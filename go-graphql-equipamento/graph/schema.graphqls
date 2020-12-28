@@ -1,0 +1,221 @@
+# GraphQL schema example
+#
+# https://gqlgen.com/getting-started/
+
+type Item {
+  id: ID!
+  marca: String
+  modelo: String
+  nome: String!
+  paginaWeb: String
+}
+
+type Computador {
+  id: ID!
+  nome: String!
+  info: Informacao
+  conectividade: Conectividade
+  equipamento: HardwareInterno
+  hardware: ListaHardware
+  perifericos: EquipamentoExterno
+  software: [Software]
+}
+
+type Informacao {
+  salaAtribuida: String
+  ultimaInspecao: String
+  tipoPc: String
+  utilisacao: String
+  tipoUtilisacao: String
+  dominio: String
+  sistemaOperativo: String
+}
+
+type Conectividade {
+  ethernet: Boolean
+  wifi: Boolean
+  conectadoDominio: Boolean
+}
+
+type HardwareInterno {
+  cpuUtil: String
+  gpuUtil: String
+  ramSlots: Int
+  ramTipo: String
+  ramVelocidade: String
+  ramMemoria: String!
+}
+
+type ListaHardware {
+  cpu: CPU!
+  gpu: GPU!
+  ram: [RAM]!
+  placaM: MBoard!
+}
+
+type CPU {
+  id: ID!
+  marca: String
+  modelo: String
+  nucleos: Int
+  maxRam: Int
+  velocidade: String
+  tdp: Float
+}
+
+type GPU {
+  id: ID!
+  marca: String
+  modelo: String
+  vram: String
+  velocidade: String
+  saidas: String
+  tdp: Float
+}
+
+type RAM {
+  id: ID!
+  marca: String
+  modelo: String
+  memoria: String
+  velocidade: String
+  tipo: String
+}
+
+type MBoard {
+  id: ID!
+  marca: String
+  modelo: String
+  tipoMemoria: String
+  chipset: String
+  familiaCompativel: String
+  socket: String
+  dimSlots: Int
+  dimMaxMem: Int
+  dimMemType: String
+  dimMaxVelc: String
+  conexoes: ConexoesMBoard!
+  interfaces: InterfacesMBoard!
+}
+
+type ConexoesMBoard {
+  sata: Int
+  pcie4_16: Int
+  pcie3_16: Int
+}
+
+type InterfacesMBoard {
+  usb2: Int
+  usb3: Int
+  lan: Boolean
+  display: Int
+  hdmi: Int
+  audio: Int
+  wifi: Int
+}
+
+type EquipamentoExterno {
+  camera: [Camera]
+  microfone: [Microfone]
+}
+
+type Microfone {
+  id: ID!
+  marca: String
+  modelo: String!
+}
+
+type Camera {
+  id: ID!
+  marca: String
+  modelo: String!
+}
+
+type Software {
+  nome: String!
+  tipo: String
+}
+
+type Query {
+  GetComputadores: [Computador!]
+  GetComputador(id: ID!): Computador
+
+  GetCPU(id: ID!): CPU
+  GetCPUS: [CPU]
+  
+  GetGPU(id: ID!): GPU
+  GetGPUS: [GPU]!
+  
+  GetRAM(id: ID!): RAM
+  GetRAMS: [RAM]
+
+  GetItems: [Item!]
+  GetItem(id: ID!): Item
+}
+
+input NovoComputador {
+  nome: String
+  info: Informacao
+  conectividade: Conectividade
+  equipamento: HardwareInterno
+  hardware: ListaHardware
+  perifericos: EquipamentoExterno
+  software: [Software]
+}
+
+input UpdateComputador {
+  nome: String
+  info: Informacao
+  conectividade: Conectividade
+  equipamento: HardwareInterno
+  hardware: ListaHardware
+  perifericos: EquipamentoExterno
+  software: [Software]
+}
+
+input NovoItem {
+  marca: String
+  modelo: String!
+  nome: String
+  paginaWeb: String
+}
+
+input NovoCPU {
+  marca: String
+  modelo: String!
+  nucleos: Int
+  maxRam: Int
+  velocidade: String
+  tdp: Float
+}
+
+input NovoGPU {
+  marca: String
+  modelo: String
+  vram: String
+  velocidade: String
+  saidas: String
+  tdp: Float
+}
+
+input NovoRAM {
+  marca: String
+  modelo: String
+  memoria: String
+  velocidade: String
+  tipo: String
+}
+
+type Mutation {
+  UpdateComputador(id: ID!, input: UpdateComputador!): Computador
+  UpdateGPU(id: ID!, input: NovoGPU!): GPU
+  UpdateCPU(id: ID!, input: NovoCPU!): CPU
+  UpdateRAM(id: ID!, input: NovoRAM!): RAM
+
+  CriarComputador(input: NovoComputador!): Computador
+  CriarItem(input: NovoItem!): Item
+
+  CriarCPU(input: NovoCPU!): CPU
+  CriarGPU(input: NovoGPU!): GPU
+  CriarRAM(input: NovoRAM!): RAM
+}
