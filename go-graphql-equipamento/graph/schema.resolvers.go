@@ -14,127 +14,149 @@ import (
 	"os"
 )
 
-var addressR = os.Getenv("REDISADDRESS")
-var portR = os.Getenv("REDISPORT")
-var passwordR = os.Getenv("REDISPASSWORD")
+var resolverLogger = log.New(os.Stdout, "GraphQL-Resolver (*) ", log.LstdFlags)
+var redisClienteDB = redisconf.NovoClienteRedis(redisconf.AddressRed, redisconf.PortRed, redisconf.PasswordRed)
 
-var redisClienteDB = redisconf.NovoClienteRedis(addressR, portR, passwordR)
-
-// TODO UpdateComputador
-func (r *mutationResolver) UpdateComputador(ctx context.Context, id string, input model.UpdateComputador) (*model.Computador, error) {
+func (r *mutationResolver) UpdateComputador(ctx context.Context, id string, input model.UpdateComputador) (*model.ComputadorAtualizado, error) {
 	panic(fmt.Errorf("not implemented"))
 }
 
-// TODO UpdateGPU
-func (r *mutationResolver) UpdateGpu(ctx context.Context, id string, input model.NovoGpu) (*model.Gpu, error) {
+func (r *mutationResolver) UpdateGpu(ctx context.Context, id string, input model.NovoGpu) (*model.ComponenteAtualizado, error) {
 	panic(fmt.Errorf("not implemented"))
 }
 
-// TODO UpdateCPU
-func (r *mutationResolver) UpdateCPU(ctx context.Context, id string, input model.NovoCPU) (*model.CPU, error) {
+func (r *mutationResolver) UpdateCPU(ctx context.Context, id string, input model.NovoCPU) (*model.ComponenteAtualizado, error) {
 	panic(fmt.Errorf("not implemented"))
 }
 
-// TODO UpdateRAM
-func (r *mutationResolver) UpdateRAM(ctx context.Context, id string, input model.NovoRAM) (*model.RAM, error) {
+func (r *mutationResolver) UpdateRAM(ctx context.Context, id string, input model.NovoRAM) (*model.ComponenteAtualizado, error) {
 	panic(fmt.Errorf("not implemented"))
 }
 
-// TODO CriarComputador
-func (r *mutationResolver) CriarComputador(ctx context.Context, input model.NovoComputador) (*model.Computador, error) {
+func (r *mutationResolver) UpdateItem(ctx context.Context, id string, input model.NovoItem) (*model.ItemAtualizado, error) {
 	panic(fmt.Errorf("not implemented"))
 }
 
-// TODO CriarItem
-func (r *mutationResolver) CriarItem(ctx context.Context, input model.NovoItem) (*model.Item, error) {
-	var novoItem model.Item
+func (r *mutationResolver) UpdateSoftware(ctx context.Context, id string, input model.NovoSoftware) (*model.SoftwareAtualizado, error) {
+	panic(fmt.Errorf("not implemented"))
+}
 
-	novoItem.Marca = input.Marca
-	novoItem.Modelo = &input.Modelo
-	novoItem.Nome = *input.Nome
-	novoItem.PaginaWeb = input.PaginaWeb
+func (r *mutationResolver) CriarSoftware(ctx context.Context, input model.NovoSoftware) (*model.SoftwareCriado, error) {
+	panic(fmt.Errorf("not implemented"))
+}
 
-	item, err := json.Marshal(novoItem)
+func (r *mutationResolver) CriarComputador(ctx context.Context, input model.NovoComputador) (*model.ComputadorCriado, error) {
+	panic(fmt.Errorf("not implemented"))
+}
+
+func (r *mutationResolver) CriarItem(ctx context.Context, input model.NovoItem) (*model.ItemCriado, error) {
+	var novoItem model.ItemCriado
+
+	// Atribuição do input a estutura de dados correta
+	novoItem.Nome = input.Nome
+
+	// Criação de chave/index relacional aos existentes
+	chave := redisconf.IDHandlerBD(&redisClienteDB)
+	idChave := "Item" + chave
+	novoItem.ID = idChave
+
+	// Tradução do input da mutation para json através da indentação do mesmo
+	item, err := json.MarshalIndent(input, "", "\t")
 	if err != nil {
 		return nil, err
 	}
 
-	err = redisClienteDB.Set(context.Background(), "id1", item, 0).Err()
+	// Inserçaõ do novo registo na base de dados
+	err = redisClienteDB.Set(context.Background(), idChave, item, 0).Err()
 	if err != nil {
 		return nil, err
 	}
 
-	val, getErr := redisClienteDB.Get(ctx, "id1").Result()
+	// Escreve no ecrã o registo insserido para verificação da insserção
+	// e visualização do novo registo
+	val, getErr := redisClienteDB.Get(ctx, idChave).Result()
 	if getErr != nil {
-		log.Fatalf("Error: %v", err)
+		resolverLogger.Fatalf("Erro: %v", err)
+		return nil, err
 	}
-	fmt.Println(val)
+	resolverLogger.Printf("[$] Valor insserido: %v", val)
 
 	return &novoItem, nil
 }
 
-// TODO CriarCPU
-func (r *mutationResolver) CriarCPU(ctx context.Context, input model.NovoCPU) (*model.CPU, error) {
+func (r *mutationResolver) CriarCPU(ctx context.Context, input model.NovoCPU) (*model.ComponenteCriado, error) {
 	panic(fmt.Errorf("not implemented"))
 }
 
-// TODO CriarGpu
-func (r *mutationResolver) CriarGpu(ctx context.Context, input model.NovoGpu) (*model.Gpu, error) {
+func (r *mutationResolver) CriarGpu(ctx context.Context, input model.NovoGpu) (*model.ComponenteCriado, error) {
 	panic(fmt.Errorf("not implemented"))
 }
 
-// TODO CriarRAM
-func (r *mutationResolver) CriarRAM(ctx context.Context, input model.NovoRAM) (*model.RAM, error) {
+func (r *mutationResolver) CriarRAM(ctx context.Context, input model.NovoRAM) (*model.ComponenteCriado, error) {
 	panic(fmt.Errorf("not implemented"))
 }
 
-// TODO Implementar GetComputadores
+func (r *mutationResolver) ApagarComponente(ctx context.Context, id string) (*model.ComponenteApagado, error) {
+	panic(fmt.Errorf("not implemented"))
+}
+
+func (r *mutationResolver) ApagarItem(ctx context.Context, id string) (*model.RegistoApagado, error) {
+	panic(fmt.Errorf("not implemented"))
+}
+
+func (r *mutationResolver) ApagarSoftware(ctx context.Context, id string) (*model.RegistoApagado, error) {
+	panic(fmt.Errorf("not implemented"))
+}
+
+func (r *mutationResolver) ApagarComputador(ctx context.Context, id string) (*model.RegistoApagado, error) {
+	panic(fmt.Errorf("not implemented"))
+}
+
 func (r *queryResolver) GetComputadores(ctx context.Context) ([]*model.Computador, error) {
 	panic(fmt.Errorf("not implemented"))
 }
 
-// TODO Implementar GetComputador
 func (r *queryResolver) GetComputador(ctx context.Context, id string) (*model.Computador, error) {
 	panic(fmt.Errorf("not implemented"))
 }
 
-// TODO Implementar GetCPU
 func (r *queryResolver) GetCPU(ctx context.Context, id string) (*model.CPU, error) {
 	panic(fmt.Errorf("not implemented"))
 }
 
-// TODO Implementar GetCPUS
 func (r *queryResolver) GetCPUS(ctx context.Context) ([]*model.CPU, error) {
 	panic(fmt.Errorf("not implemented"))
 }
 
-// TODO Implementar GetCPU
 func (r *queryResolver) GetGpu(ctx context.Context, id string) (*model.Gpu, error) {
 	panic(fmt.Errorf("not implemented"))
 }
 
-// TODO Implementar GetGpus
 func (r *queryResolver) GetGpus(ctx context.Context) ([]*model.Gpu, error) {
 	panic(fmt.Errorf("not implemented"))
 }
 
-// TODO Implementar GetRAM
 func (r *queryResolver) GetRAM(ctx context.Context, id string) (*model.RAM, error) {
 	panic(fmt.Errorf("not implemented"))
 }
 
-// TODO Implementar GetRAMS
 func (r *queryResolver) GetRAMS(ctx context.Context) ([]*model.RAM, error) {
 	panic(fmt.Errorf("not implemented"))
 }
 
-// TODO Implementar GetItems
 func (r *queryResolver) GetItems(ctx context.Context) ([]*model.Item, error) {
 	panic(fmt.Errorf("not implemented"))
 }
 
-// TODO Implementar GetItem
 func (r *queryResolver) GetItem(ctx context.Context, id string) (*model.Item, error) {
+	panic(fmt.Errorf("not implemented"))
+}
+
+func (r *queryResolver) GetSoftwares(ctx context.Context) ([]*model.Software, error) {
+	panic(fmt.Errorf("not implemented"))
+}
+
+func (r *queryResolver) GetSoftware(ctx context.Context, id string) (*model.Software, error) {
 	panic(fmt.Errorf("not implemented"))
 }
 

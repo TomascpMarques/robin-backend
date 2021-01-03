@@ -18,6 +18,24 @@ type Camera struct {
 	Modelo string  `json:"modelo"`
 }
 
+type ComponenteApagado struct {
+	ID     string  `json:"id"`
+	Modelo *string `json:"modelo"`
+	Marca  *string `json:"marca"`
+}
+
+type ComponenteAtualizado struct {
+	ID          string  `json:"id"`
+	Modelo      *string `json:"modelo"`
+	Atualizacao *string `json:"atualizacao"`
+}
+
+type ComponenteCriado struct {
+	ID             string  `json:"id"`
+	TipoComponente string  `json:"tipoComponente"`
+	Modelo         *string `json:"modelo"`
+}
+
 type Computador struct {
 	ID            string              `json:"id"`
 	Nome          string              `json:"nome"`
@@ -27,6 +45,17 @@ type Computador struct {
 	Hardware      *ListaHardware      `json:"hardware"`
 	Perifericos   *EquipamentoExterno `json:"perifericos"`
 	Software      []*Software         `json:"software"`
+}
+
+type ComputadorAtualizado struct {
+	ID          string  `json:"id"`
+	Nome        *string `json:"nome"`
+	Atualizacao *string `json:"atualizacao"`
+}
+
+type ComputadorCriado struct {
+	ID   string  `json:"id"`
+	Nome *string `json:"nome"`
 }
 
 type Conectividade struct {
@@ -93,11 +122,24 @@ type Item struct {
 	PaginaWeb *string `json:"paginaWeb"`
 }
 
+type ItemAtualizado struct {
+	ID          string  `json:"id"`
+	Nome        string  `json:"nome"`
+	Modelo      *string `json:"modelo"`
+	Atualizacao *string `json:"atualizacao"`
+}
+
+type ItemCriado struct {
+	ID   string  `json:"id"`
+	Nome *string `json:"nome"`
+}
+
 type ListaHardware struct {
-	CPU    *CPU    `json:"cpu"`
-	Gpu    *Gpu    `json:"gpu"`
-	RAM    []*RAM  `json:"ram"`
-	PlacaM *MBoard `json:"placaM"`
+	CPU           *CPU     `json:"cpu"`
+	Gpu           *Gpu     `json:"gpu"`
+	RAM           []*RAM   `json:"ram"`
+	PlacaM        *MBoard  `json:"placaM"`
+	Armazenamento *Storage `json:"armazenamento"`
 }
 
 type MBoard struct {
@@ -160,6 +202,11 @@ type NovoRAM struct {
 	Tipo       *string `json:"tipo"`
 }
 
+type NovoSoftware struct {
+	Nome string  `json:"nome"`
+	Tipo *string `json:"tipo"`
+}
+
 type RAM struct {
 	ID         string  `json:"id"`
 	Marca      *string `json:"marca"`
@@ -169,9 +216,40 @@ type RAM struct {
 	Tipo       *string `json:"tipo"`
 }
 
+type RAMAtualizado struct {
+	ID          string  `json:"id"`
+	Modelo      *string `json:"modelo"`
+	Atualizacao *string `json:"atualizacao"`
+}
+
+type RegistoApagado struct {
+	ID   string  `json:"id"`
+	Nome *string `json:"nome"`
+}
+
 type Software struct {
 	Nome string  `json:"nome"`
 	Tipo *string `json:"tipo"`
+}
+
+type SoftwareAtualizado struct {
+	ID          string  `json:"id"`
+	Nome        *string `json:"nome"`
+	Atualizacao *string `json:"atualizacao"`
+}
+
+type SoftwareCriado struct {
+	ID   string  `json:"id"`
+	Nome *string `json:"nome"`
+}
+
+type Storage struct {
+	ID         string  `json:"id"`
+	Tipo       *string `json:"tipo"`
+	Nome       *string `json:"nome"`
+	Marca      *string `json:"marca"`
+	Velocidade *string `json:"velocidade"`
+	Capacidade *string `json:"capacidade"`
 }
 
 type UpdateComputador struct {

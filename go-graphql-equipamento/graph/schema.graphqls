@@ -51,6 +51,16 @@ type ListaHardware {
   gpu: GPU!
   ram: [RAM]!
   placaM: MBoard!
+  armazenamento: Storage!
+}
+
+type Storage {
+  id: ID!
+  tipo: String
+  nome: String
+  marca: String
+  velocidade: String
+  capacidade: String
 }
 
 type CPU {
@@ -136,6 +146,73 @@ type Software {
   tipo: String
 }
 
+type SoftwareCriado {
+  id: ID!
+  nome: String
+
+}
+
+type ComputadorCriado{
+  id: ID!
+  nome: String
+
+}
+
+type ItemCriado {
+  id: ID!
+  nome: String
+
+}
+
+type ComponenteCriado {
+  id: ID!
+  tipoComponente: String!
+  modelo: String
+  
+}
+
+type ItemAtualizado {
+  id: ID!
+  nome: String!
+  modelo: String
+  atualizacao: String
+}
+
+type SoftwareAtualizado{
+  id: ID!
+  nome: String
+  atualizacao: String
+}
+
+type ComputadorAtualizado {
+  id: ID!
+  nome: String
+  atualizacao: String
+}
+
+type RAMAtualizado {
+  id: ID!
+  modelo: String
+  atualizacao: String
+}
+
+type ComponenteAtualizado {
+  id: ID!
+  modelo: String
+  atualizacao: String
+}
+
+type ComponenteApagado {
+  id: ID!
+  modelo: String
+  marca: String
+}
+
+type RegistoApagado {
+  id: ID!
+  nome: String
+}
+
 type Query {
   GetComputadores: [Computador!]
   GetComputador(id: ID!): Computador
@@ -151,6 +228,9 @@ type Query {
 
   GetItems: [Item!]
   GetItem(id: ID!): Item
+
+  GetSoftwares: [Software!]
+  GetSoftware(id: ID!): Software
 }
 
 input NovoComputador {
@@ -196,16 +276,29 @@ input NovoRAM {
   tipo: String
 }
 
+input NovoSoftware {
+  nome: String!
+  tipo: String
+}
+
 type Mutation {
-  UpdateComputador(id: ID!, input: UpdateComputador!): Computador
-  UpdateGPU(id: ID!, input: NovoGPU!): GPU
-  UpdateCPU(id: ID!, input: NovoCPU!): CPU
-  UpdateRAM(id: ID!, input: NovoRAM!): RAM
+  UpdateComputador(id: ID!, input: UpdateComputador!): ComputadorAtualizado
+  UpdateGPU(id: ID!, input: NovoGPU!): ComponenteAtualizado
+  UpdateCPU(id: ID!, input: NovoCPU!): ComponenteAtualizado
+  UpdateRAM(id: ID!, input: NovoRAM!): ComponenteAtualizado
+  UpdateItem(id: ID!, input: NovoItem!): ItemAtualizado
+  UpdateSoftware(id: ID!, input: NovoSoftware!): SoftwareAtualizado
 
-  CriarComputador(input: NovoComputador!): Computador
-  CriarItem(input: NovoItem!): Item
+  CriarSoftware(input: NovoSoftware!): SoftwareCriado
+  CriarComputador(input: NovoComputador!): ComputadorCriado
+  CriarItem(input: NovoItem!): ItemCriado
 
-  CriarCPU(input: NovoCPU!): CPU
-  CriarGPU(input: NovoGPU!): GPU
-  CriarRAM(input: NovoRAM!): RAM
+  CriarCPU(input: NovoCPU!): ComponenteCriado
+  CriarGPU(input: NovoGPU!): ComponenteCriado
+  CriarRAM(input: NovoRAM!): ComponenteCriado
+
+  ApagarComponente(id: ID!): ComponenteApagado
+  ApagarItem(id: ID!): RegistoApagado
+  ApagarSoftware(id: ID!): RegistoApagado
+  ApagarComputador(id: ID!): RegistoApagado
 }

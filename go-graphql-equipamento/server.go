@@ -13,6 +13,8 @@ import (
 
 const defaultPort = "8080"
 
+var serverloger = log.New(os.Stdout, "ServerGate.......{*} ", log.LstdFlags)
+
 func main() {
 	port := os.Getenv("PORT")
 	if port == "" {
@@ -24,6 +26,6 @@ func main() {
 	http.Handle("/", playground.Handler("GraphQL playground", "/query"))
 	http.Handle("/query", srv)
 
-	log.Printf("connect to http://localhost:%s/ for GraphQL playground", port)
-	log.Fatal(http.ListenAndServe(":"+port, nil))
+	serverloger.Printf("Connect to http://localhost:%s/ for GraphQL playground", port)
+	serverloger.Fatal(http.ListenAndServe(":"+port, nil))
 }
