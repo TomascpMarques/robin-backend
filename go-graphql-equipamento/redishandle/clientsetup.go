@@ -2,7 +2,7 @@ package redishandle
 
 import (
 	"context"
-	"log"
+	"go-graphql-equipamento/loggers"
 	"os"
 
 	"github.com/go-redis/redis/v8"
@@ -24,7 +24,7 @@ var PortRed = os.Getenv("REDISPORT")
 //PasswordRed password para a autenticação na redis bd
 var PasswordRed = os.Getenv("REDISPASSWORD")
 
-var redisLogger = log.New(os.Stdout, "Redis-Setup......[*] ", log.LstdFlags)
+var redisLogger = loggers.RedisLogger
 
 /*
 NovoClienteRedis Cria um novo cliente redis para conectar ao serviço redis

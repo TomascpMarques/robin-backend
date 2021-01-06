@@ -9,14 +9,13 @@ import (
 	"fmt"
 	"go-graphql-equipamento/graph/generated"
 	"go-graphql-equipamento/graph/model"
+	"go-graphql-equipamento/loggers"
 	"go-graphql-equipamento/redishandle"
-	"log"
-	"os"
 )
 
-var resolverLogger = log.New(os.Stdout, "GraphQL-Resolver (*) ", log.LstdFlags)
+var resolverLogger = loggers.ResolverLogger
 
-//RedisClienteDB - Cliente Redis para conectar a redis-bd
+// RedisClienteDB - cliente que establece a conexão ao serviço redis
 var RedisClienteDB = redishandle.NovoClienteRedis(redishandle.AddressRed, redishandle.PortRed, redishandle.PasswordRed)
 
 func (r *mutationResolver) UpdateComputador(ctx context.Context, id string, input model.UpdateComputador) (*model.ComputadorAtualizado, error) {
@@ -66,6 +65,8 @@ func (r *mutationResolver) CriarComputador(ctx context.Context, input model.Novo
 	var NovoComputador model.ComputadorCriado
 
 	// CriaEstruturaRegisto - Metodo do package redishandle em relação à estrutura RegistoRedisDB
+	// passamos input.conteudo como o corpo do registo para podermos mais tarde mapear só
+	// a info relacionada ao computador em sí (Ram, Gpu, Cpu...), para a struct defenida na schema do GraphQl
 	registo.CriaEstruturaRegisto(&RedisClienteDB, input, "Computador")
 
 	// Inserção do novo registo na base de dados
@@ -259,7 +260,7 @@ func (r *queryResolver) GetComputador(ctx context.Context, id string) (*model.Co
 
 	err = json.Unmarshal([]byte(valorDB), &item)
 	if err != nil {
-		resolverLogger.Panicf("[!] Erro ao mapear JSON para a Estrutura fornecida: %v\n\t[!] OU os campos da estrutura e do contéudo não são compatíveis", item)
+		resolverLogger.Printf("[!] Erro ao mapear JSON para a Estrutura fornecida: %v\n\t[!] OU os campos da estrutura e do contéudo não são compatíveis", &item)
 		return nil, err
 	}
 
@@ -327,7 +328,7 @@ func (r *queryResolver) GetItem(ctx context.Context, id string) (*model.Item, er
 
 	err = json.Unmarshal([]byte(valorDB), &item)
 	if err != nil {
-		resolverLogger.Panicf("[!] Erro ao mapear JSON para a Estrutura fornecida: %v\n\t[!] OU os campos da estrutura e do contéudo não são compatíveis", item)
+		resolverLogger.Panicf("[!] Erro ao mapear JSON para a Estrutura fornecida: %v [!] OU os campos da estrutura e do contéudo não são compatíveis", item)
 		return nil, err
 	}
 

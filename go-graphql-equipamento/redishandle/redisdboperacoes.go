@@ -2,14 +2,14 @@ package redishandle
 
 import (
 	"context"
-	"log"
-	"os"
+	"errors"
+	"go-graphql-equipamento/loggers"
 	"strconv"
 
 	"github.com/go-redis/redis/v8"
 )
 
-var operacoesBDLogger = log.New(os.Stdout, "Operações-BD.....|*| ", log.LstdFlags)
+var operacoesBDLogger = loggers.OperacoesBDLogger
 var bdContentLimitter = "[+] Conteúdo Encontrado: \n--*<INICÍO>*--\n%s\n--*<FIM>*--\n"
 
 /*
@@ -41,8 +41,9 @@ func GetRegistoBD(cr *redis.Client, keyDoRegisto string) (string, error) {
 	// e visualização do novo registo
 	registo, getErr := cr.Get(context.Background(), keyDoRegisto).Result()
 	if getErr != nil {
-		operacoesBDLogger.Panicf("[!] Erro ao buscar pelo registo de key<%v>: %v", keyDoRegisto, getErr)
-		return "null", getErr
+		operacoesBDLogger.Printf("[!] Erro ao buscar pelo registo de key<%v>: %v", keyDoRegisto, getErr)
+		erroNaProcura := "Sem registo para id: " + keyDoRegisto
+		return "null", errors.New(erroNaProcura)
 	}
 	operacoesBDLogger.Printf("[$] Conteudo do Registo <%v>:", keyDoRegisto)
 	operacoesBDLogger.Printf(bdContentLimitter, registo)

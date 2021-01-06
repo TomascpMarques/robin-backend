@@ -3,16 +3,16 @@
 # https://gqlgen.com/getting-started/
 
 type Item {
-  id: ID!
+  id: ID
   marca: String
   modelo: String
-  nome: String!
+  nome: String
   paginaWeb: String
 }
 
 type Computador {
-  id: ID!
-  nome: String!
+  id: ID
+  nome: String
   info: Informacao
   conectividade: Conectividade
   equipamento: HardwareInterno
@@ -43,15 +43,15 @@ type HardwareInterno {
   ramSlots: Int
   ramTipo: String
   ramVelocidade: String
-  ramMemoria: String!
+  ramMemoria: String
 }
 
 type ListaHardware {
   cpu: CPU!
   gpu: GPU!
   ram: [RAM]!
-  placaM: MBoard!
-  armazenamento: Storage!
+  placaM: MBoard
+  armazenamento: Storage
 }
 
 type Storage {
@@ -104,8 +104,8 @@ type MBoard {
   dimMaxMem: Int
   dimMemType: String
   dimMaxVelc: String
-  conexoes: ConexoesMBoard!
-  interfaces: InterfacesMBoard!
+  conexoes: ConexoesMBoard
+  interfaces: InterfacesMBoard
 }
 
 type ConexoesMBoard {
@@ -155,7 +155,6 @@ type SoftwareCriado {
 type ComputadorCriado{
   id: ID!
   nome: String
-
 }
 
 type ItemCriado {
@@ -250,7 +249,50 @@ input NovoStorage {
 input NovoComputador {
   id: ID
   nome: String!
-  conteudo: String
+  info: InputInformacao
+  conectividade: InputConectividade
+  equipamento: InputHardwareInterno
+  hardware: InputListaHardware
+  perifericos: InputEquipamentoExterno
+  software: [NovoSoftware]
+}
+
+input InputInformacao {
+  salaAtribuida: String
+  ultimaInspecao: String
+  tipoPc: String
+  utilisacao: String
+  tipoUtilisacao: String
+  dominio: String
+  sistemaOperativo: String
+}
+
+input InputConectividade {
+  ethernet: Boolean
+  wifi: Boolean
+  conectadoDominio: Boolean
+}
+
+input InputEquipamentoExterno {
+  camera: [NovaCamera]!
+  microfone: [NovoMicrofone]!
+}
+
+input InputHardwareInterno {
+  cpuUtil: String
+  gpuUtil: String
+  ramSlots: Int
+  ramTipo: String
+  ramVelocidade: String
+  ramMemoria: String
+}
+
+input InputListaHardware {
+  cpu: NovoCPU!
+  gpu: NovoGPU!
+  ram: [NovoRAM]!
+  placaM: NovaMBoard
+  armazenamento: NovoStorage
 }
 
 input UpdateComputador {

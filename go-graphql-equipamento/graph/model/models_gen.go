@@ -37,8 +37,8 @@ type ComponenteCriado struct {
 }
 
 type Computador struct {
-	ID            string              `json:"id"`
-	Nome          string              `json:"nome"`
+	ID            *string             `json:"id"`
+	Nome          *string             `json:"nome"`
 	Info          *Informacao         `json:"info"`
 	Conectividade *Conectividade      `json:"conectividade"`
 	Equipamento   *HardwareInterno    `json:"equipamento"`
@@ -91,7 +91,7 @@ type HardwareInterno struct {
 	RAMSlots      *int    `json:"ramSlots"`
 	RAMTipo       *string `json:"ramTipo"`
 	RAMVelocidade *string `json:"ramVelocidade"`
-	RAMMemoria    string  `json:"ramMemoria"`
+	RAMMemoria    *string `json:"ramMemoria"`
 }
 
 type Informacao struct {
@@ -102,6 +102,44 @@ type Informacao struct {
 	TipoUtilisacao   *string `json:"tipoUtilisacao"`
 	Dominio          *string `json:"dominio"`
 	SistemaOperativo *string `json:"sistemaOperativo"`
+}
+
+type InputConectividade struct {
+	Ethernet         *bool `json:"ethernet"`
+	Wifi             *bool `json:"wifi"`
+	ConectadoDominio *bool `json:"conectadoDominio"`
+}
+
+type InputEquipamentoExterno struct {
+	Camera    []*NovaCamera    `json:"camera"`
+	Microfone []*NovoMicrofone `json:"microfone"`
+}
+
+type InputHardwareInterno struct {
+	CPUUtil       *string `json:"cpuUtil"`
+	GpuUtil       *string `json:"gpuUtil"`
+	RAMSlots      *int    `json:"ramSlots"`
+	RAMTipo       *string `json:"ramTipo"`
+	RAMVelocidade *string `json:"ramVelocidade"`
+	RAMMemoria    *string `json:"ramMemoria"`
+}
+
+type InputInformacao struct {
+	SalaAtribuida    *string `json:"salaAtribuida"`
+	UltimaInspecao   *string `json:"ultimaInspecao"`
+	TipoPc           *string `json:"tipoPc"`
+	Utilisacao       *string `json:"utilisacao"`
+	TipoUtilisacao   *string `json:"tipoUtilisacao"`
+	Dominio          *string `json:"dominio"`
+	SistemaOperativo *string `json:"sistemaOperativo"`
+}
+
+type InputListaHardware struct {
+	CPU           *NovoCPU     `json:"cpu"`
+	Gpu           *NovoGpu     `json:"gpu"`
+	RAM           []*NovoRAM   `json:"ram"`
+	PlacaM        *NovaMBoard  `json:"placaM"`
+	Armazenamento *NovoStorage `json:"armazenamento"`
 }
 
 type InterfacesMBoard struct {
@@ -115,10 +153,10 @@ type InterfacesMBoard struct {
 }
 
 type Item struct {
-	ID        string  `json:"id"`
+	ID        *string `json:"id"`
 	Marca     *string `json:"marca"`
 	Modelo    *string `json:"modelo"`
-	Nome      string  `json:"nome"`
+	Nome      *string `json:"nome"`
 	PaginaWeb *string `json:"paginaWeb"`
 }
 
@@ -197,9 +235,14 @@ type NovoCPU struct {
 }
 
 type NovoComputador struct {
-	ID       *string `json:"id"`
-	Nome     string  `json:"nome"`
-	Conteudo *string `json:"conteudo"`
+	ID            *string                  `json:"id"`
+	Nome          string                   `json:"nome"`
+	Info          *InputInformacao         `json:"info"`
+	Conectividade *InputConectividade      `json:"conectividade"`
+	Equipamento   *InputHardwareInterno    `json:"equipamento"`
+	Hardware      *InputListaHardware      `json:"hardware"`
+	Perifericos   *InputEquipamentoExterno `json:"perifericos"`
+	Software      []*NovoSoftware          `json:"software"`
 }
 
 type NovoGpu struct {

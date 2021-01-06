@@ -4,8 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	"log"
-	"os"
+	"go-graphql-equipamento/loggers"
 	"regexp"
 	"time"
 
@@ -19,7 +18,7 @@ type RegistoRedisDB struct {
 	Expira time.Duration // Expiração do registo
 }
 
-var dbFuncsLogger = log.New(os.Stdout, "DBIndexing.......<*> ", log.LstdFlags)
+var dbFuncsLogger = loggers.DbFuncsLogger
 
 /*
 extrairIDMaisRecente - Extrai o id mais recente da lista fornecida
@@ -79,7 +78,8 @@ func FormatarValorParaJSON(conteudo interface{}) []byte {
 }
 
 /*
-CriaEstruturaRegisto -
+CriaEstruturaRegisto - Cria a estrutura(chave, valor, expiração)
+					   utilizada para insserir registos na base-de-dados.
 ---
 Params
 	redisClienteDB - *redis.Client / Ponteiro ao cliente redis a utilizar
