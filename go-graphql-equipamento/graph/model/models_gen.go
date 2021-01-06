@@ -164,7 +164,30 @@ type Microfone struct {
 	Modelo string  `json:"modelo"`
 }
 
+type NovaCamera struct {
+	ID     *string `json:"id"`
+	Marca  *string `json:"marca"`
+	Modelo string  `json:"modelo"`
+}
+
+type NovaMBoard struct {
+	ID                *string `json:"id"`
+	Marca             *string `json:"marca"`
+	Modelo            *string `json:"modelo"`
+	TipoMemoria       *string `json:"tipoMemoria"`
+	Chipset           *string `json:"chipset"`
+	FamiliaCompativel *string `json:"familiaCompativel"`
+	Socket            *string `json:"socket"`
+	DimSlots          *int    `json:"dimSlots"`
+	DimMaxMem         *int    `json:"dimMaxMem"`
+	DimMemType        *string `json:"dimMemType"`
+	DimMaxVelc        *string `json:"dimMaxVelc"`
+	Conexoes          *string `json:"conexoes"`
+	Interfaces        *string `json:"interfaces"`
+}
+
 type NovoCPU struct {
+	ID         *string  `json:"id"`
 	Marca      *string  `json:"marca"`
 	Modelo     string   `json:"modelo"`
 	Nucleos    *int     `json:"nucleos"`
@@ -174,11 +197,13 @@ type NovoCPU struct {
 }
 
 type NovoComputador struct {
+	ID       *string `json:"id"`
 	Nome     string  `json:"nome"`
 	Conteudo *string `json:"conteudo"`
 }
 
 type NovoGpu struct {
+	ID         *string  `json:"id"`
 	Marca      *string  `json:"marca"`
 	Modelo     *string  `json:"modelo"`
 	Vram       *string  `json:"vram"`
@@ -188,13 +213,21 @@ type NovoGpu struct {
 }
 
 type NovoItem struct {
+	ID        *string `json:"id"`
 	Marca     *string `json:"marca"`
 	Modelo    string  `json:"modelo"`
 	Nome      *string `json:"nome"`
 	PaginaWeb *string `json:"paginaWeb"`
 }
 
+type NovoMicrofone struct {
+	ID     *string `json:"id"`
+	Marca  *string `json:"marca"`
+	Modelo string  `json:"modelo"`
+}
+
 type NovoRAM struct {
+	ID         *string `json:"id"`
 	Marca      *string `json:"marca"`
 	Modelo     *string `json:"modelo"`
 	Memoria    *string `json:"memoria"`
@@ -203,8 +236,19 @@ type NovoRAM struct {
 }
 
 type NovoSoftware struct {
+	ID   *string `json:"id"`
 	Nome string  `json:"nome"`
 	Tipo *string `json:"tipo"`
+}
+
+type NovoStorage struct {
+	ID         *string `json:"id"`
+	Tipo       *string `json:"tipo"`
+	Nome       *string `json:"nome"`
+	Modelo     *string `json:"modelo"`
+	Marca      *string `json:"marca"`
+	Velocidade *string `json:"velocidade"`
+	Capacidade *string `json:"capacidade"`
 }
 
 type RAM struct {
@@ -214,12 +258,6 @@ type RAM struct {
 	Memoria    *string `json:"memoria"`
 	Velocidade *string `json:"velocidade"`
 	Tipo       *string `json:"tipo"`
-}
-
-type RAMAtualizado struct {
-	ID          string  `json:"id"`
-	Modelo      *string `json:"modelo"`
-	Atualizacao *string `json:"atualizacao"`
 }
 
 type RegistoApagado struct {
@@ -253,6 +291,7 @@ type Storage struct {
 }
 
 type UpdateComputador struct {
-	Nome         string `json:"nome"`
-	NovoConteudo string `json:"novoConteudo"`
+	ID           *string `json:"id"`
+	Nome         string  `json:"nome"`
+	NovoConteudo string  `json:"novoConteudo"`
 }

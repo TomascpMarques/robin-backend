@@ -1,4 +1,4 @@
-package redisconf
+package redishandle
 
 import (
 	"context"
@@ -8,10 +8,8 @@ import (
 	"github.com/go-redis/redis/v8"
 )
 
-var redisLogger = log.New(os.Stdout, "Redis-Setup......[*] ", log.LstdFlags)
-
 const (
-	defaultRedisAddress = "localhost"
+	defaultRedisAddress = "127.0.0.1"
 	defaultRedisPort    = "6379"
 	defaultDB           = 0
 	defaultPassword     = ""
@@ -25,6 +23,8 @@ var PortRed = os.Getenv("REDISPORT")
 
 //PasswordRed password para a autenticação na redis bd
 var PasswordRed = os.Getenv("REDISPASSWORD")
+
+var redisLogger = log.New(os.Stdout, "Redis-Setup......[*] ", log.LstdFlags)
 
 /*
 NovoClienteRedis Cria um novo cliente redis para conectar ao serviço redis

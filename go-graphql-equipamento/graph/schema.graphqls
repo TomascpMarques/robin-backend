@@ -161,14 +161,12 @@ type ComputadorCriado{
 type ItemCriado {
   id: ID!
   nome: String
-
 }
 
 type ComponenteCriado {
   id: ID!
   tipoComponente: String!
   modelo: String
-  
 }
 
 type ItemAtualizado {
@@ -190,12 +188,6 @@ type ComputadorAtualizado {
   atualizacao: String
 }
 
-type RAMAtualizado {
-  id: ID!
-  modelo: String
-  atualizacao: String
-}
-
 type ComponenteAtualizado {
   id: ID!
   modelo: String
@@ -214,36 +206,61 @@ type RegistoApagado {
 }
 
 type Query {
-  GetComputadores: [Computador!]
+  GetComputadores: [Computador]!
   GetComputador(id: ID!): Computador
 
+  GetCPUS: [CPU]!
   GetCPU(id: ID!): CPU
-  GetCPUS: [CPU]
   
-  GetGPU(id: ID!): GPU
   GetGPUS: [GPU]!
+  GetGPU(id: ID!): GPU
   
+  GetRAMS: [RAM]!
   GetRAM(id: ID!): RAM
-  GetRAMS: [RAM]
 
-  GetItems: [Item!]
+  GetItems: [Item!]!
   GetItem(id: ID!): Item
 
-  GetSoftwares: [Software!]
+  GetSoftwares: [Software]!
   GetSoftware(id: ID!): Software
+
+  GetMicrofones: [Microfone]!
+  GetMicrofone(id: ID!): Microfone
+
+  GetCameras: [Camera]!
+  GetCamera(id: ID!): Camera
+  
+  GetStorages: [Storage]!
+  GetStorage(id: ID!): Storage
+
+  GetMBoards: [MBoard]!
+  GetMBoard(id: ID!): MBoard
+}
+
+input NovoStorage {
+  id: ID
+  tipo: String
+  nome: String
+  modelo: String
+  marca: String
+  velocidade: String
+  capacidade: String
 }
 
 input NovoComputador {
+  id: ID
   nome: String!
   conteudo: String
 }
 
 input UpdateComputador {
+  id: ID
   nome: String!
   novoConteudo: String!
 }
 
 input NovoItem {
+  id: ID
   marca: String
   modelo: String!
   nome: String
@@ -251,6 +268,7 @@ input NovoItem {
 }
 
 input NovoCPU {
+  id: ID
   marca: String
   modelo: String!
   nucleos: Int
@@ -260,6 +278,7 @@ input NovoCPU {
 }
 
 input NovoGPU {
+  id: ID
   marca: String
   modelo: String
   vram: String
@@ -269,6 +288,7 @@ input NovoGPU {
 }
 
 input NovoRAM {
+  id: ID
   marca: String
   modelo: String
   memoria: String
@@ -276,9 +296,38 @@ input NovoRAM {
   tipo: String
 }
 
+input NovaMBoard {
+  id: ID
+  marca: String
+  modelo: String
+  tipoMemoria: String
+  chipset: String
+  familiaCompativel: String
+  socket: String
+  dimSlots: Int
+  dimMaxMem: Int
+  dimMemType: String
+  dimMaxVelc: String
+  conexoes: String
+  interfaces: String
+}
+
 input NovoSoftware {
+  id: ID
   nome: String!
   tipo: String
+}
+
+input NovoMicrofone {
+  id: ID
+  marca: String
+  modelo: String!
+}
+
+input NovaCamera {
+  id: ID
+  marca: String
+  modelo: String!
 }
 
 type Mutation {
@@ -296,6 +345,11 @@ type Mutation {
   CriarCPU(input: NovoCPU!): ComponenteCriado
   CriarGPU(input: NovoGPU!): ComponenteCriado
   CriarRAM(input: NovoRAM!): ComponenteCriado
+  CriarMboard(input: NovaMBoard!): ComponenteCriado
+  CriarStorage(input: NovoStorage!): ComponenteCriado
+
+  CriarMicrofone(input: NovoMicrofone!): ComponenteCriado
+  CriarCamera(input: NovaCamera!): ComponenteCriado
 
   ApagarComponente(id: ID!): ComponenteApagado
   ApagarItem(id: ID!): RegistoApagado

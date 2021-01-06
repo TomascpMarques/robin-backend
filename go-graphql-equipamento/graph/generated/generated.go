@@ -211,11 +211,15 @@ type ComplexityRoot struct {
 		ApagarItem       func(childComplexity int, id string) int
 		ApagarSoftware   func(childComplexity int, id string) int
 		CriarCPU         func(childComplexity int, input model.NovoCPU) int
+		CriarCamera      func(childComplexity int, input model.NovaCamera) int
 		CriarComputador  func(childComplexity int, input model.NovoComputador) int
 		CriarGpu         func(childComplexity int, input model.NovoGpu) int
 		CriarItem        func(childComplexity int, input model.NovoItem) int
+		CriarMboard      func(childComplexity int, input model.NovaMBoard) int
+		CriarMicrofone   func(childComplexity int, input model.NovoMicrofone) int
 		CriarRAM         func(childComplexity int, input model.NovoRAM) int
 		CriarSoftware    func(childComplexity int, input model.NovoSoftware) int
+		CriarStorage     func(childComplexity int, input model.NovoStorage) int
 		UpdateCPU        func(childComplexity int, id string, input model.NovoCPU) int
 		UpdateComputador func(childComplexity int, id string, input model.UpdateComputador) int
 		UpdateGpu        func(childComplexity int, id string, input model.NovoGpu) int
@@ -227,16 +231,24 @@ type ComplexityRoot struct {
 	Query struct {
 		GetCPU          func(childComplexity int, id string) int
 		GetCPUS         func(childComplexity int) int
+		GetCamera       func(childComplexity int, id string) int
+		GetCameras      func(childComplexity int) int
 		GetComputador   func(childComplexity int, id string) int
 		GetComputadores func(childComplexity int) int
 		GetGpu          func(childComplexity int, id string) int
 		GetGpus         func(childComplexity int) int
 		GetItem         func(childComplexity int, id string) int
 		GetItems        func(childComplexity int) int
+		GetMBoard       func(childComplexity int, id string) int
+		GetMBoards      func(childComplexity int) int
+		GetMicrofone    func(childComplexity int, id string) int
+		GetMicrofones   func(childComplexity int) int
 		GetRAM          func(childComplexity int, id string) int
 		GetRAMS         func(childComplexity int) int
 		GetSoftware     func(childComplexity int, id string) int
 		GetSoftwares    func(childComplexity int) int
+		GetStorage      func(childComplexity int, id string) int
+		GetStorages     func(childComplexity int) int
 	}
 
 	RAM struct {
@@ -246,12 +258,6 @@ type ComplexityRoot struct {
 		Modelo     func(childComplexity int) int
 		Tipo       func(childComplexity int) int
 		Velocidade func(childComplexity int) int
-	}
-
-	RAMAtualizado struct {
-		Atualizacao func(childComplexity int) int
-		ID          func(childComplexity int) int
-		Modelo      func(childComplexity int) int
 	}
 
 	RegistoApagado struct {
@@ -298,6 +304,10 @@ type MutationResolver interface {
 	CriarCPU(ctx context.Context, input model.NovoCPU) (*model.ComponenteCriado, error)
 	CriarGpu(ctx context.Context, input model.NovoGpu) (*model.ComponenteCriado, error)
 	CriarRAM(ctx context.Context, input model.NovoRAM) (*model.ComponenteCriado, error)
+	CriarMboard(ctx context.Context, input model.NovaMBoard) (*model.ComponenteCriado, error)
+	CriarStorage(ctx context.Context, input model.NovoStorage) (*model.ComponenteCriado, error)
+	CriarMicrofone(ctx context.Context, input model.NovoMicrofone) (*model.ComponenteCriado, error)
+	CriarCamera(ctx context.Context, input model.NovaCamera) (*model.ComponenteCriado, error)
 	ApagarComponente(ctx context.Context, id string) (*model.ComponenteApagado, error)
 	ApagarItem(ctx context.Context, id string) (*model.RegistoApagado, error)
 	ApagarSoftware(ctx context.Context, id string) (*model.RegistoApagado, error)
@@ -306,16 +316,24 @@ type MutationResolver interface {
 type QueryResolver interface {
 	GetComputadores(ctx context.Context) ([]*model.Computador, error)
 	GetComputador(ctx context.Context, id string) (*model.Computador, error)
-	GetCPU(ctx context.Context, id string) (*model.CPU, error)
 	GetCPUS(ctx context.Context) ([]*model.CPU, error)
-	GetGpu(ctx context.Context, id string) (*model.Gpu, error)
+	GetCPU(ctx context.Context, id string) (*model.CPU, error)
 	GetGpus(ctx context.Context) ([]*model.Gpu, error)
-	GetRAM(ctx context.Context, id string) (*model.RAM, error)
+	GetGpu(ctx context.Context, id string) (*model.Gpu, error)
 	GetRAMS(ctx context.Context) ([]*model.RAM, error)
+	GetRAM(ctx context.Context, id string) (*model.RAM, error)
 	GetItems(ctx context.Context) ([]*model.Item, error)
 	GetItem(ctx context.Context, id string) (*model.Item, error)
 	GetSoftwares(ctx context.Context) ([]*model.Software, error)
 	GetSoftware(ctx context.Context, id string) (*model.Software, error)
+	GetMicrofones(ctx context.Context) ([]*model.Microfone, error)
+	GetMicrofone(ctx context.Context, id string) (*model.Microfone, error)
+	GetCameras(ctx context.Context) ([]*model.Camera, error)
+	GetCamera(ctx context.Context, id string) (*model.Camera, error)
+	GetStorages(ctx context.Context) ([]*model.Storage, error)
+	GetStorage(ctx context.Context, id string) (*model.Storage, error)
+	GetMBoards(ctx context.Context) ([]*model.MBoard, error)
+	GetMBoard(ctx context.Context, id string) (*model.MBoard, error)
 }
 
 type executableSchema struct {
@@ -1086,6 +1104,18 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.Mutation.CriarCPU(childComplexity, args["input"].(model.NovoCPU)), true
 
+	case "Mutation.CriarCamera":
+		if e.complexity.Mutation.CriarCamera == nil {
+			break
+		}
+
+		args, err := ec.field_Mutation_CriarCamera_args(context.TODO(), rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.complexity.Mutation.CriarCamera(childComplexity, args["input"].(model.NovaCamera)), true
+
 	case "Mutation.CriarComputador":
 		if e.complexity.Mutation.CriarComputador == nil {
 			break
@@ -1122,6 +1152,30 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.Mutation.CriarItem(childComplexity, args["input"].(model.NovoItem)), true
 
+	case "Mutation.CriarMboard":
+		if e.complexity.Mutation.CriarMboard == nil {
+			break
+		}
+
+		args, err := ec.field_Mutation_CriarMboard_args(context.TODO(), rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.complexity.Mutation.CriarMboard(childComplexity, args["input"].(model.NovaMBoard)), true
+
+	case "Mutation.CriarMicrofone":
+		if e.complexity.Mutation.CriarMicrofone == nil {
+			break
+		}
+
+		args, err := ec.field_Mutation_CriarMicrofone_args(context.TODO(), rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.complexity.Mutation.CriarMicrofone(childComplexity, args["input"].(model.NovoMicrofone)), true
+
 	case "Mutation.CriarRAM":
 		if e.complexity.Mutation.CriarRAM == nil {
 			break
@@ -1145,6 +1199,18 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 		}
 
 		return e.complexity.Mutation.CriarSoftware(childComplexity, args["input"].(model.NovoSoftware)), true
+
+	case "Mutation.CriarStorage":
+		if e.complexity.Mutation.CriarStorage == nil {
+			break
+		}
+
+		args, err := ec.field_Mutation_CriarStorage_args(context.TODO(), rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.complexity.Mutation.CriarStorage(childComplexity, args["input"].(model.NovoStorage)), true
 
 	case "Mutation.UpdateCPU":
 		if e.complexity.Mutation.UpdateCPU == nil {
@@ -1237,6 +1303,25 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.Query.GetCPUS(childComplexity), true
 
+	case "Query.GetCamera":
+		if e.complexity.Query.GetCamera == nil {
+			break
+		}
+
+		args, err := ec.field_Query_GetCamera_args(context.TODO(), rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.complexity.Query.GetCamera(childComplexity, args["id"].(string)), true
+
+	case "Query.GetCameras":
+		if e.complexity.Query.GetCameras == nil {
+			break
+		}
+
+		return e.complexity.Query.GetCameras(childComplexity), true
+
 	case "Query.GetComputador":
 		if e.complexity.Query.GetComputador == nil {
 			break
@@ -1294,6 +1379,44 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.Query.GetItems(childComplexity), true
 
+	case "Query.GetMBoard":
+		if e.complexity.Query.GetMBoard == nil {
+			break
+		}
+
+		args, err := ec.field_Query_GetMBoard_args(context.TODO(), rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.complexity.Query.GetMBoard(childComplexity, args["id"].(string)), true
+
+	case "Query.GetMBoards":
+		if e.complexity.Query.GetMBoards == nil {
+			break
+		}
+
+		return e.complexity.Query.GetMBoards(childComplexity), true
+
+	case "Query.GetMicrofone":
+		if e.complexity.Query.GetMicrofone == nil {
+			break
+		}
+
+		args, err := ec.field_Query_GetMicrofone_args(context.TODO(), rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.complexity.Query.GetMicrofone(childComplexity, args["id"].(string)), true
+
+	case "Query.GetMicrofones":
+		if e.complexity.Query.GetMicrofones == nil {
+			break
+		}
+
+		return e.complexity.Query.GetMicrofones(childComplexity), true
+
 	case "Query.GetRAM":
 		if e.complexity.Query.GetRAM == nil {
 			break
@@ -1331,6 +1454,25 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 		}
 
 		return e.complexity.Query.GetSoftwares(childComplexity), true
+
+	case "Query.GetStorage":
+		if e.complexity.Query.GetStorage == nil {
+			break
+		}
+
+		args, err := ec.field_Query_GetStorage_args(context.TODO(), rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.complexity.Query.GetStorage(childComplexity, args["id"].(string)), true
+
+	case "Query.GetStorages":
+		if e.complexity.Query.GetStorages == nil {
+			break
+		}
+
+		return e.complexity.Query.GetStorages(childComplexity), true
 
 	case "RAM.id":
 		if e.complexity.RAM.ID == nil {
@@ -1373,27 +1515,6 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 		}
 
 		return e.complexity.RAM.Velocidade(childComplexity), true
-
-	case "RAMAtualizado.atualizacao":
-		if e.complexity.RAMAtualizado.Atualizacao == nil {
-			break
-		}
-
-		return e.complexity.RAMAtualizado.Atualizacao(childComplexity), true
-
-	case "RAMAtualizado.id":
-		if e.complexity.RAMAtualizado.ID == nil {
-			break
-		}
-
-		return e.complexity.RAMAtualizado.ID(childComplexity), true
-
-	case "RAMAtualizado.modelo":
-		if e.complexity.RAMAtualizado.Modelo == nil {
-			break
-		}
-
-		return e.complexity.RAMAtualizado.Modelo(childComplexity), true
 
 	case "RegistoApagado.id":
 		if e.complexity.RegistoApagado.ID == nil {
@@ -1727,14 +1848,12 @@ type ComputadorCriado{
 type ItemCriado {
   id: ID!
   nome: String
-
 }
 
 type ComponenteCriado {
   id: ID!
   tipoComponente: String!
   modelo: String
-  
 }
 
 type ItemAtualizado {
@@ -1756,12 +1875,6 @@ type ComputadorAtualizado {
   atualizacao: String
 }
 
-type RAMAtualizado {
-  id: ID!
-  modelo: String
-  atualizacao: String
-}
-
 type ComponenteAtualizado {
   id: ID!
   modelo: String
@@ -1780,36 +1893,61 @@ type RegistoApagado {
 }
 
 type Query {
-  GetComputadores: [Computador!]
+  GetComputadores: [Computador]!
   GetComputador(id: ID!): Computador
 
+  GetCPUS: [CPU]!
   GetCPU(id: ID!): CPU
-  GetCPUS: [CPU]
   
-  GetGPU(id: ID!): GPU
   GetGPUS: [GPU]!
+  GetGPU(id: ID!): GPU
   
+  GetRAMS: [RAM]!
   GetRAM(id: ID!): RAM
-  GetRAMS: [RAM]
 
-  GetItems: [Item!]
+  GetItems: [Item!]!
   GetItem(id: ID!): Item
 
-  GetSoftwares: [Software!]
+  GetSoftwares: [Software]!
   GetSoftware(id: ID!): Software
+
+  GetMicrofones: [Microfone]!
+  GetMicrofone(id: ID!): Microfone
+
+  GetCameras: [Camera]!
+  GetCamera(id: ID!): Camera
+  
+  GetStorages: [Storage]!
+  GetStorage(id: ID!): Storage
+
+  GetMBoards: [MBoard]!
+  GetMBoard(id: ID!): MBoard
+}
+
+input NovoStorage {
+  id: ID
+  tipo: String
+  nome: String
+  modelo: String
+  marca: String
+  velocidade: String
+  capacidade: String
 }
 
 input NovoComputador {
+  id: ID
   nome: String!
   conteudo: String
 }
 
 input UpdateComputador {
+  id: ID
   nome: String!
   novoConteudo: String!
 }
 
 input NovoItem {
+  id: ID
   marca: String
   modelo: String!
   nome: String
@@ -1817,6 +1955,7 @@ input NovoItem {
 }
 
 input NovoCPU {
+  id: ID
   marca: String
   modelo: String!
   nucleos: Int
@@ -1826,6 +1965,7 @@ input NovoCPU {
 }
 
 input NovoGPU {
+  id: ID
   marca: String
   modelo: String
   vram: String
@@ -1835,6 +1975,7 @@ input NovoGPU {
 }
 
 input NovoRAM {
+  id: ID
   marca: String
   modelo: String
   memoria: String
@@ -1842,9 +1983,38 @@ input NovoRAM {
   tipo: String
 }
 
+input NovaMBoard {
+  id: ID
+  marca: String
+  modelo: String
+  tipoMemoria: String
+  chipset: String
+  familiaCompativel: String
+  socket: String
+  dimSlots: Int
+  dimMaxMem: Int
+  dimMemType: String
+  dimMaxVelc: String
+  conexoes: String
+  interfaces: String
+}
+
 input NovoSoftware {
+  id: ID
   nome: String!
   tipo: String
+}
+
+input NovoMicrofone {
+  id: ID
+  marca: String
+  modelo: String!
+}
+
+input NovaCamera {
+  id: ID
+  marca: String
+  modelo: String!
 }
 
 type Mutation {
@@ -1862,6 +2032,11 @@ type Mutation {
   CriarCPU(input: NovoCPU!): ComponenteCriado
   CriarGPU(input: NovoGPU!): ComponenteCriado
   CriarRAM(input: NovoRAM!): ComponenteCriado
+  CriarMboard(input: NovaMBoard!): ComponenteCriado
+  CriarStorage(input: NovoStorage!): ComponenteCriado
+
+  CriarMicrofone(input: NovoMicrofone!): ComponenteCriado
+  CriarCamera(input: NovaCamera!): ComponenteCriado
 
   ApagarComponente(id: ID!): ComponenteApagado
   ApagarItem(id: ID!): RegistoApagado
@@ -1950,6 +2125,21 @@ func (ec *executionContext) field_Mutation_CriarCPU_args(ctx context.Context, ra
 	return args, nil
 }
 
+func (ec *executionContext) field_Mutation_CriarCamera_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
+	var err error
+	args := map[string]interface{}{}
+	var arg0 model.NovaCamera
+	if tmp, ok := rawArgs["input"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("input"))
+		arg0, err = ec.unmarshalNNovaCamera2goᚑgraphqlᚑequipamentoᚋgraphᚋmodelᚐNovaCamera(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["input"] = arg0
+	return args, nil
+}
+
 func (ec *executionContext) field_Mutation_CriarComputador_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
 	var err error
 	args := map[string]interface{}{}
@@ -1995,6 +2185,36 @@ func (ec *executionContext) field_Mutation_CriarItem_args(ctx context.Context, r
 	return args, nil
 }
 
+func (ec *executionContext) field_Mutation_CriarMboard_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
+	var err error
+	args := map[string]interface{}{}
+	var arg0 model.NovaMBoard
+	if tmp, ok := rawArgs["input"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("input"))
+		arg0, err = ec.unmarshalNNovaMBoard2goᚑgraphqlᚑequipamentoᚋgraphᚋmodelᚐNovaMBoard(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["input"] = arg0
+	return args, nil
+}
+
+func (ec *executionContext) field_Mutation_CriarMicrofone_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
+	var err error
+	args := map[string]interface{}{}
+	var arg0 model.NovoMicrofone
+	if tmp, ok := rawArgs["input"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("input"))
+		arg0, err = ec.unmarshalNNovoMicrofone2goᚑgraphqlᚑequipamentoᚋgraphᚋmodelᚐNovoMicrofone(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["input"] = arg0
+	return args, nil
+}
+
 func (ec *executionContext) field_Mutation_CriarRAM_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
 	var err error
 	args := map[string]interface{}{}
@@ -2017,6 +2237,21 @@ func (ec *executionContext) field_Mutation_CriarSoftware_args(ctx context.Contex
 	if tmp, ok := rawArgs["input"]; ok {
 		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("input"))
 		arg0, err = ec.unmarshalNNovoSoftware2goᚑgraphqlᚑequipamentoᚋgraphᚋmodelᚐNovoSoftware(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["input"] = arg0
+	return args, nil
+}
+
+func (ec *executionContext) field_Mutation_CriarStorage_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
+	var err error
+	args := map[string]interface{}{}
+	var arg0 model.NovoStorage
+	if tmp, ok := rawArgs["input"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("input"))
+		arg0, err = ec.unmarshalNNovoStorage2goᚑgraphqlᚑequipamentoᚋgraphᚋmodelᚐNovoStorage(ctx, tmp)
 		if err != nil {
 			return nil, err
 		}
@@ -2184,6 +2419,21 @@ func (ec *executionContext) field_Query_GetCPU_args(ctx context.Context, rawArgs
 	return args, nil
 }
 
+func (ec *executionContext) field_Query_GetCamera_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
+	var err error
+	args := map[string]interface{}{}
+	var arg0 string
+	if tmp, ok := rawArgs["id"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("id"))
+		arg0, err = ec.unmarshalNID2string(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["id"] = arg0
+	return args, nil
+}
+
 func (ec *executionContext) field_Query_GetComputador_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
 	var err error
 	args := map[string]interface{}{}
@@ -2229,6 +2479,36 @@ func (ec *executionContext) field_Query_GetItem_args(ctx context.Context, rawArg
 	return args, nil
 }
 
+func (ec *executionContext) field_Query_GetMBoard_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
+	var err error
+	args := map[string]interface{}{}
+	var arg0 string
+	if tmp, ok := rawArgs["id"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("id"))
+		arg0, err = ec.unmarshalNID2string(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["id"] = arg0
+	return args, nil
+}
+
+func (ec *executionContext) field_Query_GetMicrofone_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
+	var err error
+	args := map[string]interface{}{}
+	var arg0 string
+	if tmp, ok := rawArgs["id"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("id"))
+		arg0, err = ec.unmarshalNID2string(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["id"] = arg0
+	return args, nil
+}
+
 func (ec *executionContext) field_Query_GetRAM_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
 	var err error
 	args := map[string]interface{}{}
@@ -2245,6 +2525,21 @@ func (ec *executionContext) field_Query_GetRAM_args(ctx context.Context, rawArgs
 }
 
 func (ec *executionContext) field_Query_GetSoftware_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
+	var err error
+	args := map[string]interface{}{}
+	var arg0 string
+	if tmp, ok := rawArgs["id"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("id"))
+		arg0, err = ec.unmarshalNID2string(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["id"] = arg0
+	return args, nil
+}
+
+func (ec *executionContext) field_Query_GetStorage_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
 	var err error
 	args := map[string]interface{}{}
 	var arg0 string
@@ -6032,6 +6327,162 @@ func (ec *executionContext) _Mutation_CriarRAM(ctx context.Context, field graphq
 	return ec.marshalOComponenteCriado2ᚖgoᚑgraphqlᚑequipamentoᚋgraphᚋmodelᚐComponenteCriado(ctx, field.Selections, res)
 }
 
+func (ec *executionContext) _Mutation_CriarMboard(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "Mutation",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   true,
+		IsResolver: true,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	rawArgs := field.ArgumentMap(ec.Variables)
+	args, err := ec.field_Mutation_CriarMboard_args(ctx, rawArgs)
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	fc.Args = args
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.Mutation().CriarMboard(rctx, args["input"].(model.NovaMBoard))
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.(*model.ComponenteCriado)
+	fc.Result = res
+	return ec.marshalOComponenteCriado2ᚖgoᚑgraphqlᚑequipamentoᚋgraphᚋmodelᚐComponenteCriado(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _Mutation_CriarStorage(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "Mutation",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   true,
+		IsResolver: true,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	rawArgs := field.ArgumentMap(ec.Variables)
+	args, err := ec.field_Mutation_CriarStorage_args(ctx, rawArgs)
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	fc.Args = args
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.Mutation().CriarStorage(rctx, args["input"].(model.NovoStorage))
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.(*model.ComponenteCriado)
+	fc.Result = res
+	return ec.marshalOComponenteCriado2ᚖgoᚑgraphqlᚑequipamentoᚋgraphᚋmodelᚐComponenteCriado(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _Mutation_CriarMicrofone(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "Mutation",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   true,
+		IsResolver: true,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	rawArgs := field.ArgumentMap(ec.Variables)
+	args, err := ec.field_Mutation_CriarMicrofone_args(ctx, rawArgs)
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	fc.Args = args
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.Mutation().CriarMicrofone(rctx, args["input"].(model.NovoMicrofone))
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.(*model.ComponenteCriado)
+	fc.Result = res
+	return ec.marshalOComponenteCriado2ᚖgoᚑgraphqlᚑequipamentoᚋgraphᚋmodelᚐComponenteCriado(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _Mutation_CriarCamera(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "Mutation",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   true,
+		IsResolver: true,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	rawArgs := field.ArgumentMap(ec.Variables)
+	args, err := ec.field_Mutation_CriarCamera_args(ctx, rawArgs)
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	fc.Args = args
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.Mutation().CriarCamera(rctx, args["input"].(model.NovaCamera))
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.(*model.ComponenteCriado)
+	fc.Result = res
+	return ec.marshalOComponenteCriado2ᚖgoᚑgraphqlᚑequipamentoᚋgraphᚋmodelᚐComponenteCriado(ctx, field.Selections, res)
+}
+
 func (ec *executionContext) _Mutation_ApagarComponente(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
 	defer func() {
 		if r := recover(); r != nil {
@@ -6213,11 +6664,14 @@ func (ec *executionContext) _Query_GetComputadores(ctx context.Context, field gr
 		return graphql.Null
 	}
 	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
 		return graphql.Null
 	}
 	res := resTmp.([]*model.Computador)
 	fc.Result = res
-	return ec.marshalOComputador2ᚕᚖgoᚑgraphqlᚑequipamentoᚋgraphᚋmodelᚐComputadorᚄ(ctx, field.Selections, res)
+	return ec.marshalNComputador2ᚕᚖgoᚑgraphqlᚑequipamentoᚋgraphᚋmodelᚐComputador(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) _Query_GetComputador(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
@@ -6259,6 +6713,41 @@ func (ec *executionContext) _Query_GetComputador(ctx context.Context, field grap
 	return ec.marshalOComputador2ᚖgoᚑgraphqlᚑequipamentoᚋgraphᚋmodelᚐComputador(ctx, field.Selections, res)
 }
 
+func (ec *executionContext) _Query_GetCPUS(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "Query",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   true,
+		IsResolver: true,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.Query().GetCPUS(rctx)
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.([]*model.CPU)
+	fc.Result = res
+	return ec.marshalNCPU2ᚕᚖgoᚑgraphqlᚑequipamentoᚋgraphᚋmodelᚐCPU(ctx, field.Selections, res)
+}
+
 func (ec *executionContext) _Query_GetCPU(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
 	defer func() {
 		if r := recover(); r != nil {
@@ -6298,7 +6787,7 @@ func (ec *executionContext) _Query_GetCPU(ctx context.Context, field graphql.Col
 	return ec.marshalOCPU2ᚖgoᚑgraphqlᚑequipamentoᚋgraphᚋmodelᚐCPU(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) _Query_GetCPUS(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+func (ec *executionContext) _Query_GetGPUS(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
 	defer func() {
 		if r := recover(); r != nil {
 			ec.Error(ctx, ec.Recover(ctx, r))
@@ -6316,18 +6805,21 @@ func (ec *executionContext) _Query_GetCPUS(ctx context.Context, field graphql.Co
 	ctx = graphql.WithFieldContext(ctx, fc)
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
 		ctx = rctx // use context from middleware stack in children
-		return ec.resolvers.Query().GetCPUS(rctx)
+		return ec.resolvers.Query().GetGpus(rctx)
 	})
 	if err != nil {
 		ec.Error(ctx, err)
 		return graphql.Null
 	}
 	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
 		return graphql.Null
 	}
-	res := resTmp.([]*model.CPU)
+	res := resTmp.([]*model.Gpu)
 	fc.Result = res
-	return ec.marshalOCPU2ᚕᚖgoᚑgraphqlᚑequipamentoᚋgraphᚋmodelᚐCPU(ctx, field.Selections, res)
+	return ec.marshalNGPU2ᚕᚖgoᚑgraphqlᚑequipamentoᚋgraphᚋmodelᚐGpu(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) _Query_GetGPU(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
@@ -6369,7 +6861,7 @@ func (ec *executionContext) _Query_GetGPU(ctx context.Context, field graphql.Col
 	return ec.marshalOGPU2ᚖgoᚑgraphqlᚑequipamentoᚋgraphᚋmodelᚐGpu(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) _Query_GetGPUS(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+func (ec *executionContext) _Query_GetRAMS(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
 	defer func() {
 		if r := recover(); r != nil {
 			ec.Error(ctx, ec.Recover(ctx, r))
@@ -6387,7 +6879,7 @@ func (ec *executionContext) _Query_GetGPUS(ctx context.Context, field graphql.Co
 	ctx = graphql.WithFieldContext(ctx, fc)
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
 		ctx = rctx // use context from middleware stack in children
-		return ec.resolvers.Query().GetGpus(rctx)
+		return ec.resolvers.Query().GetRAMS(rctx)
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -6399,9 +6891,9 @@ func (ec *executionContext) _Query_GetGPUS(ctx context.Context, field graphql.Co
 		}
 		return graphql.Null
 	}
-	res := resTmp.([]*model.Gpu)
+	res := resTmp.([]*model.RAM)
 	fc.Result = res
-	return ec.marshalNGPU2ᚕᚖgoᚑgraphqlᚑequipamentoᚋgraphᚋmodelᚐGpu(ctx, field.Selections, res)
+	return ec.marshalNRAM2ᚕᚖgoᚑgraphqlᚑequipamentoᚋgraphᚋmodelᚐRAM(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) _Query_GetRAM(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
@@ -6443,38 +6935,6 @@ func (ec *executionContext) _Query_GetRAM(ctx context.Context, field graphql.Col
 	return ec.marshalORAM2ᚖgoᚑgraphqlᚑequipamentoᚋgraphᚋmodelᚐRAM(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) _Query_GetRAMS(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
-	defer func() {
-		if r := recover(); r != nil {
-			ec.Error(ctx, ec.Recover(ctx, r))
-			ret = graphql.Null
-		}
-	}()
-	fc := &graphql.FieldContext{
-		Object:     "Query",
-		Field:      field,
-		Args:       nil,
-		IsMethod:   true,
-		IsResolver: true,
-	}
-
-	ctx = graphql.WithFieldContext(ctx, fc)
-	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
-		ctx = rctx // use context from middleware stack in children
-		return ec.resolvers.Query().GetRAMS(rctx)
-	})
-	if err != nil {
-		ec.Error(ctx, err)
-		return graphql.Null
-	}
-	if resTmp == nil {
-		return graphql.Null
-	}
-	res := resTmp.([]*model.RAM)
-	fc.Result = res
-	return ec.marshalORAM2ᚕᚖgoᚑgraphqlᚑequipamentoᚋgraphᚋmodelᚐRAM(ctx, field.Selections, res)
-}
-
 func (ec *executionContext) _Query_GetItems(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
 	defer func() {
 		if r := recover(); r != nil {
@@ -6500,11 +6960,14 @@ func (ec *executionContext) _Query_GetItems(ctx context.Context, field graphql.C
 		return graphql.Null
 	}
 	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
 		return graphql.Null
 	}
 	res := resTmp.([]*model.Item)
 	fc.Result = res
-	return ec.marshalOItem2ᚕᚖgoᚑgraphqlᚑequipamentoᚋgraphᚋmodelᚐItemᚄ(ctx, field.Selections, res)
+	return ec.marshalNItem2ᚕᚖgoᚑgraphqlᚑequipamentoᚋgraphᚋmodelᚐItemᚄ(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) _Query_GetItem(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
@@ -6571,11 +7034,14 @@ func (ec *executionContext) _Query_GetSoftwares(ctx context.Context, field graph
 		return graphql.Null
 	}
 	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
 		return graphql.Null
 	}
 	res := resTmp.([]*model.Software)
 	fc.Result = res
-	return ec.marshalOSoftware2ᚕᚖgoᚑgraphqlᚑequipamentoᚋgraphᚋmodelᚐSoftwareᚄ(ctx, field.Selections, res)
+	return ec.marshalNSoftware2ᚕᚖgoᚑgraphqlᚑequipamentoᚋgraphᚋmodelᚐSoftware(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) _Query_GetSoftware(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
@@ -6615,6 +7081,302 @@ func (ec *executionContext) _Query_GetSoftware(ctx context.Context, field graphq
 	res := resTmp.(*model.Software)
 	fc.Result = res
 	return ec.marshalOSoftware2ᚖgoᚑgraphqlᚑequipamentoᚋgraphᚋmodelᚐSoftware(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _Query_GetMicrofones(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "Query",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   true,
+		IsResolver: true,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.Query().GetMicrofones(rctx)
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.([]*model.Microfone)
+	fc.Result = res
+	return ec.marshalNMicrofone2ᚕᚖgoᚑgraphqlᚑequipamentoᚋgraphᚋmodelᚐMicrofone(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _Query_GetMicrofone(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "Query",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   true,
+		IsResolver: true,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	rawArgs := field.ArgumentMap(ec.Variables)
+	args, err := ec.field_Query_GetMicrofone_args(ctx, rawArgs)
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	fc.Args = args
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.Query().GetMicrofone(rctx, args["id"].(string))
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.(*model.Microfone)
+	fc.Result = res
+	return ec.marshalOMicrofone2ᚖgoᚑgraphqlᚑequipamentoᚋgraphᚋmodelᚐMicrofone(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _Query_GetCameras(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "Query",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   true,
+		IsResolver: true,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.Query().GetCameras(rctx)
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.([]*model.Camera)
+	fc.Result = res
+	return ec.marshalNCamera2ᚕᚖgoᚑgraphqlᚑequipamentoᚋgraphᚋmodelᚐCamera(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _Query_GetCamera(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "Query",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   true,
+		IsResolver: true,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	rawArgs := field.ArgumentMap(ec.Variables)
+	args, err := ec.field_Query_GetCamera_args(ctx, rawArgs)
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	fc.Args = args
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.Query().GetCamera(rctx, args["id"].(string))
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.(*model.Camera)
+	fc.Result = res
+	return ec.marshalOCamera2ᚖgoᚑgraphqlᚑequipamentoᚋgraphᚋmodelᚐCamera(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _Query_GetStorages(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "Query",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   true,
+		IsResolver: true,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.Query().GetStorages(rctx)
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.([]*model.Storage)
+	fc.Result = res
+	return ec.marshalNStorage2ᚕᚖgoᚑgraphqlᚑequipamentoᚋgraphᚋmodelᚐStorage(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _Query_GetStorage(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "Query",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   true,
+		IsResolver: true,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	rawArgs := field.ArgumentMap(ec.Variables)
+	args, err := ec.field_Query_GetStorage_args(ctx, rawArgs)
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	fc.Args = args
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.Query().GetStorage(rctx, args["id"].(string))
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.(*model.Storage)
+	fc.Result = res
+	return ec.marshalOStorage2ᚖgoᚑgraphqlᚑequipamentoᚋgraphᚋmodelᚐStorage(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _Query_GetMBoards(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "Query",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   true,
+		IsResolver: true,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.Query().GetMBoards(rctx)
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.([]*model.MBoard)
+	fc.Result = res
+	return ec.marshalNMBoard2ᚕᚖgoᚑgraphqlᚑequipamentoᚋgraphᚋmodelᚐMBoard(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _Query_GetMBoard(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "Query",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   true,
+		IsResolver: true,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	rawArgs := field.ArgumentMap(ec.Variables)
+	args, err := ec.field_Query_GetMBoard_args(ctx, rawArgs)
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	fc.Args = args
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.Query().GetMBoard(rctx, args["id"].(string))
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.(*model.MBoard)
+	fc.Result = res
+	return ec.marshalOMBoard2ᚖgoᚑgraphqlᚑequipamentoᚋgraphᚋmodelᚐMBoard(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) _Query___type(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
@@ -6870,105 +7632,6 @@ func (ec *executionContext) _RAM_tipo(ctx context.Context, field graphql.Collect
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
 		ctx = rctx // use context from middleware stack in children
 		return obj.Tipo, nil
-	})
-	if err != nil {
-		ec.Error(ctx, err)
-		return graphql.Null
-	}
-	if resTmp == nil {
-		return graphql.Null
-	}
-	res := resTmp.(*string)
-	fc.Result = res
-	return ec.marshalOString2ᚖstring(ctx, field.Selections, res)
-}
-
-func (ec *executionContext) _RAMAtualizado_id(ctx context.Context, field graphql.CollectedField, obj *model.RAMAtualizado) (ret graphql.Marshaler) {
-	defer func() {
-		if r := recover(); r != nil {
-			ec.Error(ctx, ec.Recover(ctx, r))
-			ret = graphql.Null
-		}
-	}()
-	fc := &graphql.FieldContext{
-		Object:     "RAMAtualizado",
-		Field:      field,
-		Args:       nil,
-		IsMethod:   false,
-		IsResolver: false,
-	}
-
-	ctx = graphql.WithFieldContext(ctx, fc)
-	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
-		ctx = rctx // use context from middleware stack in children
-		return obj.ID, nil
-	})
-	if err != nil {
-		ec.Error(ctx, err)
-		return graphql.Null
-	}
-	if resTmp == nil {
-		if !graphql.HasFieldError(ctx, fc) {
-			ec.Errorf(ctx, "must not be null")
-		}
-		return graphql.Null
-	}
-	res := resTmp.(string)
-	fc.Result = res
-	return ec.marshalNID2string(ctx, field.Selections, res)
-}
-
-func (ec *executionContext) _RAMAtualizado_modelo(ctx context.Context, field graphql.CollectedField, obj *model.RAMAtualizado) (ret graphql.Marshaler) {
-	defer func() {
-		if r := recover(); r != nil {
-			ec.Error(ctx, ec.Recover(ctx, r))
-			ret = graphql.Null
-		}
-	}()
-	fc := &graphql.FieldContext{
-		Object:     "RAMAtualizado",
-		Field:      field,
-		Args:       nil,
-		IsMethod:   false,
-		IsResolver: false,
-	}
-
-	ctx = graphql.WithFieldContext(ctx, fc)
-	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
-		ctx = rctx // use context from middleware stack in children
-		return obj.Modelo, nil
-	})
-	if err != nil {
-		ec.Error(ctx, err)
-		return graphql.Null
-	}
-	if resTmp == nil {
-		return graphql.Null
-	}
-	res := resTmp.(*string)
-	fc.Result = res
-	return ec.marshalOString2ᚖstring(ctx, field.Selections, res)
-}
-
-func (ec *executionContext) _RAMAtualizado_atualizacao(ctx context.Context, field graphql.CollectedField, obj *model.RAMAtualizado) (ret graphql.Marshaler) {
-	defer func() {
-		if r := recover(); r != nil {
-			ec.Error(ctx, ec.Recover(ctx, r))
-			ret = graphql.Null
-		}
-	}()
-	fc := &graphql.FieldContext{
-		Object:     "RAMAtualizado",
-		Field:      field,
-		Args:       nil,
-		IsMethod:   false,
-		IsResolver: false,
-	}
-
-	ctx = graphql.WithFieldContext(ctx, fc)
-	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
-		ctx = rctx // use context from middleware stack in children
-		return obj.Atualizacao, nil
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -8564,12 +9227,172 @@ func (ec *executionContext) ___Type_ofType(ctx context.Context, field graphql.Co
 
 // region    **************************** input.gotpl *****************************
 
+func (ec *executionContext) unmarshalInputNovaCamera(ctx context.Context, obj interface{}) (model.NovaCamera, error) {
+	var it model.NovaCamera
+	var asMap = obj.(map[string]interface{})
+
+	for k, v := range asMap {
+		switch k {
+		case "id":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("id"))
+			it.ID, err = ec.unmarshalOID2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "marca":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("marca"))
+			it.Marca, err = ec.unmarshalOString2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "modelo":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("modelo"))
+			it.Modelo, err = ec.unmarshalNString2string(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		}
+	}
+
+	return it, nil
+}
+
+func (ec *executionContext) unmarshalInputNovaMBoard(ctx context.Context, obj interface{}) (model.NovaMBoard, error) {
+	var it model.NovaMBoard
+	var asMap = obj.(map[string]interface{})
+
+	for k, v := range asMap {
+		switch k {
+		case "id":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("id"))
+			it.ID, err = ec.unmarshalOID2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "marca":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("marca"))
+			it.Marca, err = ec.unmarshalOString2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "modelo":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("modelo"))
+			it.Modelo, err = ec.unmarshalOString2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "tipoMemoria":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("tipoMemoria"))
+			it.TipoMemoria, err = ec.unmarshalOString2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "chipset":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("chipset"))
+			it.Chipset, err = ec.unmarshalOString2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "familiaCompativel":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("familiaCompativel"))
+			it.FamiliaCompativel, err = ec.unmarshalOString2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "socket":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("socket"))
+			it.Socket, err = ec.unmarshalOString2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "dimSlots":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("dimSlots"))
+			it.DimSlots, err = ec.unmarshalOInt2ᚖint(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "dimMaxMem":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("dimMaxMem"))
+			it.DimMaxMem, err = ec.unmarshalOInt2ᚖint(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "dimMemType":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("dimMemType"))
+			it.DimMemType, err = ec.unmarshalOString2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "dimMaxVelc":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("dimMaxVelc"))
+			it.DimMaxVelc, err = ec.unmarshalOString2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "conexoes":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("conexoes"))
+			it.Conexoes, err = ec.unmarshalOString2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "interfaces":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("interfaces"))
+			it.Interfaces, err = ec.unmarshalOString2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		}
+	}
+
+	return it, nil
+}
+
 func (ec *executionContext) unmarshalInputNovoCPU(ctx context.Context, obj interface{}) (model.NovoCPU, error) {
 	var it model.NovoCPU
 	var asMap = obj.(map[string]interface{})
 
 	for k, v := range asMap {
 		switch k {
+		case "id":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("id"))
+			it.ID, err = ec.unmarshalOID2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
 		case "marca":
 			var err error
 
@@ -8630,6 +9453,14 @@ func (ec *executionContext) unmarshalInputNovoComputador(ctx context.Context, ob
 
 	for k, v := range asMap {
 		switch k {
+		case "id":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("id"))
+			it.ID, err = ec.unmarshalOID2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
 		case "nome":
 			var err error
 
@@ -8658,6 +9489,14 @@ func (ec *executionContext) unmarshalInputNovoGPU(ctx context.Context, obj inter
 
 	for k, v := range asMap {
 		switch k {
+		case "id":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("id"))
+			it.ID, err = ec.unmarshalOID2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
 		case "marca":
 			var err error
 
@@ -8718,6 +9557,14 @@ func (ec *executionContext) unmarshalInputNovoItem(ctx context.Context, obj inte
 
 	for k, v := range asMap {
 		switch k {
+		case "id":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("id"))
+			it.ID, err = ec.unmarshalOID2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
 		case "marca":
 			var err error
 
@@ -8756,12 +9603,56 @@ func (ec *executionContext) unmarshalInputNovoItem(ctx context.Context, obj inte
 	return it, nil
 }
 
+func (ec *executionContext) unmarshalInputNovoMicrofone(ctx context.Context, obj interface{}) (model.NovoMicrofone, error) {
+	var it model.NovoMicrofone
+	var asMap = obj.(map[string]interface{})
+
+	for k, v := range asMap {
+		switch k {
+		case "id":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("id"))
+			it.ID, err = ec.unmarshalOID2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "marca":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("marca"))
+			it.Marca, err = ec.unmarshalOString2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "modelo":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("modelo"))
+			it.Modelo, err = ec.unmarshalNString2string(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		}
+	}
+
+	return it, nil
+}
+
 func (ec *executionContext) unmarshalInputNovoRAM(ctx context.Context, obj interface{}) (model.NovoRAM, error) {
 	var it model.NovoRAM
 	var asMap = obj.(map[string]interface{})
 
 	for k, v := range asMap {
 		switch k {
+		case "id":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("id"))
+			it.ID, err = ec.unmarshalOID2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
 		case "marca":
 			var err error
 
@@ -8814,6 +9705,14 @@ func (ec *executionContext) unmarshalInputNovoSoftware(ctx context.Context, obj 
 
 	for k, v := range asMap {
 		switch k {
+		case "id":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("id"))
+			it.ID, err = ec.unmarshalOID2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
 		case "nome":
 			var err error
 
@@ -8836,12 +9735,88 @@ func (ec *executionContext) unmarshalInputNovoSoftware(ctx context.Context, obj 
 	return it, nil
 }
 
+func (ec *executionContext) unmarshalInputNovoStorage(ctx context.Context, obj interface{}) (model.NovoStorage, error) {
+	var it model.NovoStorage
+	var asMap = obj.(map[string]interface{})
+
+	for k, v := range asMap {
+		switch k {
+		case "id":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("id"))
+			it.ID, err = ec.unmarshalOID2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "tipo":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("tipo"))
+			it.Tipo, err = ec.unmarshalOString2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "nome":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("nome"))
+			it.Nome, err = ec.unmarshalOString2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "modelo":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("modelo"))
+			it.Modelo, err = ec.unmarshalOString2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "marca":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("marca"))
+			it.Marca, err = ec.unmarshalOString2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "velocidade":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("velocidade"))
+			it.Velocidade, err = ec.unmarshalOString2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "capacidade":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("capacidade"))
+			it.Capacidade, err = ec.unmarshalOString2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		}
+	}
+
+	return it, nil
+}
+
 func (ec *executionContext) unmarshalInputUpdateComputador(ctx context.Context, obj interface{}) (model.UpdateComputador, error) {
 	var it model.UpdateComputador
 	var asMap = obj.(map[string]interface{})
 
 	for k, v := range asMap {
 		switch k {
+		case "id":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("id"))
+			it.ID, err = ec.unmarshalOID2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
 		case "nome":
 			var err error
 
@@ -9655,6 +10630,14 @@ func (ec *executionContext) _Mutation(ctx context.Context, sel ast.SelectionSet)
 			out.Values[i] = ec._Mutation_CriarGPU(ctx, field)
 		case "CriarRAM":
 			out.Values[i] = ec._Mutation_CriarRAM(ctx, field)
+		case "CriarMboard":
+			out.Values[i] = ec._Mutation_CriarMboard(ctx, field)
+		case "CriarStorage":
+			out.Values[i] = ec._Mutation_CriarStorage(ctx, field)
+		case "CriarMicrofone":
+			out.Values[i] = ec._Mutation_CriarMicrofone(ctx, field)
+		case "CriarCamera":
+			out.Values[i] = ec._Mutation_CriarCamera(ctx, field)
 		case "ApagarComponente":
 			out.Values[i] = ec._Mutation_ApagarComponente(ctx, field)
 		case "ApagarItem":
@@ -9698,6 +10681,9 @@ func (ec *executionContext) _Query(ctx context.Context, sel ast.SelectionSet) gr
 					}
 				}()
 				res = ec._Query_GetComputadores(ctx, field)
+				if res == graphql.Null {
+					atomic.AddUint32(&invalids, 1)
+				}
 				return res
 			})
 		case "GetComputador":
@@ -9711,17 +10697,6 @@ func (ec *executionContext) _Query(ctx context.Context, sel ast.SelectionSet) gr
 				res = ec._Query_GetComputador(ctx, field)
 				return res
 			})
-		case "GetCPU":
-			field := field
-			out.Concurrently(i, func() (res graphql.Marshaler) {
-				defer func() {
-					if r := recover(); r != nil {
-						ec.Error(ctx, ec.Recover(ctx, r))
-					}
-				}()
-				res = ec._Query_GetCPU(ctx, field)
-				return res
-			})
 		case "GetCPUS":
 			field := field
 			out.Concurrently(i, func() (res graphql.Marshaler) {
@@ -9731,9 +10706,12 @@ func (ec *executionContext) _Query(ctx context.Context, sel ast.SelectionSet) gr
 					}
 				}()
 				res = ec._Query_GetCPUS(ctx, field)
+				if res == graphql.Null {
+					atomic.AddUint32(&invalids, 1)
+				}
 				return res
 			})
-		case "GetGPU":
+		case "GetCPU":
 			field := field
 			out.Concurrently(i, func() (res graphql.Marshaler) {
 				defer func() {
@@ -9741,7 +10719,7 @@ func (ec *executionContext) _Query(ctx context.Context, sel ast.SelectionSet) gr
 						ec.Error(ctx, ec.Recover(ctx, r))
 					}
 				}()
-				res = ec._Query_GetGPU(ctx, field)
+				res = ec._Query_GetCPU(ctx, field)
 				return res
 			})
 		case "GetGPUS":
@@ -9758,7 +10736,7 @@ func (ec *executionContext) _Query(ctx context.Context, sel ast.SelectionSet) gr
 				}
 				return res
 			})
-		case "GetRAM":
+		case "GetGPU":
 			field := field
 			out.Concurrently(i, func() (res graphql.Marshaler) {
 				defer func() {
@@ -9766,7 +10744,7 @@ func (ec *executionContext) _Query(ctx context.Context, sel ast.SelectionSet) gr
 						ec.Error(ctx, ec.Recover(ctx, r))
 					}
 				}()
-				res = ec._Query_GetRAM(ctx, field)
+				res = ec._Query_GetGPU(ctx, field)
 				return res
 			})
 		case "GetRAMS":
@@ -9778,6 +10756,20 @@ func (ec *executionContext) _Query(ctx context.Context, sel ast.SelectionSet) gr
 					}
 				}()
 				res = ec._Query_GetRAMS(ctx, field)
+				if res == graphql.Null {
+					atomic.AddUint32(&invalids, 1)
+				}
+				return res
+			})
+		case "GetRAM":
+			field := field
+			out.Concurrently(i, func() (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._Query_GetRAM(ctx, field)
 				return res
 			})
 		case "GetItems":
@@ -9789,6 +10781,9 @@ func (ec *executionContext) _Query(ctx context.Context, sel ast.SelectionSet) gr
 					}
 				}()
 				res = ec._Query_GetItems(ctx, field)
+				if res == graphql.Null {
+					atomic.AddUint32(&invalids, 1)
+				}
 				return res
 			})
 		case "GetItem":
@@ -9811,6 +10806,9 @@ func (ec *executionContext) _Query(ctx context.Context, sel ast.SelectionSet) gr
 					}
 				}()
 				res = ec._Query_GetSoftwares(ctx, field)
+				if res == graphql.Null {
+					atomic.AddUint32(&invalids, 1)
+				}
 				return res
 			})
 		case "GetSoftware":
@@ -9822,6 +10820,106 @@ func (ec *executionContext) _Query(ctx context.Context, sel ast.SelectionSet) gr
 					}
 				}()
 				res = ec._Query_GetSoftware(ctx, field)
+				return res
+			})
+		case "GetMicrofones":
+			field := field
+			out.Concurrently(i, func() (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._Query_GetMicrofones(ctx, field)
+				if res == graphql.Null {
+					atomic.AddUint32(&invalids, 1)
+				}
+				return res
+			})
+		case "GetMicrofone":
+			field := field
+			out.Concurrently(i, func() (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._Query_GetMicrofone(ctx, field)
+				return res
+			})
+		case "GetCameras":
+			field := field
+			out.Concurrently(i, func() (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._Query_GetCameras(ctx, field)
+				if res == graphql.Null {
+					atomic.AddUint32(&invalids, 1)
+				}
+				return res
+			})
+		case "GetCamera":
+			field := field
+			out.Concurrently(i, func() (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._Query_GetCamera(ctx, field)
+				return res
+			})
+		case "GetStorages":
+			field := field
+			out.Concurrently(i, func() (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._Query_GetStorages(ctx, field)
+				if res == graphql.Null {
+					atomic.AddUint32(&invalids, 1)
+				}
+				return res
+			})
+		case "GetStorage":
+			field := field
+			out.Concurrently(i, func() (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._Query_GetStorage(ctx, field)
+				return res
+			})
+		case "GetMBoards":
+			field := field
+			out.Concurrently(i, func() (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._Query_GetMBoards(ctx, field)
+				if res == graphql.Null {
+					atomic.AddUint32(&invalids, 1)
+				}
+				return res
+			})
+		case "GetMBoard":
+			field := field
+			out.Concurrently(i, func() (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._Query_GetMBoard(ctx, field)
 				return res
 			})
 		case "__type":
@@ -9865,37 +10963,6 @@ func (ec *executionContext) _RAM(ctx context.Context, sel ast.SelectionSet, obj 
 			out.Values[i] = ec._RAM_velocidade(ctx, field, obj)
 		case "tipo":
 			out.Values[i] = ec._RAM_tipo(ctx, field, obj)
-		default:
-			panic("unknown field " + strconv.Quote(field.Name))
-		}
-	}
-	out.Dispatch()
-	if invalids > 0 {
-		return graphql.Null
-	}
-	return out
-}
-
-var rAMAtualizadoImplementors = []string{"RAMAtualizado"}
-
-func (ec *executionContext) _RAMAtualizado(ctx context.Context, sel ast.SelectionSet, obj *model.RAMAtualizado) graphql.Marshaler {
-	fields := graphql.CollectFields(ec.OperationContext, sel, rAMAtualizadoImplementors)
-
-	out := graphql.NewFieldSet(fields)
-	var invalids uint32
-	for i, field := range fields {
-		switch field.Name {
-		case "__typename":
-			out.Values[i] = graphql.MarshalString("RAMAtualizado")
-		case "id":
-			out.Values[i] = ec._RAMAtualizado_id(ctx, field, obj)
-			if out.Values[i] == graphql.Null {
-				invalids++
-			}
-		case "modelo":
-			out.Values[i] = ec._RAMAtualizado_modelo(ctx, field, obj)
-		case "atualizacao":
-			out.Values[i] = ec._RAMAtualizado_atualizacao(ctx, field, obj)
 		default:
 			panic("unknown field " + strconv.Quote(field.Name))
 		}
@@ -10322,6 +11389,43 @@ func (ec *executionContext) marshalNBoolean2bool(ctx context.Context, sel ast.Se
 	return res
 }
 
+func (ec *executionContext) marshalNCPU2ᚕᚖgoᚑgraphqlᚑequipamentoᚋgraphᚋmodelᚐCPU(ctx context.Context, sel ast.SelectionSet, v []*model.CPU) graphql.Marshaler {
+	ret := make(graphql.Array, len(v))
+	var wg sync.WaitGroup
+	isLen1 := len(v) == 1
+	if !isLen1 {
+		wg.Add(len(v))
+	}
+	for i := range v {
+		i := i
+		fc := &graphql.FieldContext{
+			Index:  &i,
+			Result: &v[i],
+		}
+		ctx := graphql.WithFieldContext(ctx, fc)
+		f := func(i int) {
+			defer func() {
+				if r := recover(); r != nil {
+					ec.Error(ctx, ec.Recover(ctx, r))
+					ret = nil
+				}
+			}()
+			if !isLen1 {
+				defer wg.Done()
+			}
+			ret[i] = ec.marshalOCPU2ᚖgoᚑgraphqlᚑequipamentoᚋgraphᚋmodelᚐCPU(ctx, sel, v[i])
+		}
+		if isLen1 {
+			f(i)
+		} else {
+			go f(i)
+		}
+
+	}
+	wg.Wait()
+	return ret
+}
+
 func (ec *executionContext) marshalNCPU2ᚖgoᚑgraphqlᚑequipamentoᚋgraphᚋmodelᚐCPU(ctx context.Context, sel ast.SelectionSet, v *model.CPU) graphql.Marshaler {
 	if v == nil {
 		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
@@ -10332,14 +11436,78 @@ func (ec *executionContext) marshalNCPU2ᚖgoᚑgraphqlᚑequipamentoᚋgraphᚋ
 	return ec._CPU(ctx, sel, v)
 }
 
-func (ec *executionContext) marshalNComputador2ᚖgoᚑgraphqlᚑequipamentoᚋgraphᚋmodelᚐComputador(ctx context.Context, sel ast.SelectionSet, v *model.Computador) graphql.Marshaler {
-	if v == nil {
-		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
-			ec.Errorf(ctx, "must not be null")
-		}
-		return graphql.Null
+func (ec *executionContext) marshalNCamera2ᚕᚖgoᚑgraphqlᚑequipamentoᚋgraphᚋmodelᚐCamera(ctx context.Context, sel ast.SelectionSet, v []*model.Camera) graphql.Marshaler {
+	ret := make(graphql.Array, len(v))
+	var wg sync.WaitGroup
+	isLen1 := len(v) == 1
+	if !isLen1 {
+		wg.Add(len(v))
 	}
-	return ec._Computador(ctx, sel, v)
+	for i := range v {
+		i := i
+		fc := &graphql.FieldContext{
+			Index:  &i,
+			Result: &v[i],
+		}
+		ctx := graphql.WithFieldContext(ctx, fc)
+		f := func(i int) {
+			defer func() {
+				if r := recover(); r != nil {
+					ec.Error(ctx, ec.Recover(ctx, r))
+					ret = nil
+				}
+			}()
+			if !isLen1 {
+				defer wg.Done()
+			}
+			ret[i] = ec.marshalOCamera2ᚖgoᚑgraphqlᚑequipamentoᚋgraphᚋmodelᚐCamera(ctx, sel, v[i])
+		}
+		if isLen1 {
+			f(i)
+		} else {
+			go f(i)
+		}
+
+	}
+	wg.Wait()
+	return ret
+}
+
+func (ec *executionContext) marshalNComputador2ᚕᚖgoᚑgraphqlᚑequipamentoᚋgraphᚋmodelᚐComputador(ctx context.Context, sel ast.SelectionSet, v []*model.Computador) graphql.Marshaler {
+	ret := make(graphql.Array, len(v))
+	var wg sync.WaitGroup
+	isLen1 := len(v) == 1
+	if !isLen1 {
+		wg.Add(len(v))
+	}
+	for i := range v {
+		i := i
+		fc := &graphql.FieldContext{
+			Index:  &i,
+			Result: &v[i],
+		}
+		ctx := graphql.WithFieldContext(ctx, fc)
+		f := func(i int) {
+			defer func() {
+				if r := recover(); r != nil {
+					ec.Error(ctx, ec.Recover(ctx, r))
+					ret = nil
+				}
+			}()
+			if !isLen1 {
+				defer wg.Done()
+			}
+			ret[i] = ec.marshalOComputador2ᚖgoᚑgraphqlᚑequipamentoᚋgraphᚋmodelᚐComputador(ctx, sel, v[i])
+		}
+		if isLen1 {
+			f(i)
+		} else {
+			go f(i)
+		}
+
+	}
+	wg.Wait()
+	return ret
 }
 
 func (ec *executionContext) marshalNConexoesMBoard2ᚖgoᚑgraphqlᚑequipamentoᚋgraphᚋmodelᚐConexoesMBoard(ctx context.Context, sel ast.SelectionSet, v *model.ConexoesMBoard) graphql.Marshaler {
@@ -10424,6 +11592,43 @@ func (ec *executionContext) marshalNInterfacesMBoard2ᚖgoᚑgraphqlᚑequipamen
 	return ec._InterfacesMBoard(ctx, sel, v)
 }
 
+func (ec *executionContext) marshalNItem2ᚕᚖgoᚑgraphqlᚑequipamentoᚋgraphᚋmodelᚐItemᚄ(ctx context.Context, sel ast.SelectionSet, v []*model.Item) graphql.Marshaler {
+	ret := make(graphql.Array, len(v))
+	var wg sync.WaitGroup
+	isLen1 := len(v) == 1
+	if !isLen1 {
+		wg.Add(len(v))
+	}
+	for i := range v {
+		i := i
+		fc := &graphql.FieldContext{
+			Index:  &i,
+			Result: &v[i],
+		}
+		ctx := graphql.WithFieldContext(ctx, fc)
+		f := func(i int) {
+			defer func() {
+				if r := recover(); r != nil {
+					ec.Error(ctx, ec.Recover(ctx, r))
+					ret = nil
+				}
+			}()
+			if !isLen1 {
+				defer wg.Done()
+			}
+			ret[i] = ec.marshalNItem2ᚖgoᚑgraphqlᚑequipamentoᚋgraphᚋmodelᚐItem(ctx, sel, v[i])
+		}
+		if isLen1 {
+			f(i)
+		} else {
+			go f(i)
+		}
+
+	}
+	wg.Wait()
+	return ret
+}
+
 func (ec *executionContext) marshalNItem2ᚖgoᚑgraphqlᚑequipamentoᚋgraphᚋmodelᚐItem(ctx context.Context, sel ast.SelectionSet, v *model.Item) graphql.Marshaler {
 	if v == nil {
 		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
@@ -10434,6 +11639,43 @@ func (ec *executionContext) marshalNItem2ᚖgoᚑgraphqlᚑequipamentoᚋgraph�
 	return ec._Item(ctx, sel, v)
 }
 
+func (ec *executionContext) marshalNMBoard2ᚕᚖgoᚑgraphqlᚑequipamentoᚋgraphᚋmodelᚐMBoard(ctx context.Context, sel ast.SelectionSet, v []*model.MBoard) graphql.Marshaler {
+	ret := make(graphql.Array, len(v))
+	var wg sync.WaitGroup
+	isLen1 := len(v) == 1
+	if !isLen1 {
+		wg.Add(len(v))
+	}
+	for i := range v {
+		i := i
+		fc := &graphql.FieldContext{
+			Index:  &i,
+			Result: &v[i],
+		}
+		ctx := graphql.WithFieldContext(ctx, fc)
+		f := func(i int) {
+			defer func() {
+				if r := recover(); r != nil {
+					ec.Error(ctx, ec.Recover(ctx, r))
+					ret = nil
+				}
+			}()
+			if !isLen1 {
+				defer wg.Done()
+			}
+			ret[i] = ec.marshalOMBoard2ᚖgoᚑgraphqlᚑequipamentoᚋgraphᚋmodelᚐMBoard(ctx, sel, v[i])
+		}
+		if isLen1 {
+			f(i)
+		} else {
+			go f(i)
+		}
+
+	}
+	wg.Wait()
+	return ret
+}
+
 func (ec *executionContext) marshalNMBoard2ᚖgoᚑgraphqlᚑequipamentoᚋgraphᚋmodelᚐMBoard(ctx context.Context, sel ast.SelectionSet, v *model.MBoard) graphql.Marshaler {
 	if v == nil {
 		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
@@ -10442,6 +11684,53 @@ func (ec *executionContext) marshalNMBoard2ᚖgoᚑgraphqlᚑequipamentoᚋgraph
 		return graphql.Null
 	}
 	return ec._MBoard(ctx, sel, v)
+}
+
+func (ec *executionContext) marshalNMicrofone2ᚕᚖgoᚑgraphqlᚑequipamentoᚋgraphᚋmodelᚐMicrofone(ctx context.Context, sel ast.SelectionSet, v []*model.Microfone) graphql.Marshaler {
+	ret := make(graphql.Array, len(v))
+	var wg sync.WaitGroup
+	isLen1 := len(v) == 1
+	if !isLen1 {
+		wg.Add(len(v))
+	}
+	for i := range v {
+		i := i
+		fc := &graphql.FieldContext{
+			Index:  &i,
+			Result: &v[i],
+		}
+		ctx := graphql.WithFieldContext(ctx, fc)
+		f := func(i int) {
+			defer func() {
+				if r := recover(); r != nil {
+					ec.Error(ctx, ec.Recover(ctx, r))
+					ret = nil
+				}
+			}()
+			if !isLen1 {
+				defer wg.Done()
+			}
+			ret[i] = ec.marshalOMicrofone2ᚖgoᚑgraphqlᚑequipamentoᚋgraphᚋmodelᚐMicrofone(ctx, sel, v[i])
+		}
+		if isLen1 {
+			f(i)
+		} else {
+			go f(i)
+		}
+
+	}
+	wg.Wait()
+	return ret
+}
+
+func (ec *executionContext) unmarshalNNovaCamera2goᚑgraphqlᚑequipamentoᚋgraphᚋmodelᚐNovaCamera(ctx context.Context, v interface{}) (model.NovaCamera, error) {
+	res, err := ec.unmarshalInputNovaCamera(ctx, v)
+	return res, graphql.ErrorOnPath(ctx, err)
+}
+
+func (ec *executionContext) unmarshalNNovaMBoard2goᚑgraphqlᚑequipamentoᚋgraphᚋmodelᚐNovaMBoard(ctx context.Context, v interface{}) (model.NovaMBoard, error) {
+	res, err := ec.unmarshalInputNovaMBoard(ctx, v)
+	return res, graphql.ErrorOnPath(ctx, err)
 }
 
 func (ec *executionContext) unmarshalNNovoCPU2goᚑgraphqlᚑequipamentoᚋgraphᚋmodelᚐNovoCPU(ctx context.Context, v interface{}) (model.NovoCPU, error) {
@@ -10464,6 +11753,11 @@ func (ec *executionContext) unmarshalNNovoItem2goᚑgraphqlᚑequipamentoᚋgrap
 	return res, graphql.ErrorOnPath(ctx, err)
 }
 
+func (ec *executionContext) unmarshalNNovoMicrofone2goᚑgraphqlᚑequipamentoᚋgraphᚋmodelᚐNovoMicrofone(ctx context.Context, v interface{}) (model.NovoMicrofone, error) {
+	res, err := ec.unmarshalInputNovoMicrofone(ctx, v)
+	return res, graphql.ErrorOnPath(ctx, err)
+}
+
 func (ec *executionContext) unmarshalNNovoRAM2goᚑgraphqlᚑequipamentoᚋgraphᚋmodelᚐNovoRAM(ctx context.Context, v interface{}) (model.NovoRAM, error) {
 	res, err := ec.unmarshalInputNovoRAM(ctx, v)
 	return res, graphql.ErrorOnPath(ctx, err)
@@ -10471,6 +11765,11 @@ func (ec *executionContext) unmarshalNNovoRAM2goᚑgraphqlᚑequipamentoᚋgraph
 
 func (ec *executionContext) unmarshalNNovoSoftware2goᚑgraphqlᚑequipamentoᚋgraphᚋmodelᚐNovoSoftware(ctx context.Context, v interface{}) (model.NovoSoftware, error) {
 	res, err := ec.unmarshalInputNovoSoftware(ctx, v)
+	return res, graphql.ErrorOnPath(ctx, err)
+}
+
+func (ec *executionContext) unmarshalNNovoStorage2goᚑgraphqlᚑequipamentoᚋgraphᚋmodelᚐNovoStorage(ctx context.Context, v interface{}) (model.NovoStorage, error) {
+	res, err := ec.unmarshalInputNovoStorage(ctx, v)
 	return res, graphql.ErrorOnPath(ctx, err)
 }
 
@@ -10511,14 +11810,78 @@ func (ec *executionContext) marshalNRAM2ᚕᚖgoᚑgraphqlᚑequipamentoᚋgraph
 	return ret
 }
 
-func (ec *executionContext) marshalNSoftware2ᚖgoᚑgraphqlᚑequipamentoᚋgraphᚋmodelᚐSoftware(ctx context.Context, sel ast.SelectionSet, v *model.Software) graphql.Marshaler {
-	if v == nil {
-		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
-			ec.Errorf(ctx, "must not be null")
-		}
-		return graphql.Null
+func (ec *executionContext) marshalNSoftware2ᚕᚖgoᚑgraphqlᚑequipamentoᚋgraphᚋmodelᚐSoftware(ctx context.Context, sel ast.SelectionSet, v []*model.Software) graphql.Marshaler {
+	ret := make(graphql.Array, len(v))
+	var wg sync.WaitGroup
+	isLen1 := len(v) == 1
+	if !isLen1 {
+		wg.Add(len(v))
 	}
-	return ec._Software(ctx, sel, v)
+	for i := range v {
+		i := i
+		fc := &graphql.FieldContext{
+			Index:  &i,
+			Result: &v[i],
+		}
+		ctx := graphql.WithFieldContext(ctx, fc)
+		f := func(i int) {
+			defer func() {
+				if r := recover(); r != nil {
+					ec.Error(ctx, ec.Recover(ctx, r))
+					ret = nil
+				}
+			}()
+			if !isLen1 {
+				defer wg.Done()
+			}
+			ret[i] = ec.marshalOSoftware2ᚖgoᚑgraphqlᚑequipamentoᚋgraphᚋmodelᚐSoftware(ctx, sel, v[i])
+		}
+		if isLen1 {
+			f(i)
+		} else {
+			go f(i)
+		}
+
+	}
+	wg.Wait()
+	return ret
+}
+
+func (ec *executionContext) marshalNStorage2ᚕᚖgoᚑgraphqlᚑequipamentoᚋgraphᚋmodelᚐStorage(ctx context.Context, sel ast.SelectionSet, v []*model.Storage) graphql.Marshaler {
+	ret := make(graphql.Array, len(v))
+	var wg sync.WaitGroup
+	isLen1 := len(v) == 1
+	if !isLen1 {
+		wg.Add(len(v))
+	}
+	for i := range v {
+		i := i
+		fc := &graphql.FieldContext{
+			Index:  &i,
+			Result: &v[i],
+		}
+		ctx := graphql.WithFieldContext(ctx, fc)
+		f := func(i int) {
+			defer func() {
+				if r := recover(); r != nil {
+					ec.Error(ctx, ec.Recover(ctx, r))
+					ret = nil
+				}
+			}()
+			if !isLen1 {
+				defer wg.Done()
+			}
+			ret[i] = ec.marshalOStorage2ᚖgoᚑgraphqlᚑequipamentoᚋgraphᚋmodelᚐStorage(ctx, sel, v[i])
+		}
+		if isLen1 {
+			f(i)
+		} else {
+			go f(i)
+		}
+
+	}
+	wg.Wait()
+	return ret
 }
 
 func (ec *executionContext) marshalNStorage2ᚖgoᚑgraphqlᚑequipamentoᚋgraphᚋmodelᚐStorage(ctx context.Context, sel ast.SelectionSet, v *model.Storage) graphql.Marshaler {
@@ -10804,46 +12167,6 @@ func (ec *executionContext) marshalOBoolean2ᚖbool(ctx context.Context, sel ast
 	return graphql.MarshalBoolean(*v)
 }
 
-func (ec *executionContext) marshalOCPU2ᚕᚖgoᚑgraphqlᚑequipamentoᚋgraphᚋmodelᚐCPU(ctx context.Context, sel ast.SelectionSet, v []*model.CPU) graphql.Marshaler {
-	if v == nil {
-		return graphql.Null
-	}
-	ret := make(graphql.Array, len(v))
-	var wg sync.WaitGroup
-	isLen1 := len(v) == 1
-	if !isLen1 {
-		wg.Add(len(v))
-	}
-	for i := range v {
-		i := i
-		fc := &graphql.FieldContext{
-			Index:  &i,
-			Result: &v[i],
-		}
-		ctx := graphql.WithFieldContext(ctx, fc)
-		f := func(i int) {
-			defer func() {
-				if r := recover(); r != nil {
-					ec.Error(ctx, ec.Recover(ctx, r))
-					ret = nil
-				}
-			}()
-			if !isLen1 {
-				defer wg.Done()
-			}
-			ret[i] = ec.marshalOCPU2ᚖgoᚑgraphqlᚑequipamentoᚋgraphᚋmodelᚐCPU(ctx, sel, v[i])
-		}
-		if isLen1 {
-			f(i)
-		} else {
-			go f(i)
-		}
-
-	}
-	wg.Wait()
-	return ret
-}
-
 func (ec *executionContext) marshalOCPU2ᚖgoᚑgraphqlᚑequipamentoᚋgraphᚋmodelᚐCPU(ctx context.Context, sel ast.SelectionSet, v *model.CPU) graphql.Marshaler {
 	if v == nil {
 		return graphql.Null
@@ -10919,46 +12242,6 @@ func (ec *executionContext) marshalOComponenteCriado2ᚖgoᚑgraphqlᚑequipamen
 	return ec._ComponenteCriado(ctx, sel, v)
 }
 
-func (ec *executionContext) marshalOComputador2ᚕᚖgoᚑgraphqlᚑequipamentoᚋgraphᚋmodelᚐComputadorᚄ(ctx context.Context, sel ast.SelectionSet, v []*model.Computador) graphql.Marshaler {
-	if v == nil {
-		return graphql.Null
-	}
-	ret := make(graphql.Array, len(v))
-	var wg sync.WaitGroup
-	isLen1 := len(v) == 1
-	if !isLen1 {
-		wg.Add(len(v))
-	}
-	for i := range v {
-		i := i
-		fc := &graphql.FieldContext{
-			Index:  &i,
-			Result: &v[i],
-		}
-		ctx := graphql.WithFieldContext(ctx, fc)
-		f := func(i int) {
-			defer func() {
-				if r := recover(); r != nil {
-					ec.Error(ctx, ec.Recover(ctx, r))
-					ret = nil
-				}
-			}()
-			if !isLen1 {
-				defer wg.Done()
-			}
-			ret[i] = ec.marshalNComputador2ᚖgoᚑgraphqlᚑequipamentoᚋgraphᚋmodelᚐComputador(ctx, sel, v[i])
-		}
-		if isLen1 {
-			f(i)
-		} else {
-			go f(i)
-		}
-
-	}
-	wg.Wait()
-	return ret
-}
-
 func (ec *executionContext) marshalOComputador2ᚖgoᚑgraphqlᚑequipamentoᚋgraphᚋmodelᚐComputador(ctx context.Context, sel ast.SelectionSet, v *model.Computador) graphql.Marshaler {
 	if v == nil {
 		return graphql.Null
@@ -11023,6 +12306,21 @@ func (ec *executionContext) marshalOHardwareInterno2ᚖgoᚑgraphqlᚑequipament
 	return ec._HardwareInterno(ctx, sel, v)
 }
 
+func (ec *executionContext) unmarshalOID2ᚖstring(ctx context.Context, v interface{}) (*string, error) {
+	if v == nil {
+		return nil, nil
+	}
+	res, err := graphql.UnmarshalID(v)
+	return &res, graphql.ErrorOnPath(ctx, err)
+}
+
+func (ec *executionContext) marshalOID2ᚖstring(ctx context.Context, sel ast.SelectionSet, v *string) graphql.Marshaler {
+	if v == nil {
+		return graphql.Null
+	}
+	return graphql.MarshalID(*v)
+}
+
 func (ec *executionContext) marshalOInformacao2ᚖgoᚑgraphqlᚑequipamentoᚋgraphᚋmodelᚐInformacao(ctx context.Context, sel ast.SelectionSet, v *model.Informacao) graphql.Marshaler {
 	if v == nil {
 		return graphql.Null
@@ -11043,46 +12341,6 @@ func (ec *executionContext) marshalOInt2ᚖint(ctx context.Context, sel ast.Sele
 		return graphql.Null
 	}
 	return graphql.MarshalInt(*v)
-}
-
-func (ec *executionContext) marshalOItem2ᚕᚖgoᚑgraphqlᚑequipamentoᚋgraphᚋmodelᚐItemᚄ(ctx context.Context, sel ast.SelectionSet, v []*model.Item) graphql.Marshaler {
-	if v == nil {
-		return graphql.Null
-	}
-	ret := make(graphql.Array, len(v))
-	var wg sync.WaitGroup
-	isLen1 := len(v) == 1
-	if !isLen1 {
-		wg.Add(len(v))
-	}
-	for i := range v {
-		i := i
-		fc := &graphql.FieldContext{
-			Index:  &i,
-			Result: &v[i],
-		}
-		ctx := graphql.WithFieldContext(ctx, fc)
-		f := func(i int) {
-			defer func() {
-				if r := recover(); r != nil {
-					ec.Error(ctx, ec.Recover(ctx, r))
-					ret = nil
-				}
-			}()
-			if !isLen1 {
-				defer wg.Done()
-			}
-			ret[i] = ec.marshalNItem2ᚖgoᚑgraphqlᚑequipamentoᚋgraphᚋmodelᚐItem(ctx, sel, v[i])
-		}
-		if isLen1 {
-			f(i)
-		} else {
-			go f(i)
-		}
-
-	}
-	wg.Wait()
-	return ret
 }
 
 func (ec *executionContext) marshalOItem2ᚖgoᚑgraphqlᚑequipamentoᚋgraphᚋmodelᚐItem(ctx context.Context, sel ast.SelectionSet, v *model.Item) graphql.Marshaler {
@@ -11111,6 +12369,13 @@ func (ec *executionContext) marshalOListaHardware2ᚖgoᚑgraphqlᚑequipamento�
 		return graphql.Null
 	}
 	return ec._ListaHardware(ctx, sel, v)
+}
+
+func (ec *executionContext) marshalOMBoard2ᚖgoᚑgraphqlᚑequipamentoᚋgraphᚋmodelᚐMBoard(ctx context.Context, sel ast.SelectionSet, v *model.MBoard) graphql.Marshaler {
+	if v == nil {
+		return graphql.Null
+	}
+	return ec._MBoard(ctx, sel, v)
 }
 
 func (ec *executionContext) marshalOMicrofone2ᚕᚖgoᚑgraphqlᚑequipamentoᚋgraphᚋmodelᚐMicrofone(ctx context.Context, sel ast.SelectionSet, v []*model.Microfone) graphql.Marshaler {
@@ -11158,46 +12423,6 @@ func (ec *executionContext) marshalOMicrofone2ᚖgoᚑgraphqlᚑequipamentoᚋgr
 		return graphql.Null
 	}
 	return ec._Microfone(ctx, sel, v)
-}
-
-func (ec *executionContext) marshalORAM2ᚕᚖgoᚑgraphqlᚑequipamentoᚋgraphᚋmodelᚐRAM(ctx context.Context, sel ast.SelectionSet, v []*model.RAM) graphql.Marshaler {
-	if v == nil {
-		return graphql.Null
-	}
-	ret := make(graphql.Array, len(v))
-	var wg sync.WaitGroup
-	isLen1 := len(v) == 1
-	if !isLen1 {
-		wg.Add(len(v))
-	}
-	for i := range v {
-		i := i
-		fc := &graphql.FieldContext{
-			Index:  &i,
-			Result: &v[i],
-		}
-		ctx := graphql.WithFieldContext(ctx, fc)
-		f := func(i int) {
-			defer func() {
-				if r := recover(); r != nil {
-					ec.Error(ctx, ec.Recover(ctx, r))
-					ret = nil
-				}
-			}()
-			if !isLen1 {
-				defer wg.Done()
-			}
-			ret[i] = ec.marshalORAM2ᚖgoᚑgraphqlᚑequipamentoᚋgraphᚋmodelᚐRAM(ctx, sel, v[i])
-		}
-		if isLen1 {
-			f(i)
-		} else {
-			go f(i)
-		}
-
-	}
-	wg.Wait()
-	return ret
 }
 
 func (ec *executionContext) marshalORAM2ᚖgoᚑgraphqlᚑequipamentoᚋgraphᚋmodelᚐRAM(ctx context.Context, sel ast.SelectionSet, v *model.RAM) graphql.Marshaler {
@@ -11254,46 +12479,6 @@ func (ec *executionContext) marshalOSoftware2ᚕᚖgoᚑgraphqlᚑequipamentoᚋ
 	return ret
 }
 
-func (ec *executionContext) marshalOSoftware2ᚕᚖgoᚑgraphqlᚑequipamentoᚋgraphᚋmodelᚐSoftwareᚄ(ctx context.Context, sel ast.SelectionSet, v []*model.Software) graphql.Marshaler {
-	if v == nil {
-		return graphql.Null
-	}
-	ret := make(graphql.Array, len(v))
-	var wg sync.WaitGroup
-	isLen1 := len(v) == 1
-	if !isLen1 {
-		wg.Add(len(v))
-	}
-	for i := range v {
-		i := i
-		fc := &graphql.FieldContext{
-			Index:  &i,
-			Result: &v[i],
-		}
-		ctx := graphql.WithFieldContext(ctx, fc)
-		f := func(i int) {
-			defer func() {
-				if r := recover(); r != nil {
-					ec.Error(ctx, ec.Recover(ctx, r))
-					ret = nil
-				}
-			}()
-			if !isLen1 {
-				defer wg.Done()
-			}
-			ret[i] = ec.marshalNSoftware2ᚖgoᚑgraphqlᚑequipamentoᚋgraphᚋmodelᚐSoftware(ctx, sel, v[i])
-		}
-		if isLen1 {
-			f(i)
-		} else {
-			go f(i)
-		}
-
-	}
-	wg.Wait()
-	return ret
-}
-
 func (ec *executionContext) marshalOSoftware2ᚖgoᚑgraphqlᚑequipamentoᚋgraphᚋmodelᚐSoftware(ctx context.Context, sel ast.SelectionSet, v *model.Software) graphql.Marshaler {
 	if v == nil {
 		return graphql.Null
@@ -11313,6 +12498,13 @@ func (ec *executionContext) marshalOSoftwareCriado2ᚖgoᚑgraphqlᚑequipamento
 		return graphql.Null
 	}
 	return ec._SoftwareCriado(ctx, sel, v)
+}
+
+func (ec *executionContext) marshalOStorage2ᚖgoᚑgraphqlᚑequipamentoᚋgraphᚋmodelᚐStorage(ctx context.Context, sel ast.SelectionSet, v *model.Storage) graphql.Marshaler {
+	if v == nil {
+		return graphql.Null
+	}
+	return ec._Storage(ctx, sel, v)
 }
 
 func (ec *executionContext) unmarshalOString2string(ctx context.Context, v interface{}) (string, error) {
