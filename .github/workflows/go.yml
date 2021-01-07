@@ -19,9 +19,7 @@ jobs:
         go-version: 1.15
 
     - name: Build
-      run: go mod download
       run: go build -v ./...
 
     - name: Test
-      run: go mod download
-      run: go test -v ./...
+      run: go mod download; go test -v ./...
