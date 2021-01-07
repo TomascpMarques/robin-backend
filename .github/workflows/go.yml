@@ -9,7 +9,7 @@ on:
 jobs:
 
   build:
-    runs-on: golang-alpine
+    runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v2
 
@@ -19,7 +19,7 @@ jobs:
         go-version: 1.15
 
     - name: Build
-      run: go mod download; go build -v ./...
+      run: go mod download ; go build -v ./...
 
     - name: Test
-      run: go mod download; go test -v ./...
+      run: go mod download ; go test -v ./...
