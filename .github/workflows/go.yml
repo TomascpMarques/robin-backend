@@ -9,7 +9,7 @@ on:
 jobs:
 
   build:
-    runs-on: golang:alpine
+    runs-on: golang-alpine
     steps:
     - uses: actions/checkout@v2
 
