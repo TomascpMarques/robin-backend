@@ -20,7 +20,7 @@ jobs:
 
     - name: Build
       run: go mod download
-      CMD: ["go", "build", "-v", "./..."]
+      command: ["go", "build", "-v", "./..."]
 
     - name: Test
       run: go test -v ./...
