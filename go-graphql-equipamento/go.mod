@@ -14,11 +14,11 @@ require (
 	github.com/nxadm/tail v1.4.6 // indirect
 	github.com/vektah/gqlparser/v2 v2.1.0
 	golang.org/x/net v0.0.0-20201224014010-6772e930b67b // indirect
-	golang.org/x/sys v0.0.0-20210104204734-6f8348627aad // indirect
+	golang.org/x/sys v0.0.0-20210105210732-16f7687f5001 // indirect
 	golang.org/x/text v0.3.4 // indirect
 	golang.org/x/xerrors v0.0.0-20200804184101-5ec99f83aff1 // indirect
 	google.golang.org/protobuf v1.25.0 // indirect
 	gopkg.in/check.v1 v1.0.0-20201130134442-10cb98267c6c // indirect
 	gopkg.in/yaml.v2 v2.4.0 // indirect
-	gopkg.in/yaml.v3 v3.0.0-20200615113413-eeeca48fe776 // indirect
+	gopkg.in/yaml.v3 v3.0.0-20210107192922-496545a6307b // indirect
 )
