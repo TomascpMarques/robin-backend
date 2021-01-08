@@ -21,12 +21,12 @@ type RegistoRedisDB struct {
 var dbFuncsLogger = loggers.DbFuncsLogger
 
 /*
-extrairIDMaisRecente - Extrai o id mais recente da lista fornecida
+ExtrairIDMaisRecente - Extrai o id mais recente da lista fornecida
 ---
 Params
 	listaIDs *[]string - lista de ids a usar para extração do maior index
 */
-func extrairIDMaisRecente(listaIDs *[]string) string {
+func ExtrairIDMaisRecente(listaIDs *[]string) string {
 	// Cria o padrão para retirar os digitos do ID
 	padrao := regexp.MustCompile(`\d+$`)
 	indexMaior := ""
@@ -51,7 +51,7 @@ func DBCriadorID(clienteRedis *redis.Client, tiporegisto string) string {
 	ids := BuscarKeysVerificarResultado(context.Background(), clienteRedis, tiporegisto)
 
 	// Extrai o ID mais recente da base de dados
-	indexMaior := extrairIDMaisRecente(&ids)
+	indexMaior := ExtrairIDMaisRecente(&ids)
 
 	// converte o indice do id para uma integer
 	resultado := ConversaoIDStringInt(indexMaior)
