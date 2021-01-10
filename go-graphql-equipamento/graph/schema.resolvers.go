@@ -39,7 +39,7 @@ func (r *mutationResolver) UpdateItem(ctx context.Context, id string, input mode
 	panic(fmt.Errorf("not implemented"))
 }
 
-func (r *mutationResolver) UpdateSoftware(ctx context.Context, id string, Input model.NovoSoftware) (*model.SoftwareAtualizado, error) {
+func (r *mutationResolver) UpdateSoftware(ctx context.Context, id string, input model.NovoSoftware) (*model.SoftwareAtualizado, error) {
 	//Valida o id fornecido
 	redishandle.ValidarIDParaUpdate(id, "Software")
 
@@ -58,40 +58,30 @@ func (r *mutationResolver) UpdateSoftware(ctx context.Context, id string, Input 
 		return nil, err
 	}
 
-	a := reflect.ValueOf(Input)
-	for i := 0; i < a.NumField(); i++ {
-		if reflect.ValueOf(a.Field(i).Interface()).IsZero() == false {
-			if a.Type().Field(i).Name == "Tipo" {
-				res.Tipo = a.Field(i).Interface().(*string)
+	inputReflect := reflect.ValueOf(&input).Elem()
+	resReflect := reflect.ValueOf(&res).Elem()
+
+	for i := 0; i < (resReflect.NumField()); i++ {
+		// resolverLogger.Println("NumField: ", inputReflect.NumField(), i, inputReflect.Type().Field(i).Name)
+		if inputReflect.Field(i).IsZero() == false {
+			campoString := inputReflect.Type().Field(i).Name
+			tipoDeVariavel := resReflect.FieldByName(campoString).Addr().Type().String()
+
+			if tipoDeVariavel == "*string" {
+				// resolverLogger.Println("*string: ", tipoDeVariavel, inputReflect.Type().Field(i).Name)
+				enderecoValorCampo := resReflect.FieldByName(campoString).Addr().Interface().(*string)
+				mudarValor := enderecoValorCampo
+				*mudarValor = inputReflect.Field(i).String()
 			}
-			if a.Type().Field(i).Name == "Nome" {
-				res.Nome = a.Field(i).String()
+
+			if tipoDeVariavel == "**string" {
+				// resolverLogger.Println("**string: ", tipoDeVariavel, inputReflect.Type().Field(i).Name)
+				enderecoValorCampo := resReflect.FieldByName(campoString).Addr().Interface().(**string)
+				mudarValor := enderecoValorCampo
+				**mudarValor = inputReflect.Field(i).Elem().String()
 			}
 		}
 	}
-	test := &res.Tipo
-	Message := "asdasd"
-	*test = &Message
-	resolverLogger.Println("->> ", &res.Tipo, test, &Input.Nome, reflect.ValueOf(&Input.Nome).Elem().Addr().Pointer())
-	te := reflect.ValueOf(&Input.Nome).Elem().Addr().Interface()
-	resolverLogger.Printf("%T, %v, %v", &te, &te, te)
-	aaa := te.(*string)
-	resolverLogger.Println(aaa, *aaa)
-	*aaa = "TESTE TESTE"
-	resolverLogger.Println("AAAAAA_: ", Input.Nome)
-	resolverLogger.Println(reflect.TypeOf(reflect.ValueOf(Input).FieldByName("Tipo").Interface()).String())
-	/*
-		if reflect.TypeOf(reflect.ValueOf(Input).FieldByName("Tipo").Interface()).String() == "*string" {
-			te := reflect.ValueOf(&Input.Nome).Elem().Addr().Interface()
-			aaa := te.(*string)
-			resolverLogger.Println(aaa, *aaa) *aaa -> gives value
-			*aaa = "TESTE TESTE"
-			resolverLogger.Println("AAAAAA_: ", Input.Nome)
-		}
-		E ISTO FUNCEMINA!!!
-		PEGA NO VALOR DA STRUCT	E RETORNA O SEU ENDEREÇO, E POSSO MUDAR O VALOR NESSE ENDEREÇO
-		COM A CONVERÃO PARA O PONTEIRO RESPETIVO, BICHO!!!! E MAI NADA!!!!
-	*/
 
 	actualizacao, err := json.Marshal(res)
 	if err != nil {

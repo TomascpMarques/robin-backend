@@ -2036,7 +2036,6 @@ input NovaMBoard {
 }
 
 input NovoSoftware {
-  id: ID
   nome: String!
   tipo: String
 }
@@ -9998,14 +9997,6 @@ func (ec *executionContext) unmarshalInputNovoSoftware(ctx context.Context, obj 
 
 	for k, v := range asMap {
 		switch k {
-		case "id":
-			var err error
-
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("id"))
-			it.ID, err = ec.unmarshalOID2ᚖstring(ctx, v)
-			if err != nil {
-				return it, err
-			}
 		case "nome":
 			var err error
 

@@ -349,7 +349,6 @@ input NovaMBoard {
 }
 
 input NovoSoftware {
-  id: ID
   nome: String!
   tipo: String
 }
