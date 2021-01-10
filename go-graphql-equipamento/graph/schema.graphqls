@@ -295,12 +295,6 @@ input InputListaHardware {
   armazenamento: NovoStorage
 }
 
-input UpdateComputador {
-  id: ID
-  nome: String!
-  novoConteudo: String!
-}
-
 input NovoItem {
   id: ID
   marca: String
@@ -373,7 +367,7 @@ input NovaCamera {
 }
 
 type Mutation {
-  UpdateComputador(id: ID!, input: UpdateComputador!): ComputadorAtualizado
+  UpdateComputador(id: ID!, input: NovoComputador!): ComputadorAtualizado
   UpdateGPU(id: ID!, input: NovoGPU!): ComponenteAtualizado
   UpdateCPU(id: ID!, input: NovoCPU!): ComponenteAtualizado
   UpdateRAM(id: ID!, input: NovoRAM!): ComponenteAtualizado

@@ -221,7 +221,7 @@ type ComplexityRoot struct {
 		CriarSoftware    func(childComplexity int, input model.NovoSoftware) int
 		CriarStorage     func(childComplexity int, input model.NovoStorage) int
 		UpdateCPU        func(childComplexity int, id string, input model.NovoCPU) int
-		UpdateComputador func(childComplexity int, id string, input model.UpdateComputador) int
+		UpdateComputador func(childComplexity int, id string, input model.NovoComputador) int
 		UpdateGpu        func(childComplexity int, id string, input model.NovoGpu) int
 		UpdateItem       func(childComplexity int, id string, input model.NovoItem) int
 		UpdateRAM        func(childComplexity int, id string, input model.NovoRAM) int
@@ -292,7 +292,7 @@ type ComplexityRoot struct {
 }
 
 type MutationResolver interface {
-	UpdateComputador(ctx context.Context, id string, input model.UpdateComputador) (*model.ComputadorAtualizado, error)
+	UpdateComputador(ctx context.Context, id string, input model.NovoComputador) (*model.ComputadorAtualizado, error)
 	UpdateGpu(ctx context.Context, id string, input model.NovoGpu) (*model.ComponenteAtualizado, error)
 	UpdateCPU(ctx context.Context, id string, input model.NovoCPU) (*model.ComponenteAtualizado, error)
 	UpdateRAM(ctx context.Context, id string, input model.NovoRAM) (*model.ComponenteAtualizado, error)
@@ -1234,7 +1234,7 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 			return 0, false
 		}
 
-		return e.complexity.Mutation.UpdateComputador(childComplexity, args["id"].(string), args["input"].(model.UpdateComputador)), true
+		return e.complexity.Mutation.UpdateComputador(childComplexity, args["id"].(string), args["input"].(model.NovoComputador)), true
 
 	case "Mutation.UpdateGPU":
 		if e.complexity.Mutation.UpdateGpu == nil {
@@ -1982,12 +1982,6 @@ input InputListaHardware {
   armazenamento: NovoStorage
 }
 
-input UpdateComputador {
-  id: ID
-  nome: String!
-  novoConteudo: String!
-}
-
 input NovoItem {
   id: ID
   marca: String
@@ -2060,7 +2054,7 @@ input NovaCamera {
 }
 
 type Mutation {
-  UpdateComputador(id: ID!, input: UpdateComputador!): ComputadorAtualizado
+  UpdateComputador(id: ID!, input: NovoComputador!): ComputadorAtualizado
   UpdateGPU(id: ID!, input: NovoGPU!): ComponenteAtualizado
   UpdateCPU(id: ID!, input: NovoCPU!): ComponenteAtualizado
   UpdateRAM(id: ID!, input: NovoRAM!): ComponenteAtualizado
@@ -2338,10 +2332,10 @@ func (ec *executionContext) field_Mutation_UpdateComputador_args(ctx context.Con
 		}
 	}
 	args["id"] = arg0
-	var arg1 model.UpdateComputador
+	var arg1 model.NovoComputador
 	if tmp, ok := rawArgs["input"]; ok {
 		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("input"))
-		arg1, err = ec.unmarshalNUpdateComputador2goᚑgraphqlᚑequipamentoᚋgraphᚋmodelᚐUpdateComputador(ctx, tmp)
+		arg1, err = ec.unmarshalNNovoComputador2goᚑgraphqlᚑequipamentoᚋgraphᚋmodelᚐNovoComputador(ctx, tmp)
 		if err != nil {
 			return nil, err
 		}
@@ -5899,7 +5893,7 @@ func (ec *executionContext) _Mutation_UpdateComputador(ctx context.Context, fiel
 	fc.Args = args
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
 		ctx = rctx // use context from middleware stack in children
-		return ec.resolvers.Mutation().UpdateComputador(rctx, args["id"].(string), args["input"].(model.UpdateComputador))
+		return ec.resolvers.Mutation().UpdateComputador(rctx, args["id"].(string), args["input"].(model.NovoComputador))
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -10102,42 +10096,6 @@ func (ec *executionContext) unmarshalInputNovoStorage(ctx context.Context, obj i
 	return it, nil
 }
 
-func (ec *executionContext) unmarshalInputUpdateComputador(ctx context.Context, obj interface{}) (model.UpdateComputador, error) {
-	var it model.UpdateComputador
-	var asMap = obj.(map[string]interface{})
-
-	for k, v := range asMap {
-		switch k {
-		case "id":
-			var err error
-
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("id"))
-			it.ID, err = ec.unmarshalOID2ᚖstring(ctx, v)
-			if err != nil {
-				return it, err
-			}
-		case "nome":
-			var err error
-
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("nome"))
-			it.Nome, err = ec.unmarshalNString2string(ctx, v)
-			if err != nil {
-				return it, err
-			}
-		case "novoConteudo":
-			var err error
-
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("novoConteudo"))
-			it.NovoConteudo, err = ec.unmarshalNString2string(ctx, v)
-			if err != nil {
-				return it, err
-			}
-		}
-	}
-
-	return it, nil
-}
-
 // endregion **************************** input.gotpl *****************************
 
 // region    ************************** interface.gotpl ***************************
@@ -12212,11 +12170,6 @@ func (ec *executionContext) marshalNString2string(ctx context.Context, sel ast.S
 		}
 	}
 	return res
-}
-
-func (ec *executionContext) unmarshalNUpdateComputador2goᚑgraphqlᚑequipamentoᚋgraphᚋmodelᚐUpdateComputador(ctx context.Context, v interface{}) (model.UpdateComputador, error) {
-	res, err := ec.unmarshalInputUpdateComputador(ctx, v)
-	return res, graphql.ErrorOnPath(ctx, err)
 }
 
 func (ec *executionContext) marshalN__Directive2githubᚗcomᚋ99designsᚋgqlgenᚋgraphqlᚋintrospectionᚐDirective(ctx context.Context, sel ast.SelectionSet, v introspection.Directive) graphql.Marshaler {

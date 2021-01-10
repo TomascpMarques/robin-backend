@@ -11,14 +11,15 @@ import (
 	"go-graphql-equipamento/graph/model"
 	"go-graphql-equipamento/loggers"
 	"go-graphql-equipamento/redishandle"
+	"reflect"
 )
 
 var resolverLogger = loggers.ResolverLogger
 
-// RedisClienteDB - cliente que establece a conexão ao serviço redis
+//RedisClienteDB -
 var RedisClienteDB = redishandle.NovoClienteRedis(redishandle.AddressRed, redishandle.PortRed, redishandle.PasswordRed)
 
-func (r *mutationResolver) UpdateComputador(ctx context.Context, id string, input model.UpdateComputador) (*model.ComputadorAtualizado, error) {
+func (r *mutationResolver) UpdateComputador(ctx context.Context, id string, input model.NovoComputador) (*model.ComputadorAtualizado, error) {
 	panic(fmt.Errorf("not implemented"))
 }
 
@@ -38,8 +39,77 @@ func (r *mutationResolver) UpdateItem(ctx context.Context, id string, input mode
 	panic(fmt.Errorf("not implemented"))
 }
 
-func (r *mutationResolver) UpdateSoftware(ctx context.Context, id string, input model.NovoSoftware) (*model.SoftwareAtualizado, error) {
-	panic(fmt.Errorf("not implemented"))
+func (r *mutationResolver) UpdateSoftware(ctx context.Context, id string, Input model.NovoSoftware) (*model.SoftwareAtualizado, error) {
+	//Valida o id fornecido
+	redishandle.ValidarIDParaUpdate(id, "Software")
+
+	// Busca o registo pelo id fornecido
+	registo, err := redishandle.GetRegistoBD(&RedisClienteDB, id)
+	if err != nil {
+		resolverLogger.Panicf("Erro: %v", err)
+		return nil, err
+	}
+
+	// Mapea o registo encontrado para a struct equivalente
+	var res model.Software
+	err = json.Unmarshal([]byte(registo), &res)
+	if err != nil {
+		resolverLogger.Panicf("[!] Erro: %v", err)
+		return nil, err
+	}
+
+	a := reflect.ValueOf(Input)
+	for i := 0; i < a.NumField(); i++ {
+		if reflect.ValueOf(a.Field(i).Interface()).IsZero() == false {
+			if a.Type().Field(i).Name == "Tipo" {
+				res.Tipo = a.Field(i).Interface().(*string)
+			}
+			if a.Type().Field(i).Name == "Nome" {
+				res.Nome = a.Field(i).String()
+			}
+		}
+	}
+	test := &res.Tipo
+	Message := "asdasd"
+	*test = &Message
+	resolverLogger.Println("->> ", &res.Tipo, test, &Input.Nome, reflect.ValueOf(&Input.Nome).Elem().Addr().Pointer())
+	te := reflect.ValueOf(&Input.Nome).Elem().Addr().Interface()
+	resolverLogger.Printf("%T, %v, %v", &te, &te, te)
+	aaa := te.(*string)
+	resolverLogger.Println(aaa, *aaa)
+	*aaa = "TESTE TESTE"
+	resolverLogger.Println("AAAAAA_: ", Input.Nome)
+	resolverLogger.Println(reflect.TypeOf(reflect.ValueOf(Input).FieldByName("Tipo").Interface()).String())
+	/*
+		if reflect.TypeOf(reflect.ValueOf(Input).FieldByName("Tipo").Interface()).String() == "*string" {
+			te := reflect.ValueOf(&Input.Nome).Elem().Addr().Interface()
+			aaa := te.(*string)
+			resolverLogger.Println(aaa, *aaa) *aaa -> gives value
+			*aaa = "TESTE TESTE"
+			resolverLogger.Println("AAAAAA_: ", Input.Nome)
+		}
+		E ISTO FUNCEMINA!!!
+		PEGA NO VALOR DA STRUCT	E RETORNA O SEU ENDEREÇO, E POSSO MUDAR O VALOR NESSE ENDEREÇO
+		COM A CONVERÃO PARA O PONTEIRO RESPETIVO, BICHO!!!! E MAI NADA!!!!
+	*/
+
+	actualizacao, err := json.Marshal(res)
+	if err != nil {
+		return nil, err
+	}
+	temp := string(actualizacao)
+
+	err = redishandle.DelRegistoBD(&RedisClienteDB, id)
+
+	var registoAtualizado redishandle.RegistoRedisDB
+	registoAtualizado.CriaEstruturaRegistoAtualizada(&RedisClienteDB, res, id)
+	redishandle.SetRegistoBD(&RedisClienteDB, registoAtualizado)
+
+	var softwareAtualizado model.SoftwareAtualizado
+	softwareAtualizado.Nome = &res.Nome
+	softwareAtualizado.Atualizacao = &temp
+
+	return &softwareAtualizado, nil
 }
 
 func (r *mutationResolver) CriarSoftware(ctx context.Context, input model.NovoSoftware) (*model.SoftwareCriado, error) {

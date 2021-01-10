@@ -3,14 +3,18 @@ package redishandle
 import (
 	"context"
 	"errors"
+	"fmt"
 	"go-graphql-equipamento/loggers"
+	"regexp"
 	"strconv"
 
 	"github.com/go-redis/redis/v8"
 )
 
 var operacoesBDLogger = loggers.OperacoesBDLogger
-var bdContentLimitter = "[+] Conteúdo Encontrado: \n--*<INICÍO>*--\n%s\n--*<FIM>*--\n"
+
+//BDContentLimitter - limitador de conteúdo da bd.
+var BDContentLimitter = "[+] Conteúdo Encontrado: \n--*<INICÍO>*--\n%s\n--*<FIM>*--\n"
 
 /*
 SetRegistoBD - Inssere o registo passado na base de dados.
@@ -26,7 +30,25 @@ func SetRegistoBD(cr *redis.Client, registo RegistoRedisDB) {
 		return
 	}
 	operacoesBDLogger.Printf("[+] Registo insserido com ID: %v\n", registo.Key)
-	operacoesBDLogger.Printf(bdContentLimitter, registo)
+	operacoesBDLogger.Printf(BDContentLimitter, registo)
+}
+
+/*
+DelRegistoBD - Apaga um ou mais registos passados para função como um vetor de strings
+---
+Params
+	cr - redis.Client / cliente redis a usar
+	regID - []string / Ids dos registos a apagar
+*/
+func DelRegistoBD(cr *redis.Client, regID ...string) error {
+	pattern := regexp.MustCompile(`\d+$`)
+	err := cr.Del(context.Background(), regID...)
+	if pattern.FindString(err.String()) != fmt.Sprintf("%v", len(regID)) {
+		operacoesBDLogger.Panicf("[!] Erro ao apagar o registo de keys: %v", regID)
+		return errors.New("[!!] ID de registo inválido")
+	}
+
+	return nil
 }
 
 /*
@@ -46,7 +68,7 @@ func GetRegistoBD(cr *redis.Client, keyDoRegisto string) (string, error) {
 		return "null", errors.New(erroNaProcura)
 	}
 	operacoesBDLogger.Printf("[$] Conteudo do Registo <%v>:", keyDoRegisto)
-	operacoesBDLogger.Printf(bdContentLimitter, registo)
+	operacoesBDLogger.Printf(BDContentLimitter, registo)
 
 	return registo, nil
 }

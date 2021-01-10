@@ -332,9 +332,3 @@ type Storage struct {
 	Velocidade *string `json:"velocidade"`
 	Capacidade *string `json:"capacidade"`
 }
-
-type UpdateComputador struct {
-	ID           *string `json:"id"`
-	Nome         string  `json:"nome"`
-	NovoConteudo string  `json:"novoConteudo"`
-}

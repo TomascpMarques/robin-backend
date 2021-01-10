@@ -94,3 +94,36 @@ func (registo *RegistoRedisDB) CriaEstruturaRegisto(redisClienteDB *redis.Client
 	registo.Expira = time.Duration(0)
 	dbFuncsLogger.Printf("[.] Registo Criado\n")
 }
+
+/*
+CriaEstruturaRegistoAtualizada - Atualiza a estrutura(chave, valor, expiração)
+					   			 utilizada para insserir registos na base-de-dados.
+---
+Params
+	redisClienteDB - *redis.Client / Ponteiro ao cliente redis a utilizar
+	regsitoCorpo - interface{} / corpo/conteúdo do registo a insserir
+	registoID - string / o id do registo a atualizar
+*/
+func (registo *RegistoRedisDB) CriaEstruturaRegistoAtualizada(redisClienteDB *redis.Client, regsitoCorpo interface{}, registoID string) {
+	// Criação de chave/index relacional aos existentes
+	registo.Key = registoID
+	// Tradução do input da mutation para json através da indentação do mesmo
+	registo.Valor = FormatarValorParaJSON(regsitoCorpo)
+	// Defenição do tempo de expiração da key do registo (0 = não expira)
+	registo.Expira = time.Duration(0)
+	dbFuncsLogger.Printf("[.] Registo Atualizado\n")
+}
+
+/*
+ValidarIDParaUpdate -
+---
+Params
+	id - tipo de id para utilizar na validação
+*/
+func ValidarIDParaUpdate(id string, tipoID string) {
+	padrao := regexp.MustCompile(tipoID + `\d+$`)
+	if padrao.FindString(id) == "" {
+		dbFuncsLogger.Panicf("[!] Erro: O id especificado não é do tipo fornecido: %v", id)
+		return
+	}
+}
