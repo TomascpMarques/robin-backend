@@ -9,9 +9,9 @@ import (
 	"fmt"
 	"go-graphql-equipamento/graph/generated"
 	"go-graphql-equipamento/graph/model"
+	"go-graphql-equipamento/graph/schemaresolvehelper"
 	"go-graphql-equipamento/loggers"
 	"go-graphql-equipamento/redishandle"
-	"reflect"
 )
 
 var resolverLogger = loggers.ResolverLogger
@@ -20,7 +20,48 @@ var resolverLogger = loggers.ResolverLogger
 var RedisClienteDB = redishandle.NovoClienteRedis(redishandle.AddressRed, redishandle.PortRed, redishandle.PasswordRed)
 
 func (r *mutationResolver) UpdateComputador(ctx context.Context, id string, input model.NovoComputador) (*model.ComputadorAtualizado, error) {
-	panic(fmt.Errorf("not implemented"))
+	//Valida o id fornecido
+	redishandle.ValidarIDParaUpdate(id, "Software")
+
+	// Busca o registo pelo id fornecido
+	registo, err := redishandle.GetRegistoBD(&RedisClienteDB, id)
+	if err != nil {
+		resolverLogger.Printf("[!] Erro: %v", err)
+		return nil, err
+	}
+
+	// Mapea o registo encontrado para a struct equivalente
+	var registoStruct model.Software
+	err = json.Unmarshal([]byte(registo), &registoStruct)
+	if err != nil {
+		resolverLogger.Printf("[!] Erro: %v", err)
+		return nil, err
+	}
+
+	schemaresolvehelper.OperacoesMemoriaStructsValores(&input, &registoStruct)
+
+	actualizacao, err := json.Marshal(registoStruct)
+	if err != nil {
+		resolverLogger.Printf("[!] Erro: %v", err)
+		return nil, err
+	}
+
+	err = redishandle.DelRegistoBD(&RedisClienteDB, id)
+	if err != nil {
+		resolverLogger.Printf("[!] Erro: %v", err)
+		return nil, err
+	}
+
+	var registoAtualizado redishandle.RegistoRedisDB
+	registoAtualizado.CriaEstruturaRegistoAtualizada(&RedisClienteDB, registoStruct, id)
+	redishandle.SetRegistoBD(&RedisClienteDB, registoAtualizado)
+
+	var computadorAtualizado model.ComputadorAtualizado
+	computadorAtualizado.Nome = &registoStruct.Nome
+	temp := string(actualizacao)
+	computadorAtualizado.Atualizacao = &temp
+
+	return &computadorAtualizado, nil
 }
 
 func (r *mutationResolver) UpdateGpu(ctx context.Context, id string, input model.NovoGpu) (*model.ComponenteAtualizado, error) {
@@ -46,60 +87,42 @@ func (r *mutationResolver) UpdateSoftware(ctx context.Context, id string, input 
 	// Busca o registo pelo id fornecido
 	registo, err := redishandle.GetRegistoBD(&RedisClienteDB, id)
 	if err != nil {
-		resolverLogger.Panicf("Erro: %v", err)
+		resolverLogger.Printf("[!] Erro: %v", err)
 		return nil, err
 	}
 
 	// Mapea o registo encontrado para a struct equivalente
-	var res model.Software
-	err = json.Unmarshal([]byte(registo), &res)
+	var registoStruct model.Software
+	err = json.Unmarshal([]byte(registo), &registoStruct)
 	if err != nil {
-		resolverLogger.Panicf("[!] Erro: %v", err)
+		resolverLogger.Printf("[!] Erro: %v", err)
 		return nil, err
 	}
 
-	inputReflect := reflect.ValueOf(&input).Elem()
-	resReflect := reflect.ValueOf(&res).Elem()
+	schemaresolvehelper.OperacoesMemoriaStructsValores(&input, &registoStruct)
 
-	for i := 0; i < (resReflect.NumField()); i++ {
-		// resolverLogger.Println("NumField: ", inputReflect.NumField(), i, inputReflect.Type().Field(i).Name)
-		if inputReflect.Field(i).IsZero() == false {
-			campoString := inputReflect.Type().Field(i).Name
-			tipoDeVariavel := resReflect.FieldByName(campoString).Addr().Type().String()
-
-			if tipoDeVariavel == "*string" {
-				// resolverLogger.Println("*string: ", tipoDeVariavel, inputReflect.Type().Field(i).Name)
-				enderecoValorCampo := resReflect.FieldByName(campoString).Addr().Interface().(*string)
-				mudarValor := enderecoValorCampo
-				*mudarValor = inputReflect.Field(i).String()
-			}
-
-			if tipoDeVariavel == "**string" {
-				// resolverLogger.Println("**string: ", tipoDeVariavel, inputReflect.Type().Field(i).Name)
-				enderecoValorCampo := resReflect.FieldByName(campoString).Addr().Interface().(**string)
-				mudarValor := enderecoValorCampo
-				**mudarValor = inputReflect.Field(i).Elem().String()
-			}
-		}
-	}
-
-	actualizacao, err := json.Marshal(res)
+	actualizacao, err := json.Marshal(registoStruct)
 	if err != nil {
+		resolverLogger.Printf("[!] Erro: %v", err)
 		return nil, err
 	}
+
 	temp := string(actualizacao)
-
 	err = redishandle.DelRegistoBD(&RedisClienteDB, id)
 
 	var registoAtualizado redishandle.RegistoRedisDB
-	registoAtualizado.CriaEstruturaRegistoAtualizada(&RedisClienteDB, res, id)
+	registoAtualizado.CriaEstruturaRegistoAtualizada(&RedisClienteDB, registoStruct, id)
 	redishandle.SetRegistoBD(&RedisClienteDB, registoAtualizado)
 
 	var softwareAtualizado model.SoftwareAtualizado
-	softwareAtualizado.Nome = &res.Nome
+	softwareAtualizado.Nome = &registoStruct.Nome
 	softwareAtualizado.Atualizacao = &temp
 
 	return &softwareAtualizado, nil
+}
+
+func (r *mutationResolver) UpdateStorage(ctx context.Context, id string, input model.NovoStorage) (*model.StorageAtualizado, error) {
+	panic(fmt.Errorf("not implemented"))
 }
 
 func (r *mutationResolver) CriarSoftware(ctx context.Context, input model.NovoSoftware) (*model.SoftwareCriado, error) {
@@ -340,7 +363,7 @@ func (r *queryResolver) GetCPU(ctx context.Context, id string) (*model.CPU, erro
 
 	err = json.Unmarshal([]byte(valorDB), &item)
 	if err != nil {
-		resolverLogger.Panicf("[!] Erro ao mapear JSON para a Estrutura fornecida: %v\n\t[!] OU os campos da estrutura e do contéudo não são compatíveis", item)
+		resolverLogger.Printf("[!] Erro ao mapear JSON para a Estrutura fornecida: %v\n\t[!] OU os campos da estrutura e do contéudo não são compatíveis", item)
 		return nil, err
 	}
 
@@ -360,7 +383,7 @@ func (r *queryResolver) GetGpu(ctx context.Context, id string) (*model.Gpu, erro
 
 	err = json.Unmarshal([]byte(valorDB), &item)
 	if err != nil {
-		resolverLogger.Panicf("[!] Erro ao mapear JSON para a Estrutura fornecida: %v\n\t[!] OU os campos da estrutura e do contéudo não são compatíveis", item)
+		resolverLogger.Printf("[!] Erro ao mapear JSON para a Estrutura fornecida: %v\n\t[!] OU os campos da estrutura e do contéudo não são compatíveis", item)
 		return nil, err
 	}
 
@@ -388,7 +411,7 @@ func (r *queryResolver) GetItem(ctx context.Context, id string) (*model.Item, er
 
 	err = json.Unmarshal([]byte(valorDB), &item)
 	if err != nil {
-		resolverLogger.Panicf("[!] Erro ao mapear JSON para a Estrutura fornecida: %v [!] OU os campos da estrutura e do contéudo não são compatíveis", item)
+		resolverLogger.Printf("[!] Erro ao mapear JSON para a Estrutura fornecida: %v [!] OU os campos da estrutura e do contéudo não são compatíveis", item)
 		return nil, err
 	}
 
@@ -408,7 +431,7 @@ func (r *queryResolver) GetSoftware(ctx context.Context, id string) (*model.Soft
 
 	err = json.Unmarshal([]byte(valorDB), &item)
 	if err != nil {
-		resolverLogger.Panicf("[!] Erro ao mapear JSON para a Estrutura fornecida: %v\n\t[!] OU os campos da estrutura e do contéudo não são compatíveis", item)
+		resolverLogger.Printf("[!] Erro ao mapear JSON para a Estrutura fornecida: %v\n\t[!] OU os campos da estrutura e do contéudo não são compatíveis", item)
 		return nil, err
 	}
 
@@ -428,7 +451,7 @@ func (r *queryResolver) GetMicrofone(ctx context.Context, id string) (*model.Mic
 
 	err = json.Unmarshal([]byte(valorDB), &item)
 	if err != nil {
-		resolverLogger.Panicf("[!] Erro ao mapear JSON para a Estrutura fornecida: %v\n\t[!] OU os campos da estrutura e do contéudo não são compatíveis", item)
+		resolverLogger.Printf("[!] Erro ao mapear JSON para a Estrutura fornecida: %v\n\t[!] OU os campos da estrutura e do contéudo não são compatíveis", item)
 		return nil, err
 	}
 
@@ -448,7 +471,7 @@ func (r *queryResolver) GetCamera(ctx context.Context, id string) (*model.Camera
 
 	err = json.Unmarshal([]byte(valorDB), &item)
 	if err != nil {
-		resolverLogger.Panicf("[!] Erro ao mapear JSON para a Estrutura fornecida: %v\n\t[!] OU os campos da estrutura e do contéudo não são compatíveis", item)
+		resolverLogger.Printf("[!] Erro ao mapear JSON para a Estrutura fornecida: %v\n\t[!] OU os campos da estrutura e do contéudo não são compatíveis", item)
 		return nil, err
 	}
 
@@ -468,7 +491,7 @@ func (r *queryResolver) GetStorage(ctx context.Context, id string) (*model.Stora
 
 	err = json.Unmarshal([]byte(valorDB), &item)
 	if err != nil {
-		resolverLogger.Panicf("[!] Erro ao mapear JSON para a Estrutura fornecida: %v\n\t[!] OU os campos da estrutura e do contéudo não são compatíveis", item)
+		resolverLogger.Printf("[!] Erro ao mapear JSON para a Estrutura fornecida: %v\n\t[!] OU os campos da estrutura e do contéudo não são compatíveis", item)
 		return nil, err
 	}
 
@@ -488,7 +511,7 @@ func (r *queryResolver) GetMBoard(ctx context.Context, id string) (*model.MBoard
 
 	err = json.Unmarshal([]byte(valorDB), &item)
 	if err != nil {
-		resolverLogger.Panicf("[!] Erro ao mapear JSON para a Estrutura fornecida: %v\n\t[!] OU os campos da estrutura e do contéudo não são compatíveis", item)
+		resolverLogger.Printf("[!] Erro ao mapear JSON para a Estrutura fornecida: %v\n\t[!] OU os campos da estrutura e do contéudo não são compatíveis", item)
 		return nil, err
 	}
 
@@ -503,3 +526,94 @@ func (r *Resolver) Query() generated.QueryResolver { return &queryResolver{r} }
 
 type mutationResolver struct{ *Resolver }
 type queryResolver struct{ *Resolver }
+
+/*
+	mutation {
+  CriarComputador(input: {
+    nome: "TESTE",
+    info: {
+      salaAtribuida: "TESTE",
+      ultimaInspecao: "TESTE",
+      utilisacao: "TESTE",
+      tipoPc: "TESTE",
+      dominio: "TESTE",
+      sistemaOperativo: "TESTE",
+    },
+  	conectividade:{
+      ethernet: "TESTE",
+      conectadoDominio: "TESTE",
+      wifi: "TESTE",
+    },
+    equipamento: {
+      cpuUtil: "TESTE",
+      gpuUtil: "TESTE",
+      ramTipo: "TESTE",
+      ramSlots: "TESTE",
+      ramMemoria: "TESTE",
+      ramVelocidade: "TESTE",
+    },
+    hardware: {
+      cpu: {
+        marca: "TESTE",
+        modelo: "TESTE",
+        maxRam: "TESTE",
+        velocidade: "TESTE",
+        nucleos: "TESTE",
+        tdp: "TESTE",
+      },
+      gpu: {
+        vram: "TESTE",
+        marca: "TESTE",
+        saidas: "TESTE",
+        velocidade: "TESTE",
+        tdp: "TESTE",
+      },
+      ram: {
+        marca: "TESTE",
+        modelo: "TESTE",
+        memoria: "TESTE",
+        velocidade: "TESTE",
+        tipo: "TESTE",
+      },
+      placaM: {
+        marca: "TESTE",
+        modelo: "TESTE",
+        tipoMemoria: "TESTE",
+        chipset: "TESTE",
+        familiaCompativel: "TESTE",
+        socket: "TESTE",
+        dimSlots: "TESTE",
+        dimMaxMem: "TESTE",
+        dimMemType: "TESTE",
+        dimMaxVelc: "TESTE",
+        conexoes: "TESTE",
+        interfaces: "TESTE",
+      },
+      armazenamento: {
+        tipo: "TESTE",
+        nome: "TESTE",
+        modelo: "TESTE",
+        marca: "TESTE",
+        velocidade: "TESTE",
+        capacidade: "TESTE",
+      }
+    },
+    perifericos:{
+      camera: {
+        marca: "TESTE",
+        modelo: "TESTE",
+      },
+      microfone: {
+        marca: "TESTE",
+        modelo: "TESTE",
+      }
+    },
+    software: [
+      {nome: "TESTE",tipo: "TESTE"},
+      {nome: "TESTE",tipo: "TESTE"},
+      {nome: "TESTE",tipo: "TESTE"},
+      {nome: "TESTE",tipo: "TESTE"},
+    ]
+  }){}
+}
+*/

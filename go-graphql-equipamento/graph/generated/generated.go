@@ -226,6 +226,7 @@ type ComplexityRoot struct {
 		UpdateItem       func(childComplexity int, id string, input model.NovoItem) int
 		UpdateRAM        func(childComplexity int, id string, input model.NovoRAM) int
 		UpdateSoftware   func(childComplexity int, id string, input model.NovoSoftware) int
+		UpdateStorage    func(childComplexity int, id string, input model.NovoStorage) int
 	}
 
 	Query struct {
@@ -289,6 +290,12 @@ type ComplexityRoot struct {
 		Tipo       func(childComplexity int) int
 		Velocidade func(childComplexity int) int
 	}
+
+	StorageAtualizado struct {
+		Atualizacao func(childComplexity int) int
+		ID          func(childComplexity int) int
+		Nome        func(childComplexity int) int
+	}
 }
 
 type MutationResolver interface {
@@ -298,6 +305,7 @@ type MutationResolver interface {
 	UpdateRAM(ctx context.Context, id string, input model.NovoRAM) (*model.ComponenteAtualizado, error)
 	UpdateItem(ctx context.Context, id string, input model.NovoItem) (*model.ItemAtualizado, error)
 	UpdateSoftware(ctx context.Context, id string, input model.NovoSoftware) (*model.SoftwareAtualizado, error)
+	UpdateStorage(ctx context.Context, id string, input model.NovoStorage) (*model.StorageAtualizado, error)
 	CriarSoftware(ctx context.Context, input model.NovoSoftware) (*model.SoftwareCriado, error)
 	CriarComputador(ctx context.Context, input model.NovoComputador) (*model.ComputadorCriado, error)
 	CriarItem(ctx context.Context, input model.NovoItem) (*model.ItemCriado, error)
@@ -1284,6 +1292,18 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.Mutation.UpdateSoftware(childComplexity, args["id"].(string), args["input"].(model.NovoSoftware)), true
 
+	case "Mutation.UpdateStorage":
+		if e.complexity.Mutation.UpdateStorage == nil {
+			break
+		}
+
+		args, err := ec.field_Mutation_UpdateStorage_args(context.TODO(), rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.complexity.Mutation.UpdateStorage(childComplexity, args["id"].(string), args["input"].(model.NovoStorage)), true
+
 	case "Query.GetCPU":
 		if e.complexity.Query.GetCPU == nil {
 			break
@@ -1621,6 +1641,27 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.Storage.Velocidade(childComplexity), true
 
+	case "StorageAtualizado.atualizacao":
+		if e.complexity.StorageAtualizado.Atualizacao == nil {
+			break
+		}
+
+		return e.complexity.StorageAtualizado.Atualizacao(childComplexity), true
+
+	case "StorageAtualizado.id":
+		if e.complexity.StorageAtualizado.ID == nil {
+			break
+		}
+
+		return e.complexity.StorageAtualizado.ID(childComplexity), true
+
+	case "StorageAtualizado.nome":
+		if e.complexity.StorageAtualizado.Nome == nil {
+			break
+		}
+
+		return e.complexity.StorageAtualizado.Nome(childComplexity), true
+
 	}
 	return 0, false
 }
@@ -1690,7 +1731,7 @@ var sources = []*ast.Source{
 # https://gqlgen.com/getting-started/
 
 type Item {
-  id: ID
+  id: ID!
   marca: String
   modelo: String
   nome: String
@@ -1698,7 +1739,7 @@ type Item {
 }
 
 type Computador {
-  id: ID
+  id: ID!
   nome: String
   info: Informacao
   conectividade: Conectividade
@@ -1719,9 +1760,9 @@ type Informacao {
 }
 
 type Conectividade {
-  ethernet: Boolean
-  wifi: Boolean
-  conectadoDominio: Boolean
+  ethernet: String
+  wifi: String
+  conectadoDominio: String
 }
 
 type HardwareInterno {
@@ -1804,7 +1845,7 @@ type ConexoesMBoard {
 type InterfacesMBoard {
   usb2: Int
   usb3: Int
-  lan: Boolean
+  lan: String
   display: Int
   hdmi: Int
   audio: Int
@@ -1868,6 +1909,12 @@ type SoftwareAtualizado{
   atualizacao: String
 }
 
+type StorageAtualizado{
+  id: ID!
+  nome: String
+  atualizacao: String
+}
+
 type ComputadorAtualizado {
   id: ID!
   nome: String
@@ -1924,7 +1971,7 @@ type Query {
 }
 
 input NovoStorage {
-  id: ID
+  id: ID!
   tipo: String
   nome: String
   modelo: String
@@ -1934,7 +1981,7 @@ input NovoStorage {
 }
 
 input NovoComputador {
-  id: ID
+  id: ID!
   nome: String!
   info: InputInformacao
   conectividade: InputConectividade
@@ -1955,9 +2002,9 @@ input InputInformacao {
 }
 
 input InputConectividade {
-  ethernet: Boolean
-  wifi: Boolean
-  conectadoDominio: Boolean
+  ethernet: String
+  wifi: String
+  conectadoDominio: String
 }
 
 input InputEquipamentoExterno {
@@ -1983,7 +2030,7 @@ input InputListaHardware {
 }
 
 input NovoItem {
-  id: ID
+  id: ID!
   marca: String
   modelo: String!
   nome: String
@@ -1991,7 +2038,7 @@ input NovoItem {
 }
 
 input NovoCPU {
-  id: ID
+  id: ID!
   marca: String
   modelo: String!
   nucleos: Int
@@ -2001,7 +2048,7 @@ input NovoCPU {
 }
 
 input NovoGPU {
-  id: ID
+  id: ID!
   marca: String
   modelo: String
   vram: String
@@ -2011,7 +2058,7 @@ input NovoGPU {
 }
 
 input NovoRAM {
-  id: ID
+  id: ID!
   marca: String
   modelo: String
   memoria: String
@@ -2020,7 +2067,7 @@ input NovoRAM {
 }
 
 input NovaMBoard {
-  id: ID
+  id: ID!
   marca: String
   modelo: String
   tipoMemoria: String
@@ -2041,13 +2088,13 @@ input NovoSoftware {
 }
 
 input NovoMicrofone {
-  id: ID
+  id: ID!
   marca: String
   modelo: String!
 }
 
 input NovaCamera {
-  id: ID
+  id: ID!
   marca: String
   modelo: String!
 }
@@ -2059,6 +2106,7 @@ type Mutation {
   UpdateRAM(id: ID!, input: NovoRAM!): ComponenteAtualizado
   UpdateItem(id: ID!, input: NovoItem!): ItemAtualizado
   UpdateSoftware(id: ID!, input: NovoSoftware!): SoftwareAtualizado
+  UpdateStorage(id: ID!, input: NovoStorage!): StorageAtualizado
 
   CriarSoftware(input: NovoSoftware!): SoftwareCriado
   CriarComputador(input: NovoComputador!): ComputadorCriado
@@ -2431,6 +2479,30 @@ func (ec *executionContext) field_Mutation_UpdateSoftware_args(ctx context.Conte
 	if tmp, ok := rawArgs["input"]; ok {
 		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("input"))
 		arg1, err = ec.unmarshalNNovoSoftware2goᚑgraphqlᚑequipamentoᚋgraphᚋmodelᚐNovoSoftware(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["input"] = arg1
+	return args, nil
+}
+
+func (ec *executionContext) field_Mutation_UpdateStorage_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
+	var err error
+	args := map[string]interface{}{}
+	var arg0 string
+	if tmp, ok := rawArgs["id"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("id"))
+		arg0, err = ec.unmarshalNID2string(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["id"] = arg0
+	var arg1 model.NovoStorage
+	if tmp, ok := rawArgs["input"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("input"))
+		arg1, err = ec.unmarshalNNovoStorage2goᚑgraphqlᚑequipamentoᚋgraphᚋmodelᚐNovoStorage(ctx, tmp)
 		if err != nil {
 			return nil, err
 		}
@@ -3296,11 +3368,14 @@ func (ec *executionContext) _Computador_id(ctx context.Context, field graphql.Co
 		return graphql.Null
 	}
 	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
 		return graphql.Null
 	}
-	res := resTmp.(*string)
+	res := resTmp.(string)
 	fc.Result = res
-	return ec.marshalOID2ᚖstring(ctx, field.Selections, res)
+	return ec.marshalNID2string(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) _Computador_nome(ctx context.Context, field graphql.CollectedField, obj *model.Computador) (ret graphql.Marshaler) {
@@ -3720,9 +3795,9 @@ func (ec *executionContext) _Conectividade_ethernet(ctx context.Context, field g
 	if resTmp == nil {
 		return graphql.Null
 	}
-	res := resTmp.(*bool)
+	res := resTmp.(*string)
 	fc.Result = res
-	return ec.marshalOBoolean2ᚖbool(ctx, field.Selections, res)
+	return ec.marshalOString2ᚖstring(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) _Conectividade_wifi(ctx context.Context, field graphql.CollectedField, obj *model.Conectividade) (ret graphql.Marshaler) {
@@ -3752,9 +3827,9 @@ func (ec *executionContext) _Conectividade_wifi(ctx context.Context, field graph
 	if resTmp == nil {
 		return graphql.Null
 	}
-	res := resTmp.(*bool)
+	res := resTmp.(*string)
 	fc.Result = res
-	return ec.marshalOBoolean2ᚖbool(ctx, field.Selections, res)
+	return ec.marshalOString2ᚖstring(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) _Conectividade_conectadoDominio(ctx context.Context, field graphql.CollectedField, obj *model.Conectividade) (ret graphql.Marshaler) {
@@ -3784,9 +3859,9 @@ func (ec *executionContext) _Conectividade_conectadoDominio(ctx context.Context,
 	if resTmp == nil {
 		return graphql.Null
 	}
-	res := resTmp.(*bool)
+	res := resTmp.(*string)
 	fc.Result = res
-	return ec.marshalOBoolean2ᚖbool(ctx, field.Selections, res)
+	return ec.marshalOString2ᚖstring(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) _ConexoesMBoard_sata(ctx context.Context, field graphql.CollectedField, obj *model.ConexoesMBoard) (ret graphql.Marshaler) {
@@ -4683,9 +4758,9 @@ func (ec *executionContext) _InterfacesMBoard_lan(ctx context.Context, field gra
 	if resTmp == nil {
 		return graphql.Null
 	}
-	res := resTmp.(*bool)
+	res := resTmp.(*string)
 	fc.Result = res
-	return ec.marshalOBoolean2ᚖbool(ctx, field.Selections, res)
+	return ec.marshalOString2ᚖstring(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) _InterfacesMBoard_display(ctx context.Context, field graphql.CollectedField, obj *model.InterfacesMBoard) (ret graphql.Marshaler) {
@@ -4841,11 +4916,14 @@ func (ec *executionContext) _Item_id(ctx context.Context, field graphql.Collecte
 		return graphql.Null
 	}
 	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
 		return graphql.Null
 	}
-	res := resTmp.(*string)
+	res := resTmp.(string)
 	fc.Result = res
-	return ec.marshalOID2ᚖstring(ctx, field.Selections, res)
+	return ec.marshalNID2string(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) _Item_marca(ctx context.Context, field graphql.CollectedField, obj *model.Item) (ret graphql.Marshaler) {
@@ -6099,6 +6177,45 @@ func (ec *executionContext) _Mutation_UpdateSoftware(ctx context.Context, field 
 	res := resTmp.(*model.SoftwareAtualizado)
 	fc.Result = res
 	return ec.marshalOSoftwareAtualizado2ᚖgoᚑgraphqlᚑequipamentoᚋgraphᚋmodelᚐSoftwareAtualizado(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _Mutation_UpdateStorage(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "Mutation",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   true,
+		IsResolver: true,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	rawArgs := field.ArgumentMap(ec.Variables)
+	args, err := ec.field_Mutation_UpdateStorage_args(ctx, rawArgs)
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	fc.Args = args
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.Mutation().UpdateStorage(rctx, args["id"].(string), args["input"].(model.NovoStorage))
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.(*model.StorageAtualizado)
+	fc.Result = res
+	return ec.marshalOStorageAtualizado2ᚖgoᚑgraphqlᚑequipamentoᚋgraphᚋmodelᚐStorageAtualizado(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) _Mutation_CriarSoftware(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
@@ -8148,6 +8265,105 @@ func (ec *executionContext) _Storage_capacidade(ctx context.Context, field graph
 	return ec.marshalOString2ᚖstring(ctx, field.Selections, res)
 }
 
+func (ec *executionContext) _StorageAtualizado_id(ctx context.Context, field graphql.CollectedField, obj *model.StorageAtualizado) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "StorageAtualizado",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   false,
+		IsResolver: false,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.ID, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(string)
+	fc.Result = res
+	return ec.marshalNID2string(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _StorageAtualizado_nome(ctx context.Context, field graphql.CollectedField, obj *model.StorageAtualizado) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "StorageAtualizado",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   false,
+		IsResolver: false,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Nome, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.(*string)
+	fc.Result = res
+	return ec.marshalOString2ᚖstring(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _StorageAtualizado_atualizacao(ctx context.Context, field graphql.CollectedField, obj *model.StorageAtualizado) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "StorageAtualizado",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   false,
+		IsResolver: false,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Atualizacao, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.(*string)
+	fc.Result = res
+	return ec.marshalOString2ᚖstring(ctx, field.Selections, res)
+}
+
 func (ec *executionContext) ___Directive_name(ctx context.Context, field graphql.CollectedField, obj *introspection.Directive) (ret graphql.Marshaler) {
 	defer func() {
 		if r := recover(); r != nil {
@@ -9245,7 +9461,7 @@ func (ec *executionContext) unmarshalInputInputConectividade(ctx context.Context
 			var err error
 
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("ethernet"))
-			it.Ethernet, err = ec.unmarshalOBoolean2ᚖbool(ctx, v)
+			it.Ethernet, err = ec.unmarshalOString2ᚖstring(ctx, v)
 			if err != nil {
 				return it, err
 			}
@@ -9253,7 +9469,7 @@ func (ec *executionContext) unmarshalInputInputConectividade(ctx context.Context
 			var err error
 
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("wifi"))
-			it.Wifi, err = ec.unmarshalOBoolean2ᚖbool(ctx, v)
+			it.Wifi, err = ec.unmarshalOString2ᚖstring(ctx, v)
 			if err != nil {
 				return it, err
 			}
@@ -9261,7 +9477,7 @@ func (ec *executionContext) unmarshalInputInputConectividade(ctx context.Context
 			var err error
 
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("conectadoDominio"))
-			it.ConectadoDominio, err = ec.unmarshalOBoolean2ᚖbool(ctx, v)
+			it.ConectadoDominio, err = ec.unmarshalOString2ᚖstring(ctx, v)
 			if err != nil {
 				return it, err
 			}
@@ -9489,7 +9705,7 @@ func (ec *executionContext) unmarshalInputNovaCamera(ctx context.Context, obj in
 			var err error
 
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("id"))
-			it.ID, err = ec.unmarshalOID2ᚖstring(ctx, v)
+			it.ID, err = ec.unmarshalNID2string(ctx, v)
 			if err != nil {
 				return it, err
 			}
@@ -9525,7 +9741,7 @@ func (ec *executionContext) unmarshalInputNovaMBoard(ctx context.Context, obj in
 			var err error
 
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("id"))
-			it.ID, err = ec.unmarshalOID2ᚖstring(ctx, v)
+			it.ID, err = ec.unmarshalNID2string(ctx, v)
 			if err != nil {
 				return it, err
 			}
@@ -9641,7 +9857,7 @@ func (ec *executionContext) unmarshalInputNovoCPU(ctx context.Context, obj inter
 			var err error
 
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("id"))
-			it.ID, err = ec.unmarshalOID2ᚖstring(ctx, v)
+			it.ID, err = ec.unmarshalNID2string(ctx, v)
 			if err != nil {
 				return it, err
 			}
@@ -9709,7 +9925,7 @@ func (ec *executionContext) unmarshalInputNovoComputador(ctx context.Context, ob
 			var err error
 
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("id"))
-			it.ID, err = ec.unmarshalOID2ᚖstring(ctx, v)
+			it.ID, err = ec.unmarshalNID2string(ctx, v)
 			if err != nil {
 				return it, err
 			}
@@ -9785,7 +10001,7 @@ func (ec *executionContext) unmarshalInputNovoGPU(ctx context.Context, obj inter
 			var err error
 
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("id"))
-			it.ID, err = ec.unmarshalOID2ᚖstring(ctx, v)
+			it.ID, err = ec.unmarshalNID2string(ctx, v)
 			if err != nil {
 				return it, err
 			}
@@ -9853,7 +10069,7 @@ func (ec *executionContext) unmarshalInputNovoItem(ctx context.Context, obj inte
 			var err error
 
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("id"))
-			it.ID, err = ec.unmarshalOID2ᚖstring(ctx, v)
+			it.ID, err = ec.unmarshalNID2string(ctx, v)
 			if err != nil {
 				return it, err
 			}
@@ -9905,7 +10121,7 @@ func (ec *executionContext) unmarshalInputNovoMicrofone(ctx context.Context, obj
 			var err error
 
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("id"))
-			it.ID, err = ec.unmarshalOID2ᚖstring(ctx, v)
+			it.ID, err = ec.unmarshalNID2string(ctx, v)
 			if err != nil {
 				return it, err
 			}
@@ -9941,7 +10157,7 @@ func (ec *executionContext) unmarshalInputNovoRAM(ctx context.Context, obj inter
 			var err error
 
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("id"))
-			it.ID, err = ec.unmarshalOID2ᚖstring(ctx, v)
+			it.ID, err = ec.unmarshalNID2string(ctx, v)
 			if err != nil {
 				return it, err
 			}
@@ -10029,7 +10245,7 @@ func (ec *executionContext) unmarshalInputNovoStorage(ctx context.Context, obj i
 			var err error
 
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("id"))
-			it.ID, err = ec.unmarshalOID2ᚖstring(ctx, v)
+			it.ID, err = ec.unmarshalNID2string(ctx, v)
 			if err != nil {
 				return it, err
 			}
@@ -10277,6 +10493,9 @@ func (ec *executionContext) _Computador(ctx context.Context, sel ast.SelectionSe
 			out.Values[i] = graphql.MarshalString("Computador")
 		case "id":
 			out.Values[i] = ec._Computador_id(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				invalids++
+			}
 		case "nome":
 			out.Values[i] = ec._Computador_nome(ctx, field, obj)
 		case "info":
@@ -10602,6 +10821,9 @@ func (ec *executionContext) _Item(ctx context.Context, sel ast.SelectionSet, obj
 			out.Values[i] = graphql.MarshalString("Item")
 		case "id":
 			out.Values[i] = ec._Item_id(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				invalids++
+			}
 		case "marca":
 			out.Values[i] = ec._Item_marca(ctx, field, obj)
 		case "modelo":
@@ -10839,6 +11061,8 @@ func (ec *executionContext) _Mutation(ctx context.Context, sel ast.SelectionSet)
 			out.Values[i] = ec._Mutation_UpdateItem(ctx, field)
 		case "UpdateSoftware":
 			out.Values[i] = ec._Mutation_UpdateSoftware(ctx, field)
+		case "UpdateStorage":
+			out.Values[i] = ec._Mutation_UpdateStorage(ctx, field)
 		case "CriarSoftware":
 			out.Values[i] = ec._Mutation_CriarSoftware(ctx, field)
 		case "CriarComputador":
@@ -11339,6 +11563,37 @@ func (ec *executionContext) _Storage(ctx context.Context, sel ast.SelectionSet, 
 			out.Values[i] = ec._Storage_velocidade(ctx, field, obj)
 		case "capacidade":
 			out.Values[i] = ec._Storage_capacidade(ctx, field, obj)
+		default:
+			panic("unknown field " + strconv.Quote(field.Name))
+		}
+	}
+	out.Dispatch()
+	if invalids > 0 {
+		return graphql.Null
+	}
+	return out
+}
+
+var storageAtualizadoImplementors = []string{"StorageAtualizado"}
+
+func (ec *executionContext) _StorageAtualizado(ctx context.Context, sel ast.SelectionSet, obj *model.StorageAtualizado) graphql.Marshaler {
+	fields := graphql.CollectFields(ec.OperationContext, sel, storageAtualizadoImplementors)
+
+	out := graphql.NewFieldSet(fields)
+	var invalids uint32
+	for i, field := range fields {
+		switch field.Name {
+		case "__typename":
+			out.Values[i] = graphql.MarshalString("StorageAtualizado")
+		case "id":
+			out.Values[i] = ec._StorageAtualizado_id(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				invalids++
+			}
+		case "nome":
+			out.Values[i] = ec._StorageAtualizado_nome(ctx, field, obj)
+		case "atualizacao":
+			out.Values[i] = ec._StorageAtualizado_atualizacao(ctx, field, obj)
 		default:
 			panic("unknown field " + strconv.Quote(field.Name))
 		}
@@ -12562,21 +12817,6 @@ func (ec *executionContext) marshalOHardwareInterno2ᚖgoᚑgraphqlᚑequipament
 	return ec._HardwareInterno(ctx, sel, v)
 }
 
-func (ec *executionContext) unmarshalOID2ᚖstring(ctx context.Context, v interface{}) (*string, error) {
-	if v == nil {
-		return nil, nil
-	}
-	res, err := graphql.UnmarshalID(v)
-	return &res, graphql.ErrorOnPath(ctx, err)
-}
-
-func (ec *executionContext) marshalOID2ᚖstring(ctx context.Context, sel ast.SelectionSet, v *string) graphql.Marshaler {
-	if v == nil {
-		return graphql.Null
-	}
-	return graphql.MarshalID(*v)
-}
-
 func (ec *executionContext) marshalOInformacao2ᚖgoᚑgraphqlᚑequipamentoᚋgraphᚋmodelᚐInformacao(ctx context.Context, sel ast.SelectionSet, v *model.Informacao) graphql.Marshaler {
 	if v == nil {
 		return graphql.Null
@@ -12880,6 +13120,13 @@ func (ec *executionContext) marshalOStorage2ᚖgoᚑgraphqlᚑequipamentoᚋgrap
 		return graphql.Null
 	}
 	return ec._Storage(ctx, sel, v)
+}
+
+func (ec *executionContext) marshalOStorageAtualizado2ᚖgoᚑgraphqlᚑequipamentoᚋgraphᚋmodelᚐStorageAtualizado(ctx context.Context, sel ast.SelectionSet, v *model.StorageAtualizado) graphql.Marshaler {
+	if v == nil {
+		return graphql.Null
+	}
+	return ec._StorageAtualizado(ctx, sel, v)
 }
 
 func (ec *executionContext) unmarshalOString2string(ctx context.Context, v interface{}) (string, error) {

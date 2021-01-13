@@ -3,7 +3,7 @@
 # https://gqlgen.com/getting-started/
 
 type Item {
-  id: ID
+  id: ID!
   marca: String
   modelo: String
   nome: String
@@ -11,7 +11,7 @@ type Item {
 }
 
 type Computador {
-  id: ID
+  id: ID!
   nome: String
   info: Informacao
   conectividade: Conectividade
@@ -32,9 +32,9 @@ type Informacao {
 }
 
 type Conectividade {
-  ethernet: Boolean
-  wifi: Boolean
-  conectadoDominio: Boolean
+  ethernet: String
+  wifi: String
+  conectadoDominio: String
 }
 
 type HardwareInterno {
@@ -117,7 +117,7 @@ type ConexoesMBoard {
 type InterfacesMBoard {
   usb2: Int
   usb3: Int
-  lan: Boolean
+  lan: String
   display: Int
   hdmi: Int
   audio: Int
@@ -181,6 +181,12 @@ type SoftwareAtualizado{
   atualizacao: String
 }
 
+type StorageAtualizado{
+  id: ID!
+  nome: String
+  atualizacao: String
+}
+
 type ComputadorAtualizado {
   id: ID!
   nome: String
@@ -237,7 +243,7 @@ type Query {
 }
 
 input NovoStorage {
-  id: ID
+  id: ID!
   tipo: String
   nome: String
   modelo: String
@@ -247,7 +253,7 @@ input NovoStorage {
 }
 
 input NovoComputador {
-  id: ID
+  id: ID!
   nome: String!
   info: InputInformacao
   conectividade: InputConectividade
@@ -268,9 +274,9 @@ input InputInformacao {
 }
 
 input InputConectividade {
-  ethernet: Boolean
-  wifi: Boolean
-  conectadoDominio: Boolean
+  ethernet: String
+  wifi: String
+  conectadoDominio: String
 }
 
 input InputEquipamentoExterno {
@@ -296,7 +302,7 @@ input InputListaHardware {
 }
 
 input NovoItem {
-  id: ID
+  id: ID!
   marca: String
   modelo: String!
   nome: String
@@ -304,7 +310,7 @@ input NovoItem {
 }
 
 input NovoCPU {
-  id: ID
+  id: ID!
   marca: String
   modelo: String!
   nucleos: Int
@@ -314,7 +320,7 @@ input NovoCPU {
 }
 
 input NovoGPU {
-  id: ID
+  id: ID!
   marca: String
   modelo: String
   vram: String
@@ -324,7 +330,7 @@ input NovoGPU {
 }
 
 input NovoRAM {
-  id: ID
+  id: ID!
   marca: String
   modelo: String
   memoria: String
@@ -333,7 +339,7 @@ input NovoRAM {
 }
 
 input NovaMBoard {
-  id: ID
+  id: ID!
   marca: String
   modelo: String
   tipoMemoria: String
@@ -354,13 +360,13 @@ input NovoSoftware {
 }
 
 input NovoMicrofone {
-  id: ID
+  id: ID!
   marca: String
   modelo: String!
 }
 
 input NovaCamera {
-  id: ID
+  id: ID!
   marca: String
   modelo: String!
 }
@@ -372,6 +378,7 @@ type Mutation {
   UpdateRAM(id: ID!, input: NovoRAM!): ComponenteAtualizado
   UpdateItem(id: ID!, input: NovoItem!): ItemAtualizado
   UpdateSoftware(id: ID!, input: NovoSoftware!): SoftwareAtualizado
+  UpdateStorage(id: ID!, input: NovoStorage!): StorageAtualizado
 
   CriarSoftware(input: NovoSoftware!): SoftwareCriado
   CriarComputador(input: NovoComputador!): ComputadorCriado

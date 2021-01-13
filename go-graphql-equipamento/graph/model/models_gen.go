@@ -37,7 +37,7 @@ type ComponenteCriado struct {
 }
 
 type Computador struct {
-	ID            *string             `json:"id"`
+	ID            string              `json:"id"`
 	Nome          *string             `json:"nome"`
 	Info          *Informacao         `json:"info"`
 	Conectividade *Conectividade      `json:"conectividade"`
@@ -59,9 +59,9 @@ type ComputadorCriado struct {
 }
 
 type Conectividade struct {
-	Ethernet         *bool `json:"ethernet"`
-	Wifi             *bool `json:"wifi"`
-	ConectadoDominio *bool `json:"conectadoDominio"`
+	Ethernet         *string `json:"ethernet"`
+	Wifi             *string `json:"wifi"`
+	ConectadoDominio *string `json:"conectadoDominio"`
 }
 
 type ConexoesMBoard struct {
@@ -105,9 +105,9 @@ type Informacao struct {
 }
 
 type InputConectividade struct {
-	Ethernet         *bool `json:"ethernet"`
-	Wifi             *bool `json:"wifi"`
-	ConectadoDominio *bool `json:"conectadoDominio"`
+	Ethernet         *string `json:"ethernet"`
+	Wifi             *string `json:"wifi"`
+	ConectadoDominio *string `json:"conectadoDominio"`
 }
 
 type InputEquipamentoExterno struct {
@@ -143,17 +143,17 @@ type InputListaHardware struct {
 }
 
 type InterfacesMBoard struct {
-	Usb2    *int  `json:"usb2"`
-	Usb3    *int  `json:"usb3"`
-	Lan     *bool `json:"lan"`
-	Display *int  `json:"display"`
-	Hdmi    *int  `json:"hdmi"`
-	Audio   *int  `json:"audio"`
-	Wifi    *int  `json:"wifi"`
+	Usb2    *int    `json:"usb2"`
+	Usb3    *int    `json:"usb3"`
+	Lan     *string `json:"lan"`
+	Display *int    `json:"display"`
+	Hdmi    *int    `json:"hdmi"`
+	Audio   *int    `json:"audio"`
+	Wifi    *int    `json:"wifi"`
 }
 
 type Item struct {
-	ID        *string `json:"id"`
+	ID        string  `json:"id"`
 	Marca     *string `json:"marca"`
 	Modelo    *string `json:"modelo"`
 	Nome      *string `json:"nome"`
@@ -203,13 +203,13 @@ type Microfone struct {
 }
 
 type NovaCamera struct {
-	ID     *string `json:"id"`
+	ID     string  `json:"id"`
 	Marca  *string `json:"marca"`
 	Modelo string  `json:"modelo"`
 }
 
 type NovaMBoard struct {
-	ID                *string `json:"id"`
+	ID                string  `json:"id"`
 	Marca             *string `json:"marca"`
 	Modelo            *string `json:"modelo"`
 	TipoMemoria       *string `json:"tipoMemoria"`
@@ -225,7 +225,7 @@ type NovaMBoard struct {
 }
 
 type NovoCPU struct {
-	ID         *string  `json:"id"`
+	ID         string   `json:"id"`
 	Marca      *string  `json:"marca"`
 	Modelo     string   `json:"modelo"`
 	Nucleos    *int     `json:"nucleos"`
@@ -235,7 +235,7 @@ type NovoCPU struct {
 }
 
 type NovoComputador struct {
-	ID            *string                  `json:"id"`
+	ID            string                   `json:"id"`
 	Nome          string                   `json:"nome"`
 	Info          *InputInformacao         `json:"info"`
 	Conectividade *InputConectividade      `json:"conectividade"`
@@ -246,7 +246,7 @@ type NovoComputador struct {
 }
 
 type NovoGpu struct {
-	ID         *string  `json:"id"`
+	ID         string   `json:"id"`
 	Marca      *string  `json:"marca"`
 	Modelo     *string  `json:"modelo"`
 	Vram       *string  `json:"vram"`
@@ -256,7 +256,7 @@ type NovoGpu struct {
 }
 
 type NovoItem struct {
-	ID        *string `json:"id"`
+	ID        string  `json:"id"`
 	Marca     *string `json:"marca"`
 	Modelo    string  `json:"modelo"`
 	Nome      *string `json:"nome"`
@@ -264,13 +264,13 @@ type NovoItem struct {
 }
 
 type NovoMicrofone struct {
-	ID     *string `json:"id"`
+	ID     string  `json:"id"`
 	Marca  *string `json:"marca"`
 	Modelo string  `json:"modelo"`
 }
 
 type NovoRAM struct {
-	ID         *string `json:"id"`
+	ID         string  `json:"id"`
 	Marca      *string `json:"marca"`
 	Modelo     *string `json:"modelo"`
 	Memoria    *string `json:"memoria"`
@@ -284,7 +284,7 @@ type NovoSoftware struct {
 }
 
 type NovoStorage struct {
-	ID         *string `json:"id"`
+	ID         string  `json:"id"`
 	Tipo       *string `json:"tipo"`
 	Nome       *string `json:"nome"`
 	Modelo     *string `json:"modelo"`
@@ -330,4 +330,10 @@ type Storage struct {
 	Marca      *string `json:"marca"`
 	Velocidade *string `json:"velocidade"`
 	Capacidade *string `json:"capacidade"`
+}
+
+type StorageAtualizado struct {
+	ID          string  `json:"id"`
+	Nome        *string `json:"nome"`
+	Atualizacao *string `json:"atualizacao"`
 }
