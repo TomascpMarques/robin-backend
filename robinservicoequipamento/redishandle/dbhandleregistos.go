@@ -115,7 +115,8 @@ func (registo *RegistoRedisDB) CriaEstruturaRegistoAtualizada(redisClienteDB *re
 }
 
 /*
-ValidarIDParaUpdate -
+ValidarIDParaUpdate - Valida o id fornecido com o tipo de id 
+					  que se está a utilisar na procura do registo
 ---
 Params
 	id - tipo de id para utilizar na validação
