@@ -9,7 +9,7 @@ import (
 	"time"
 
 	"github.com/go-redis/redis/v8"
-	"github.com/tomascpmarques/PAP/backend/robinservicoequipamento/loggers"
+	"github.com/tomascpmarques/PAP/backend/robinservicologin/loggers"
 )
 
 // RegistoRedisDB Estrutura o registo a insserir ou retirar da BD
@@ -19,7 +19,7 @@ type RegistoRedisDB struct {
 	Expira time.Duration // Expiração do registo
 }
 
-var dbFuncsLogger = loggers.DbFuncsLogger
+var dbFuncsLogger = loggers.LoginDbFuncsLogger
 
 /*
 ExtrairIDMaisRecente - Extrai o id mais recente da lista fornecida

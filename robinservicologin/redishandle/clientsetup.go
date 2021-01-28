@@ -6,7 +6,7 @@ import (
 	"strconv"
 
 	"github.com/go-redis/redis/v8"
-	"github.com/tomascpmarques/PAP/backend/robinservicoequipamento/loggers"
+	"github.com/tomascpmarques/PAP/backend/robinservicologin/loggers"
 )
 
 const (
@@ -41,7 +41,7 @@ var UserRed = os.Getenv("REDISUSER")
 // DBRed a base de dados a concetar pelo cliente
 var DBRed, _ = strconv.Atoi(os.Getenv("REDISDB"))
 
-var redisLogger = loggers.RedisLogger
+var redisLogger = loggers.LoginResolverLogger
 
 /*
 NovoClienteRedis Cria um novo cliente redis para conectar ao serviço redis
