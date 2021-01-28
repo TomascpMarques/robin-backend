@@ -1,6 +1,10 @@
 package loginregistohandlers
 
-import "github.com/dgrijalva/jwt-go"
+import (
+	"time"
+
+	"github.com/dgrijalva/jwt-go"
+)
 
 const (
 	// ROOT -
@@ -11,11 +15,12 @@ const (
 	USER
 )
 
-// User -
+// User - Epecifica os dados que definem um utilizador
 type User struct {
 	Username   string `json:"user,omitempty"`
 	Password   string `json:"passwd,omitempty,-"`
 	Permissoes int    `json:"perms,omitempty"`
+	Logged     bool   `json:"logged"`
 	JWT        string `json:"jwt,omitempty"`
 }
 
@@ -24,6 +29,7 @@ func CriarNovoUser(user string, password string) User {
 	return User{
 		Username:   user,
 		Password:   password,
+		Logged:     false,
 		Permissoes: USER,
 	}
 }
@@ -34,6 +40,7 @@ func (user User) CriarUserJWT() *jwt.Token {
 		"user": user.Username,
 		"pass": user.Password,
 		"iss":  "loginServer",
+		"exp":  time.Now().Add(time.Second * 240).Unix(),
 	})
 	return jwtToken
 }

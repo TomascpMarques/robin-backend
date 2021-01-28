@@ -65,7 +65,7 @@ func GetRegistoBD(cr *redis.Client, keyDoRegisto string, debugg int) (string, er
 	// e visualização do novo registo
 	registo, getErr := cr.Get(context.Background(), keyDoRegisto).Result()
 	if getErr != nil {
-		operacoesBDLogger.Printf("[!] Erro ao buscar pelo registo de key<%v>: %v", keyDoRegisto, getErr)
+		operacoesBDLogger.Printf("[!] Erro ao buscar pelo registo de key <%v> : %v", keyDoRegisto, getErr)
 		erroNaProcura := "Sem registo para id: " + keyDoRegisto
 		return "null", errors.New(erroNaProcura)
 	}

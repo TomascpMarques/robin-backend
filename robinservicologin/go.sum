@@ -4,6 +4,8 @@ github.com/TomascpMarques/dynamic-querys-go v1.3.1-0.20210128175520-37a03b833d18
 github.com/TomascpMarques/dynamic-querys-go v1.3.1-0.20210128175520-37a03b833d18/go.mod h1:WuZ+ow4SoA7nYGCQEsW3ih0inZH5uFvfajJXdZwRqLc=
 github.com/TomascpMarques/dynamic-querys-go v1.3.1-0.20210128175905-ff29a20acc14 h1:6dnOi13LzIWwjuQ/PW+Pl9wQps0zMh+ZueIgCTLgJTc=
 github.com/TomascpMarques/dynamic-querys-go v1.3.1-0.20210128175905-ff29a20acc14/go.mod h1:WuZ+ow4SoA7nYGCQEsW3ih0inZH5uFvfajJXdZwRqLc=
+github.com/TomascpMarques/dynamic-querys-go v1.3.1 h1:afctdB7jSGWRyyIE5XDsD+BVMEEUDIkCUr/T+VJJRIs=
+github.com/TomascpMarques/dynamic-querys-go v1.3.1/go.mod h1:WuZ+ow4SoA7nYGCQEsW3ih0inZH5uFvfajJXdZwRqLc=
 github.com/cespare/xxhash/v2 v2.1.1 h1:6MnRN8NT7+YBpUIWxHtefFZOKTAPgGjpQSxqLNn0+qY=
 github.com/cespare/xxhash/v2 v2.1.1/go.mod h1:VGX0DQ3Q6kWi7AoAeZDth3/j3BFtOZR5XLFGgcrjCOs=
 github.com/davecgh/go-spew v1.1.0/go.mod h1:J7Y8YcW2NihsgmVo/mv3lAwl/skON4iLHjSsI+c5H38=

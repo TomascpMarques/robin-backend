@@ -14,10 +14,10 @@ import (
 	"github.com/tomascpmarques/PAP/backend/robinservicologin/loginregistohandlers"
 )
 
-// HTTPport -
+// HTTPport - porta onde o servidor http está localizado
 var HTTPport = os.Getenv("LOGIN_SERV_PORT")
 
-// DEFAULTHTTPPORT -
+// DEFAULTHTTPPORT - valor default para HTTPport
 var DEFAULTHTTPPORT = "5600"
 
 func main() {
@@ -30,6 +30,8 @@ func main() {
 	flag.DurationVar(&wait, "graceful-timeout", time.Second*15, "the duration for which the server gracefully wait for existing connections to finish - e.g. 15s or 1m")
 	flag.Parse()
 
+	// Mapeamento das funções desponíveis
+	actions.FuncsStorage["TestLoggedUser"] = loginregistohandlers.TestLoggedUser
 	actions.FuncsStorage["Login"] = loginregistohandlers.Login
 	actions.FuncsStorage["Registar"] = loginregistohandlers.Registar
 
