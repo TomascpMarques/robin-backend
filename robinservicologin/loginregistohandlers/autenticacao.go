@@ -38,7 +38,9 @@ func Login(user string, pass string) string {
 }
 
 // Registar -
-func Registar(user string, password string) string {
+func Registar(user string, password string, token string) string {
+	fmt.Println("token: >", token)
+
 	novoUser := CriarNovoUser(user, password)
 
 	jwtToken := CriarNovoUser(user, password).CriarUserJWT()
