@@ -31,7 +31,7 @@ func main() {
 	flag.Parse()
 
 	// Mapeamento das funções desponíveis
-	actions.FuncsStorage["TestLoggedUser"] = loginregistohandlers.TestLoggedUser
+	actions.FuncsStorage["VerificarTokenUser"] = loginregistohandlers.VerificarTokenUser
 	actions.FuncsStorage["Login"] = loginregistohandlers.Login
 	actions.FuncsStorage["Registar"] = loginregistohandlers.Registar
 

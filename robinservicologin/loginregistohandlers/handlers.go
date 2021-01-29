@@ -20,7 +20,6 @@ type User struct {
 	Username   string `json:"user,omitempty"`
 	Password   string `json:"passwd,omitempty,-"`
 	Permissoes int    `json:"perms,omitempty"`
-	Logged     bool   `json:"logged"`
 	JWT        string `json:"jwt,omitempty"`
 }
 
@@ -29,7 +28,6 @@ func CriarNovoUser(user string, password string) User {
 	return User{
 		Username:   user,
 		Password:   password,
-		Logged:     false,
 		Permissoes: USER,
 	}
 }
