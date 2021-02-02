@@ -1,11 +1,14 @@
 version: "3.9"
 services:
 
+  # Serviço de base de dados redis
   redis-login-service:
+    # ajuda na conexão entre containers
     container_name: redis-auth
     image: robin-db-redis
     ports:
       - "6379:6379"
+    # volume para perssistência
     volumes: 
       - auth-db:/test
 

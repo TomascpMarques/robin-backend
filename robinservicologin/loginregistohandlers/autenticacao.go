@@ -18,8 +18,8 @@ var hmacSecret = hmac.New(sha256.New, []byte(`SUPPER_SECRET_DEVELOPMENT_KEY`)).S
 var RedisClientDB = redishandle.NovoClienteRedis(
 	os.Getenv("REDISADDRESS"),
 	os.Getenv("AUTH_SERVER_REDIS_PORT"),
-	"Pg+V@j+Z9gKj88=-?dSk",
-	"admin",
+	"", //Pg+V@j+Z9gKj88=-?dSk
+	"", //admin
 	0,
 )
 
@@ -27,7 +27,8 @@ var RedisClientDB = redishandle.NovoClienteRedis(
 // Verifica se o utilisador admin já existe ou não
 var _ = VerificarAdminFirstBoot()
 
-// VerificarTokenUser -
+// VerificarTokenUser verifica se a token passada é válida, logo vê se já expirou
+// se o modo de assinatura é o correto, e se o emissor é o servidor de autenticação
 func VerificarTokenUser(userToken string) string {
 	token, err := jwt.Parse(userToken, func(token *jwt.Token) (interface{}, error) {
 		// valida o metodo de assinatura da key
@@ -50,56 +51,74 @@ func VerificarTokenUser(userToken string) string {
 	return "Token inválida ou expirada"
 }
 
-// Login - Recebe dois parametros, o username e a passwd, cria uma token com esses dados e compara
-func Login(user string, passwd string, perms int) map[string]interface{} {
+// VerificarTokenAdmin verifica tudo o que a função VerificarTokenUser verifica,
+// e ainda verifica se o utilisador é o administrador
+func VerificarTokenAdmin(userToken string) string {
+	token, err := jwt.Parse(userToken, func(token *jwt.Token) (interface{}, error) {
+		// valida o metodo de assinatura da key
+		if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
+			return nil, fmt.Errorf("Metodo de assinatura inesperado: %v", token.Header["alg"])
+		}
+
+		// hmacSampleSecret é o []byte que contem o segredo de assinatura
+		return hmacSecret, nil
+	})
+	// Se a token for assinada por outro metodo ou a key for diferente dá erro
+	if err != nil {
+		return fmt.Sprint(err)
+	}
+
+	// Verifica que a token é válida e assinada pelo servidor de login
+	if claims, ok := token.Claims.(jwt.MapClaims); ok && token.Valid && claims["iss"] == "Robin-Servico-Auth" &&
+		claims["perms"].(float64) == 2 {
+		return "OK"
+	}
+	return "Token inválida ou expirada"
+}
+
+// Login Recebe dois parametros, o username e a passwd, cria uma token com esses dados e compara com o utilisador pedido
+// devolve uma token com o tempo de expiração de time.Now().Add(time.Minute * 40).Unix()
+func Login(user string, passwd string) map[string]interface{} {
 	returnVal := make(map[string]interface{}, 0)
 
-	// Cria uma struc user, com os dados passados nos parametros
-	novoUser := CriarNovoUser(user, passwd, perms)
+	// Busca o registo de utilisador que se está a usar para fazer login
+	utilizadorPedido, err := GetUserParaValorStruct(user)
+	if err != nil {
+		loggers.LoginAuthLogger.Println("Erro: ", err)
+		returnVal["erro"] = err
+		return returnVal
+	}
+
+	// Compára as credenciais com as do utilisador fornecido
+	if utilizadorPedido.Password != passwd {
+		loggers.LoginAuthLogger.Println("Error: ", "credeenciais inválidas")
+		returnVal["erro"] = "Credenciais inválidas"
+		return returnVal
+	}
 
 	// Cria um token de utilisador a partir dos dados fornecidos
-	novoUserJWTToken, err := novoUser.CriarUserJWT().SignedString(hmacSecret)
+	UserNewJWTToken, err := utilizadorPedido.CriarUserJWT().SignedString(hmacSecret)
 	if err != nil {
 		loggers.LoginAuthLogger.Println("Error: ", err)
 		returnVal["erro"] = err
 		return returnVal
 	}
 
-	// Busca o registo de utilisador que se está a usar para fazer login
-	// E compara as credenciais com as do utilisador fornecido
-	if reg := GetUserParaValorStruct(user); reg.Password != passwd && reg.Permissoes != perms {
-		loggers.LoginAuthLogger.Println("Error: ", "credeenciais inválidas")
-		returnVal["erro"] = "Credenciais inválidas"
-		return returnVal
-	}
-
 	// Loga que o utilisador XXXX iniciou sessão
+	// E devolve a token, em como o utilisador está logado
 	loggers.LoginAuthLogger.Println("Utilizador, ", user, ", iniciou sessão")
-	returnVal["token"] = novoUserJWTToken
+	returnVal["token"] = UserNewJWTToken
 	return returnVal
 }
 
-// Registar -
-func Registar(user string, password string, token string, perms int) map[string]interface{} {
+// Registar utiliza os dados de utilisador base defenidos, cria e inssere na BD um utilisador novo, antes disso
+// ela verifica se quem está a fazer o pedido é o administrador, só administradores podem registar utilisadores.
+// Se todas as regras forem cumpridas, a função devolve a jwt token desse novo utilizador.
+func Registar(user string, password string, perms int, token string) map[string]interface{} {
 	returnVal := make(map[string]interface{}, 0)
 
-	// Busca o registo do admin
-	registoAdmin, err := redishandle.GetRegistoBD(&RedisClientDB, "admin", 0)
-	if err != nil {
-		loggers.LoginAuthLogger.Println("Erro ao buscar jwt do utilisador necessário.")
-		returnVal["error"] = "não foi possível encontrar o utilizador necessário"
-		return returnVal
-	}
-	// Transforma o contéudo do registo do admin em uma estrutura User
-	var userRegAdmin User
-	err = json.Unmarshal([]byte(registoAdmin), &userRegAdmin)
-	if err != nil {
-		loggers.LoginAuthLogger.Println("Erro ao descodificar registo do utilizador.")
-		returnVal["error"] = "Erro interno"
-		return returnVal
-	}
 	// Se a token não for igual ao do admin não se regista nenhumuser novo
-	if userRegAdmin.JWT != token {
+	if VerificarTokenAdmin(token) != "OK" {
 		loggers.LoginAuthLogger.Println("A token não têm permissões")
 		returnVal["error"] = "A token não têm permissões"
 		return returnVal
@@ -135,11 +154,62 @@ func Registar(user string, password string, token string, perms int) map[string]
 			Valor:  novoUserJSON,
 			Expira: 0,
 		}, 0)
-		loggers.LoginAuthLogger.Println("Error: ", err)
+		loggers.LoginAuthLogger.Println("Registo adicionado com sucesso.")
 		returnVal["token"] = jwtTokenSigned
 		return returnVal
 	}
 
-	returnVal["error"] = "Credenciais inválidas"
+	returnVal["error"] = "Credenciais inválidas ou utilizador já existente"
+	return returnVal
+}
+
+// AtualizarUser atualiza os dados dos utilizador fornecido, depois de verificar a token fornecida
+func AtualizarUser(user string, userInfo map[string]interface{}, token string) map[string]interface{} {
+	returnVal := make(map[string]interface{}, 0)
+
+	if VerificarTokenAdmin(token) != "OK" {
+		loggers.LoginAuthLogger.Println("Token inválida.")
+		returnVal["err"] = "Token inválida ou expirada"
+		return returnVal
+	}
+
+	userAtualizar, err := GetUserParaValorStruct(user)
+	if err != nil {
+		loggers.LoginAuthLogger.Println("Erro: ", "Sem registo para <", user, ">")
+		returnVal["erro"] = err
+		return returnVal
+	}
+
+	if userInfo["user"] != nil && userInfo["user"] != userAtualizar.Username {
+		userAtualizar.Username = userInfo["user"].(string)
+	}
+	if userInfo["pass"] != nil && userInfo["pass"] != userAtualizar.Password {
+		userAtualizar.Password = userInfo["pass"].(string)
+	}
+	if userInfo["perms"] != nil && userInfo["perms"] != userAtualizar.Permissoes {
+		userAtualizar.Permissoes = userInfo["perms"].(int)
+	}
+
+	userAtualizadoJSON, err := json.Marshal(&userAtualizar)
+	if err != nil {
+		loggers.LoginAuthLogger.Println("Error: ", err)
+		returnVal["error"] = err
+		return returnVal
+	}
+
+	err = redishandle.DelRegistoBD(&RedisClientDB, user)
+	if err != nil {
+		loggers.LoginAuthLogger.Println("Error: ", err)
+		returnVal["error"] = err
+		return returnVal
+	}
+
+	redishandle.SetRegistoBD(&RedisClientDB, redishandle.RegistoRedisDB{
+		Key:    userAtualizar.Username,
+		Valor:  userAtualizadoJSON,
+		Expira: 0,
+	}, 0)
+
+	returnVal["Menssagem"] = "Sucesso ao alterar dados."
 	return returnVal
 }

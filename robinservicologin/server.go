@@ -3,7 +3,6 @@ package main
 import (
 	"context"
 	"flag"
-	"io/ioutil"
 	"net/http"
 	"os"
 	"os/signal"
@@ -31,18 +30,15 @@ func main() {
 	flag.DurationVar(&wait, "graceful-timeout", time.Second*15, "the duration for which the server gracefully wait for existing connections to finish - e.g. 15s or 1m")
 	flag.Parse()
 
-	// Mapeamento das funções desponíveis
+	// Mapeamento das funções desponíveis aos action requests
+	actions.FuncsStorage["VerificarTokenAdmin"] = loginregistohandlers.VerificarTokenAdmin
 	actions.FuncsStorage["VerificarTokenUser"] = loginregistohandlers.VerificarTokenUser
-	actions.FuncsStorage["Login"] = loginregistohandlers.Login
+	actions.FuncsStorage["AtualizarUsers"] = loginregistohandlers.AtualizarUser
 	actions.FuncsStorage["Registar"] = loginregistohandlers.Registar
+	actions.FuncsStorage["Login"] = loginregistohandlers.Login
 
 	router := mux.NewRouter()
 	router.HandleFunc("/auth", actions.Handler)
-	router.HandleFunc("/test", func(rw http.ResponseWriter, r *http.Request) {
-		content, _ := ioutil.ReadAll(r.Body)
-		rw.Header().Set("Content-Type", "application/json")
-		rw.Write(content)
-	})
 
 	srv := &http.Server{
 		Addr:         "0.0.0.0:" + HTTPport,
@@ -53,6 +49,7 @@ func main() {
 		ErrorLog:     loggers.LoginServerErrorLogger,
 	}
 
+	// Exits se não se consseguir iniciar o servidor com as defnições necessárias
 	if err := srv.ListenAndServe(); err != nil {
 		loggers.LoginServerErrorLogger.Fatal("Erro Fatal: ", err)
 	}

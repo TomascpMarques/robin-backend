@@ -6,7 +6,7 @@ import (
 )
 
 // LoginResolverLogger - loger para os resolvers da schema GraphQL
-var LoginResolverLogger = log.New(os.Stdout, "Auth-Resolver (*) ", log.LstdFlags)
+var LoginResolverLogger = log.New(os.Stdout, "Auth-Resolver....(*) ", log.LstdFlags)
 
 // LoginRedisLogger - logger para o o tratamento e criação do cliente que liga ao serviço redis
 var LoginRedisLogger = log.New(os.Stdout, "Redis-Setup......[*] ", log.LstdFlags)

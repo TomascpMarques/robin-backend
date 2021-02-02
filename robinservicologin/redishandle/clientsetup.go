@@ -11,19 +11,19 @@ import (
 )
 
 const (
-	defaultRedisPort = "6379"
+	defaultRedisPort = "6379" // porta base onde o serviçio redis está esposto
 	defaultDB        = 0
-	defaultPassword  = "Pg+V@j+Z9gKj88=-?dSk" // Pg+V@j+Z9gKj88=-?dSk
-	defaultUsername  = "admin"
+	defaultPassword  = "" // Pg+V@j+Z9gKj88=-?dSk
+	defaultUsername  = "" // user para a conexão á base de dados, não o utilisador admin do sistema
 )
 
 // DefClienteRedis -
 type DefClienteRedis struct {
-	Addres   string
-	Port     string
-	Password string
-	User     string
-	DB       int
+	Addres   string // Endereço do serviço redis
+	Port     string // Porta onde o serviço redis está exposto
+	Password string // Password do utilizador a usar na autenticação
+	User     string // Username do utilizador a usar na autenticação
+	DB       int    // Base de dados a usar para as operações de base de dados
 }
 
 //AddressRed endereço do serviço redis
@@ -52,8 +52,8 @@ Params:
 	db - Int Indica se vai usar a data-base default do redis
 */
 func NovoClienteRedis(addres, port, password, username string, db int) redis.Client {
-	// checks for passed env variables
-	// and sets default if none are passed
+	// verifica as variaveis env passadas
+	// e define valores default se não forem defenidos valores por vars env
 	if port == "" {
 		port = defaultRedisPort
 	}
@@ -74,6 +74,7 @@ func NovoClienteRedis(addres, port, password, username string, db int) redis.Cli
 		DB:       db,
 	})
 
+	// Define o tempo máximo que o client-setup deve esperar pela BD
 	cntx, cancel := context.WithDeadline(context.Background(), time.Now().Add(time.Second*40))
 	// verifica se o cliente está UP e funcional
 	_, err := client.Ping(cntx).Result()
