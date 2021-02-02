@@ -2,10 +2,11 @@ package redishandle
 
 import (
 	"context"
-	"go-graphql-equipamento/loggers"
 	"os"
+	"strconv"
 
 	"github.com/go-redis/redis/v8"
+	"github.com/tomascpmarques/PAP/backend/robinservicoequipamento/loggers"
 )
 
 const (
@@ -13,7 +14,17 @@ const (
 	defaultRedisPort    = "6379"
 	defaultDB           = 0
 	defaultPassword     = ""
+	defaultUsername     = ""
 )
+
+// DefClienteRedis -
+type DefClienteRedis struct {
+	Addres   string
+	Port     string
+	Password string
+	User     string
+	DB       int
+}
 
 //AddressRed endereço do serviço redis
 var AddressRed = os.Getenv("REDISADDRESS")
@@ -23,6 +34,12 @@ var PortRed = os.Getenv("REDISPORT")
 
 //PasswordRed password para a autenticação na redis bd
 var PasswordRed = os.Getenv("REDISPASSWORD")
+
+// UserRed Utilisador a utilizar na autenticação no serviço redis
+var UserRed = os.Getenv("REDISUSER")
+
+// DBRed a base de dados a concetar pelo cliente
+var DBRed, _ = strconv.Atoi(os.Getenv("REDISDB"))
 
 var redisLogger = loggers.RedisLogger
 
@@ -34,7 +51,7 @@ Params:
 	port - String Porta onde o serviço está desponível
 	db - Int Indica se vai usar a data-base default do redis
 */
-func NovoClienteRedis(addres, port, password string) redis.Client {
+func NovoClienteRedis(addres, port, password, username string, db int) redis.Client {
 	// checks for passed env variables
 	// and sets default if none are passed
 	if addres == "" {
@@ -46,12 +63,16 @@ func NovoClienteRedis(addres, port, password string) redis.Client {
 	if password == "" {
 		password = defaultPassword
 	}
+	if username == "" {
+		password = defaultUsername
+	}
 
 	// aplica as defenições passadas nos argumentos da função
 	client := redis.NewClient(&redis.Options{
 		Addr:     string(addres + ":" + port),
 		Password: password,
-		DB:       0,
+		Username: username,
+		DB:       db,
 	})
 
 	// verifica se o cliente está UP e funcional

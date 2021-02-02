@@ -4,11 +4,12 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	"go-graphql-equipamento/loggers"
 	"regexp"
+	"strconv"
 	"time"
 
 	"github.com/go-redis/redis/v8"
+	"github.com/tomascpmarques/PAP/backend/robinservicologin/loggers"
 )
 
 // RegistoRedisDB Estrutura o registo a insserir ou retirar da BD
@@ -18,7 +19,7 @@ type RegistoRedisDB struct {
 	Expira time.Duration // Expiração do registo
 }
 
-var dbFuncsLogger = loggers.DbFuncsLogger
+var dbFuncsLogger = loggers.LoginDbFuncsLogger
 
 /*
 ExtrairIDMaisRecente - Extrai o id mais recente da lista fornecida
@@ -29,14 +30,19 @@ Params
 func ExtrairIDMaisRecente(listaIDs *[]string) string {
 	// Cria o padrão para retirar os digitos do ID
 	padrao := regexp.MustCompile(`\d+$`)
-	indexMaior := ""
+	indexMaior := 0
 	// Lê todos os ids e procura o maior
 	for _, v := range *listaIDs {
-		if padrao.FindString(v) > indexMaior {
-			indexMaior = padrao.FindString(v)
+		idcurrente, err := strconv.Atoi(padrao.FindString(v))
+		if err != nil {
+			dbFuncsLogger.Println("Não foi possivél converter o valor para a operação necessária")
+			return ""
+		}
+		if idcurrente > indexMaior {
+			indexMaior = idcurrente
 		}
 	}
-	return indexMaior
+	return fmt.Sprint(indexMaior)
 }
 
 /*
@@ -115,7 +121,8 @@ func (registo *RegistoRedisDB) CriaEstruturaRegistoAtualizada(redisClienteDB *re
 }
 
 /*
-ValidarIDParaUpdate -
+ValidarIDParaUpdate - Valida o id fornecido com o tipo de id
+					  que se está a utilisar na procura do registo
 ---
 Params
 	id - tipo de id para utilizar na validação

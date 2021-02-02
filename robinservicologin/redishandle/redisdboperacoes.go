@@ -4,14 +4,14 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"go-graphql-equipamento/loggers"
 	"regexp"
 	"strconv"
 
 	"github.com/go-redis/redis/v8"
+	"github.com/tomascpmarques/PAP/backend/robinservicologin/loggers"
 )
 
-var operacoesBDLogger = loggers.OperacoesBDLogger
+var operacoesBDLogger = loggers.LoginOperacoesBDLogger
 
 //BDContentLimitter - limitador de conteúdo da bd.
 var BDContentLimitter = "[+] Conteúdo Encontrado: \n--*<INICÍO>*--\n%s\n--*<FIM>*--\n"
@@ -23,14 +23,16 @@ Params
 	cr - redis.Client / cliente redis a usar
 	registo - RegistoRedisDB / registo a insserir
 */
-func SetRegistoBD(cr *redis.Client, registo RegistoRedisDB) {
+func SetRegistoBD(cr *redis.Client, registo RegistoRedisDB, debugg int) {
 	err := cr.Set(context.Background(), registo.Key, registo.Valor, registo.Expira).Err()
 	if err != nil {
-		operacoesBDLogger.Panic("[!] Erro ao insserir registo na base de dados")
+		operacoesBDLogger.Panic("[!] Erro ao insserir registo na base de dados, Erro: ", err)
 		return
 	}
 	operacoesBDLogger.Printf("[+] Registo insserido com ID: %v\n", registo.Key)
-	operacoesBDLogger.Printf(BDContentLimitter, registo)
+	if debugg == 1 {
+		operacoesBDLogger.Printf(BDContentLimitter, registo)
+	}
 }
 
 /*
@@ -58,17 +60,19 @@ Params
 	cr - redis.Client / cliente redis a usar
 	keyDoRegisto - string / key do registo a procurar
 */
-func GetRegistoBD(cr *redis.Client, keyDoRegisto string) (string, error) {
+func GetRegistoBD(cr *redis.Client, keyDoRegisto string, debugg int) (string, error) {
 	// Escreve no ecrã o registo insserido para verificação da insserção
 	// e visualização do novo registo
 	registo, getErr := cr.Get(context.Background(), keyDoRegisto).Result()
 	if getErr != nil {
-		operacoesBDLogger.Printf("[!] Erro ao buscar pelo registo de key<%v>: %v", keyDoRegisto, getErr)
+		operacoesBDLogger.Printf("[!] Erro ao buscar pelo registo de key <%v> : %v", keyDoRegisto, getErr)
 		erroNaProcura := "Sem registo para id: " + keyDoRegisto
 		return "null", errors.New(erroNaProcura)
 	}
-	operacoesBDLogger.Printf("[$] Conteudo do Registo <%v>:", keyDoRegisto)
-	operacoesBDLogger.Printf(BDContentLimitter, registo)
+	operacoesBDLogger.Printf("[$] ID do Registo <%v>:", keyDoRegisto)
+	if debugg == 1 {
+		operacoesBDLogger.Printf(BDContentLimitter, registo)
+	}
 
 	return registo, nil
 }
@@ -88,7 +92,7 @@ func BuscarKeysVerificarResultado(contexto context.Context, clienteRedis *redis.
 	keys := clienteRedis.Keys(contexto, tiporegisto+`*`).Val()
 	// Veridfica se têm algum registo na DB alvo
 	if len(keys) == 0 {
-		dbFuncsLogger.Printf("[!!] Aviso: Lista de keys para <%v> vaiza (nil) Valor enviado: %v0\n", tiporegisto, tiporegisto)
+		operacoesBDLogger.Printf("[!!] Aviso: Lista de keys para <%v> vaiza (nil) Valor enviado: %v0\n", tiporegisto, tiporegisto)
 		return append(make([]string, 1), tiporegisto+"0")
 	}
 
@@ -104,7 +108,7 @@ Params
 func ConversaoIDStringInt(conteudo string) int {
 	keyInt, err := strconv.Atoi(conteudo)
 	if err != nil {
-		dbFuncsLogger.Panic("[!] Erro: A Conversão falhou")
+		operacoesBDLogger.Panic("[!] Erro: A Conversão falhou")
 		return 0
 	}
 	return keyInt

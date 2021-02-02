@@ -1,0 +1,29 @@
+version: "3.9"
+services:
+
+  # Serviço de base de dados redis
+  redis-login-service:
+    # ajuda na conexão entre containers
+    container_name: redis-auth
+    image: robin-db-redis
+    ports:
+      - "6379:6379"
+    # volume para perssistência
+    volumes: 
+      - auth-db:/test
+
+  robin-auth-service:
+    container_name: "robin-auth"
+    image: robin-auth-server
+    ports: 
+      - "8080:8080"
+    working_dir: /app
+    environment:
+      AUTH_SERVER_REDIS_PORT: 6379
+      LOGIN_SERV_PORT: "8080"
+      REDISADDRESS: redis-auth
+
+volumes: 
+  auth-db: 
+    external: false
+    
