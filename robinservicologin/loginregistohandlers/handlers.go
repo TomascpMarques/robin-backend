@@ -1,9 +1,12 @@
 package loginregistohandlers
 
 import (
+	"encoding/json"
 	"time"
 
 	"github.com/dgrijalva/jwt-go"
+	"github.com/tomascpmarques/PAP/backend/robinservicologin/loggers"
+	"github.com/tomascpmarques/PAP/backend/robinservicologin/redishandle"
 )
 
 const (
@@ -15,6 +18,11 @@ const (
 	USER
 )
 
+/*
+	admin - md5 > 532f1f7e5e4ae1475835c4978696c1e3
+			clear-text > @@Robin_Gestao_Admin2#0#2#0!!
+*/
+
 // User - Epecifica os dados que definem um utilizador
 type User struct {
 	Username   string `json:"user,omitempty"`
@@ -24,21 +32,66 @@ type User struct {
 }
 
 // CriarNovoUser -
-func CriarNovoUser(user string, password string) User {
+func CriarNovoUser(user string, password string, perms int) User {
 	return User{
 		Username:   user,
 		Password:   password,
-		Permissoes: USER,
+		Permissoes: perms,
 	}
 }
 
 // CriarUserJWT -
 func (user User) CriarUserJWT() *jwt.Token {
 	jwtToken := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{
-		"user": user.Username,
-		"pass": user.Password,
-		"iss":  "loginServer",
-		"exp":  time.Now().Add(time.Second * 240).Unix(),
+		"user":  user.Username,
+		"perms": user.Permissoes,
+		"iss":   "Robin-Servico-Auth",
+		"exp":   time.Now().Add(time.Minute * 40).Unix(),
 	})
 	return jwtToken
+}
+
+// GetUserParaValorStruct -
+func GetUserParaValorStruct(username string) User {
+	// Busca o registo correspondente ao user passado nos parametros
+	userCompare, err := redishandle.GetRegistoBD(&RedisClientDB, username, 0)
+	if err != nil {
+		loggers.LoginRedisLogger.Println("Erro: ", err)
+		return User{}
+	}
+
+	// Cria a estrutura User para o registo, descodifica o conteúdo de valores json
+	var registo User
+	err = json.Unmarshal([]byte(userCompare), &registo)
+	if err != nil {
+		loggers.LoginRedisLogger.Println("Erro: ", err)
+		return User{}
+	}
+
+	return registo
+}
+
+// VerificarAdminFirstBoot -
+func VerificarAdminFirstBoot() bool {
+	// Tenta encontrar o registo do admin, se não o encontrar cria-o
+	_, err := redishandle.GetRegistoBD(&RedisClientDB, "admin", 0)
+	if err != nil {
+		loggers.LoginAuthLogger.Println("O utilizador administrador não existe...")
+		// Cria a struct de utilisador para o admin
+		admin := CriarNovoUser("admin", "532f1f7e5e4ae1475835c4978696c1e3", 1)
+		registoUserJSON, err := json.Marshal(&admin)
+		if err != nil {
+			loggers.LoginRedisLogger.Println("Erro: ",err)
+			return false
+		}
+		// Inssere o administrador
+		redishandle.SetRegistoBD(&RedisClientDB, redishandle.RegistoRedisDB{
+			Key:    admin.Username,
+			Valor:  registoUserJSON,
+			Expira: 0,
+		}, 0)
+
+		return true
+	}
+	return false
 }

@@ -4,17 +4,17 @@ import (
 	"context"
 	"os"
 	"strconv"
+	"time"
 
 	"github.com/go-redis/redis/v8"
 	"github.com/tomascpmarques/PAP/backend/robinservicologin/loggers"
 )
 
 const (
-	defaultRedisAddress = "127.0.0.1"
-	defaultRedisPort    = "6379"
-	defaultDB           = 0
-	defaultPassword     = ""
-	defaultUsername     = ""
+	defaultRedisPort = "6379"
+	defaultDB        = 0
+	defaultPassword  = "Pg+V@j+Z9gKj88=-?dSk" // Pg+V@j+Z9gKj88=-?dSk
+	defaultUsername  = "admin"
 )
 
 // DefClienteRedis -
@@ -27,16 +27,16 @@ type DefClienteRedis struct {
 }
 
 //AddressRed endereço do serviço redis
-var AddressRed = os.Getenv("REDISADDRESS")
+var AddressRed = os.Getenv("AUTH_SERVER_REDIS_PORT")
 
 //PortRed porta onde o serviço redis está a correr
 var PortRed = os.Getenv("REDISPORT")
 
 //PasswordRed password para a autenticação na redis bd
-var PasswordRed = os.Getenv("REDISPASSWORD")
+var PasswordRed = os.Getenv("REDIS_USER1_PASS")
 
 // UserRed Utilisador a utilizar na autenticação no serviço redis
-var UserRed = os.Getenv("REDISUSER")
+var UserRed = os.Getenv("REDIS_USER1_NAME")
 
 // DBRed a base de dados a concetar pelo cliente
 var DBRed, _ = strconv.Atoi(os.Getenv("REDISDB"))
@@ -54,9 +54,6 @@ Params:
 func NovoClienteRedis(addres, port, password, username string, db int) redis.Client {
 	// checks for passed env variables
 	// and sets default if none are passed
-	if addres == "" {
-		addres = defaultRedisAddress
-	}
 	if port == "" {
 		port = defaultRedisPort
 	}
@@ -67,6 +64,8 @@ func NovoClienteRedis(addres, port, password, username string, db int) redis.Cli
 		password = defaultUsername
 	}
 
+	// Sleep ajuda a que a redis-bd inicie antes de tentar conectar
+	time.Sleep(time.Second * 10)
 	// aplica as defenições passadas nos argumentos da função
 	client := redis.NewClient(&redis.Options{
 		Addr:     string(addres + ":" + port),
@@ -75,8 +74,10 @@ func NovoClienteRedis(addres, port, password, username string, db int) redis.Cli
 		DB:       db,
 	})
 
+	cntx, cancel := context.WithDeadline(context.Background(), time.Now().Add(time.Second*40))
 	// verifica se o cliente está UP e funcional
-	_, err := client.Ping(context.Background()).Result()
+	_, err := client.Ping(cntx).Result()
+	defer cancel()
 	if err != nil {
 		redisLogger.Printf("[!] Erro: %v", err)
 		redisLogger.Fatal()

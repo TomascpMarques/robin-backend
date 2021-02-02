@@ -3,6 +3,7 @@ package main
 import (
 	"context"
 	"flag"
+	"io/ioutil"
 	"net/http"
 	"os"
 	"os/signal"
@@ -18,7 +19,7 @@ import (
 var HTTPport = os.Getenv("LOGIN_SERV_PORT")
 
 // DEFAULTHTTPPORT - valor default para HTTPport
-var DEFAULTHTTPPORT = "5600"
+var DEFAULTHTTPPORT = "8080"
 
 func main() {
 	if HTTPport == "" {
@@ -37,9 +38,14 @@ func main() {
 
 	router := mux.NewRouter()
 	router.HandleFunc("/auth", actions.Handler)
+	router.HandleFunc("/test", func(rw http.ResponseWriter, r *http.Request) {
+		content, _ := ioutil.ReadAll(r.Body)
+		rw.Header().Set("Content-Type", "application/json")
+		rw.Write(content)
+	})
 
 	srv := &http.Server{
-		Addr:         "127.0.0.1:" + HTTPport,
+		Addr:         "0.0.0.0:" + HTTPport,
 		Handler:      router,
 		WriteTimeout: 2 * time.Second,
 		ReadTimeout:  2 * time.Second,
@@ -48,8 +54,7 @@ func main() {
 	}
 
 	if err := srv.ListenAndServe(); err != nil {
-		srv.ErrorLog.Fatal("Erro: ", err)
-		os.Exit(1)
+		loggers.LoginServerErrorLogger.Fatal("Erro Fatal: ", err)
 	}
 
 	// Graceful-Shutdown implementation
