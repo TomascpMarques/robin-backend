@@ -10,8 +10,7 @@ RUN go mod download
 
 # Defenição de valores para variaveis env
 ENV AUTH_SERVER_REDIS_PORT="6379"
-ENV REDIS_USER1_PASS=""
-ENV REDIS_USER1_NAME=""
+ENV REDIS_USER1_NAME="admin"
 ENV LOGIN_SERV_PORT=8080
 
 # compila o programa para um executável

@@ -18,13 +18,13 @@ var hmacSecret = hmac.New(sha256.New, []byte(`SUPPER_SECRET_DEVELOPMENT_KEY`)).S
 var RedisClientDB = redishandle.NovoClienteRedis(
 	os.Getenv("REDISADDRESS"),
 	os.Getenv("AUTH_SERVER_REDIS_PORT"),
-	"", //Pg+V@j+Z9gKj88=-?dSk
-	"", //admin
+	"Pg+V@j+Z9gKj88=-?dSk",
+	"admin",
 	0,
 )
 
-// Se não, cria o utilizador admin com as crdênciais default
 // Verifica se o utilisador admin já existe ou não
+// Se não, cria o utilizador admin com as crdênciais default
 var _ = VerificarAdminFirstBoot()
 
 // VerificarTokenUser verifica se a token passada é válida, logo vê se já expirou
