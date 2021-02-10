@@ -11,10 +11,10 @@ import (
 
 const (
 	defaultRedisAddress = "127.0.0.1"
-	defaultRedisPort    = "6379"
+	defaultRedisPort    = "8080"
 	defaultDB           = 0
-	defaultPassword     = ""
-	defaultUsername     = ""
+	defaultPassword     = "" // Pg+V@j+Z9gKj88=-?dSk
+	defaultUsername     = "" // admin
 )
 
 // DefClienteRedis -

@@ -16,3 +16,6 @@ var DbFuncsLogger = log.New(os.Stdout, "DBIndexing.......<*> ", log.LstdFlags)
 
 // OperacoesBDLogger - logger para as operações relacionadas á bd
 var OperacoesBDLogger = log.New(os.Stdout, "Operações-BD.....|*| ", log.LstdFlags)
+
+// ServerErrorLogger - Logger para erros do servidor
+var ServerErrorLogger = log.New(os.Stdout, "Erro-Server-BD...|*| ", log.LstdFlags)

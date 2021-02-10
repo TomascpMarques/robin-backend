@@ -1,0 +1,6 @@
+
+tipo Item
+    ID string
+    Nome string
+    Tipo string
+    Quantidade int

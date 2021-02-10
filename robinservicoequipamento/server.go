@@ -12,26 +12,32 @@ import (
 	"github.com/TomascpMarques/dynamic-querys-go/actions"
 	"github.com/gorilla/mux"
 	"github.com/tomascpmarques/PAP/backend/robinservicoequipamento/endpointfuncs"
-	"github.com/tomascpmarques/PAP/backend/robinservicoequipamento/redishandle"
+	"github.com/tomascpmarques/PAP/backend/robinservicoequipamento/loggers"
 )
 
-var redisClientDB = redishandle.NovoClienteRedis(redishandle.AddressRed, "8080", redishandle.PasswordRed, "", 0)
-
 func main() {
-	os.Setenv("ENV_GOACTIONS_PORT", "8000")
-	actions.FuncsStorage["Hello"] = endpointfuncs.Hello
+	os.Setenv("ENV_ROBINEQUIPAMENTO_PORT", "8000")
+
+	
 
 	// flag setup fo graceful-shutdown
 	var wait time.Duration
 	flag.DurationVar(&wait, "graceful-timeout", time.Second*15, "the duration for which the server gracefully wait for existing connections to finish - e.g. 15s or 1m")
 	flag.Parse()
 
-	r := mux.NewRouter()
-	r.HandleFunc("/", actions.Handler)
+	actions.FuncsStorage["Hello"] = endpointfuncs.Hello
+	actions.FuncsStorage["AdicionarRegistoDeItem"] = endpointfuncs.AdicionarRegistoDeItem
+
+	router := mux.NewRouter()
+	router.HandleFunc("/", actions.Handler)
 
 	server := &http.Server{
-		Handler: r,
-		Addr:    "127.0.0.1:" + os.Getenv("ENV_GOACTIONS_PORT"),
+		Handler:      router,
+		Addr:         "0.0.0.0:" + os.Getenv("ENV_ROBINEQUIPAMENTO_PORT"),
+		IdleTimeout:  time.Second * 5,
+		WriteTimeout: time.Second * 3,
+		ReadTimeout:  time.Second * 2,
+		ErrorLog:     loggers.ServerErrorLogger,
 	}
 
 	if err := server.ListenAndServe(); err != nil {

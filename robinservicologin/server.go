@@ -18,7 +18,7 @@ import (
 var HTTPport = os.Getenv("LOGIN_SERV_PORT")
 
 // DEFAULTHTTPPORT - valor default para HTTPport
-var DEFAULTHTTPPORT = "8080"
+var DEFAULTHTTPPORT = "8081"
 
 func main() {
 	if HTTPport == "" {

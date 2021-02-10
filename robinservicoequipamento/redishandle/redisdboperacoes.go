@@ -23,14 +23,18 @@ Params
 	cr - redis.Client / cliente redis a usar
 	registo - RegistoRedisDB / registo a insserir
 */
-func SetRegistoBD(cr *redis.Client, registo RegistoRedisDB) {
+func SetRegistoBD(cr *redis.Client, registo RegistoRedisDB, debug int) {
 	err := cr.Set(context.Background(), registo.Key, registo.Valor, registo.Expira).Err()
 	if err != nil {
 		operacoesBDLogger.Panic("[!] Erro ao insserir registo na base de dados, Erro: ", err)
 		return
 	}
-	operacoesBDLogger.Printf("[+] Registo insserido com ID: %v\n", registo.Key)
-	operacoesBDLogger.Printf(BDContentLimitter, registo)
+	if debug != 0 {
+		operacoesBDLogger.Printf("[+] Registo insserido com ID: %v\n", registo.Key)
+		operacoesBDLogger.Printf(BDContentLimitter, registo)
+	}
+	operacoesBDLogger.Println("[+] Registo insserido com sucesso.")
+	return
 }
 
 /*
@@ -58,7 +62,7 @@ Params
 	cr - redis.Client / cliente redis a usar
 	keyDoRegisto - string / key do registo a procurar
 */
-func GetRegistoBD(cr *redis.Client, keyDoRegisto string) (string, error) {
+func GetRegistoBD(cr *redis.Client, keyDoRegisto string, debug int) (string, error) {
 	// Escreve no ecrã o registo insserido para verificação da insserção
 	// e visualização do novo registo
 	registo, getErr := cr.Get(context.Background(), keyDoRegisto).Result()
@@ -67,8 +71,10 @@ func GetRegistoBD(cr *redis.Client, keyDoRegisto string) (string, error) {
 		erroNaProcura := "Sem registo para id: " + keyDoRegisto
 		return "null", errors.New(erroNaProcura)
 	}
-	operacoesBDLogger.Printf("[$] Conteudo do Registo <%v>:", keyDoRegisto)
-	operacoesBDLogger.Printf(BDContentLimitter, registo)
+	if debug != 0 {
+		operacoesBDLogger.Printf("[$] Conteudo do Registo <%v>:", keyDoRegisto)
+		operacoesBDLogger.Printf(BDContentLimitter, registo)
+	}
 
 	return registo, nil
 }
