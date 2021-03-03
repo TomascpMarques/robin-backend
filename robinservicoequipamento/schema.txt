@@ -1,4 +1,5 @@
 tipo InfoComputador
+    ID string
     Nome string
     Sala string
     Formato string
@@ -6,12 +7,13 @@ tipo InfoComputador
     Area string
 
 tipo ComponentesComputador
-    CPU string > CPU
-    GPU string > GPU
-    RAM string > RAM
-    MBoard string > MBoard
+    CPU lista CPU
+    GPU lista GPU
+    RAM lista RAM
+    MBoard Mboard
 
 tipo Mboard
+    ID string
     Nome string
     RAMSlots int
     MaxRAM int
@@ -24,6 +26,7 @@ tipo Mboard
     Notas string
 
 tipo CPU 
+    ID string
     Nome string
     Nucleos int
     Threads int
@@ -34,6 +37,7 @@ tipo CPU
     Marca string
 
 tipo GPU
+    ID string
     Nome string
     VelocidadeMem string
     VRAM int
@@ -49,5 +53,6 @@ tipo RAM
     Tipo string
 
 tipo Computador 
-    Info string > InfoComputador
-    Caracteristicas string > ComponentesComputador
+    ID string
+    Info InfoComputador
+    Caracteristicas ComponentesComputador

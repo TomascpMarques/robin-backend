@@ -95,7 +95,7 @@ func BuscarKeysVerificarResultado(contexto context.Context, clienteRedis *redis.
 	// Veridfica se têm algum registo na DB alvo
 	if len(keys) == 0 {
 		dbFuncsLogger.Printf("[!!] Aviso: Lista de keys para <%v> vaiza (nil) Valor enviado: %v0\n", tiporegisto, tiporegisto)
-		return append(make([]string, 1), tiporegisto+"0")
+		return append(make([]string, 0), tiporegisto+"0")
 	}
 
 	return keys

@@ -18,15 +18,14 @@ import (
 func main() {
 	os.Setenv("ENV_ROBINEQUIPAMENTO_PORT", "8000")
 
-	
-
 	// flag setup fo graceful-shutdown
 	var wait time.Duration
 	flag.DurationVar(&wait, "graceful-timeout", time.Second*15, "the duration for which the server gracefully wait for existing connections to finish - e.g. 15s or 1m")
 	flag.Parse()
 
 	actions.FuncsStorage["Hello"] = endpointfuncs.Hello
-	actions.FuncsStorage["AdicionarRegistoDeItem"] = endpointfuncs.AdicionarRegistoDeItem
+	actions.FuncsStorage["AdicionarRegistoDeItem"] = endpointfuncs.AdicionarRegisto
+	actions.FuncsStorage["ApagarRegistoDeItem"] = endpointfuncs.ApagarRegistoDeItem
 
 	router := mux.NewRouter()
 	router.HandleFunc("/", actions.Handler)
@@ -38,7 +37,7 @@ func main() {
 		WriteTimeout: time.Second * 3,
 		ReadTimeout:  time.Second * 2,
 		ErrorLog:     loggers.ServerErrorLogger,
-	}
+	}	
 
 	if err := server.ListenAndServe(); err != nil {
 		log.Println("Erro: ", err)

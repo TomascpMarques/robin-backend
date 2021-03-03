@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"reflect"
 	"regexp"
 	"strconv"
 	"time"
@@ -74,6 +75,9 @@ Params
 	(interface para ser compativél com todo o tipo de estrutura de dados)
 */
 func FormatarValorParaJSON(conteudo interface{}) []byte {
+	if reflect.TypeOf(conteudo).String() == "[]uint8" {
+		return conteudo.([]byte)
+	}
 	// Tradução do input da mutation para json através da indentação do mesmo
 	valorTraduzido, err := json.MarshalIndent(conteudo, "", "\t")
 	if err != nil {

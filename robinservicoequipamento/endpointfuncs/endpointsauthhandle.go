@@ -15,9 +15,9 @@ var hmacSecret = hmac.New(sha256.New, []byte(`SUPPER_SECRET_DEVELOPMENT_KEY`)).S
 
 // User define um utilizador
 type User struct {
-	Username   string `json:"user,omitempty"`
-	Password   string `json:"passwd,omitempty,-"`
-	
+	Username string `json:"user,omitempty"`
+	Password string `json:"passwd,omitempty,-"`
+
 	Permissoes int    `json:"perms,omitempty"`
 	JWT        string `json:"jwt,omitempty"`
 }

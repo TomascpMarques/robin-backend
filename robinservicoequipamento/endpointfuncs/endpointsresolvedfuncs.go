@@ -6,7 +6,6 @@ import (
 	"os"
 
 	"github.com/tomascpmarques/PAP/backend/robinservicoequipamento/redishandle"
-	"github.com/tomascpmarques/PAP/backend/robinservicoequipamento/resolvedschema"
 )
 
 //RedisClientDB -
@@ -24,25 +23,55 @@ func Hello(name map[string]interface{}) map[string]interface{} {
 	return name
 }
 
-// AdicionarRegistoDeItem -
-func AdicionarRegistoDeItem(token string, tipoDeItem string, item []byte) map[string]interface{} {
+// AdicionarRegisto -
+func AdicionarRegisto(tipoItem string, item []byte, token string) map[string]interface{} {
 	result := make(map[string]interface{}, 0)
 
-	if VerificarTokenUser(token) != "OK" {
-		fmt.Println("Erro: A token fornecida é inválida ou expirou")
-		result["erro"] = "A token fornecida é inválida ou expirou"
+	// if VerificarTokenUser(token) != "OK" {
+	// 	fmt.Println("Erro: A token fornecida é inválida ou expirou")
+	// 	result["erro"] = "A token fornecida é inválida ou expirou"
+	// 	return result
+	// }
+
+	var surfaceLevelKeys map[string]interface{}
+
+	err := json.Unmarshal(item, &surfaceLevelKeys)
+	if err != nil {
+		fmt.Println("Erro: Erro ao descodificar valor json")
+		result["erro"] = "Erro ao descodificar valor json"
 		return result
 	}
 
-	var test resolvedschema.Item
-	bts := json.Unmarshal(item, &test)
-	fmt.Println(bts, test)
+	var registo redishandle.RegistoRedisDB
+	registo.CriaEstruturaRegisto(&RedisClientDB, item, tipoItem)
+	redishandle.SetRegistoBD(&RedisClientDB, registo, 0)
 
+	result["keys"] = surfaceLevelKeys
 	return result
 }
 
 // ApagarRegistoDeItem -
-func ApagarRegistoDeItem() {}
+func ApagarRegistoDeItem(idItem string, token string) map[string]interface{} {
+	result := make(map[string]interface{}, 0)
+
+	// if VerificarTokenUser(token) != "OK" {
+	// 	fmt.Println("Erro: A token fornecida é inválida ou expirou")
+	// 	result["erro"] = "A token fornecida é inválida ou expirou"
+	// 	return result
+	// }
+
+	err := redishandle.DelRegistoBD(&RedisClientDB, idItem)
+	if err != nil {
+		result["id_registo"] = idItem
+		result["apagado"] = false
+		result["erro"] = err
+		return result
+	}
+
+	result["id_registo"] = idItem
+	result["apagado"] = true
+	return result
+}
 
 // AtualizararRegistoDeItem -
 func AtualizararRegistoDeItem() {}
