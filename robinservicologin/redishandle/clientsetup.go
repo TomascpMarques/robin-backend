@@ -11,7 +11,7 @@ import (
 )
 
 const (
-	defaultRedisPort = "6379" // porta base onde o serviçio redis está esposto
+	defaultRedisPort = "6379" // porta base onde o serviçio redis está exposto
 	defaultDB        = 0
 	defaultPassword  = "Pg+V@j+Z9gKj88=-?dSk" // Pg+V@j+Z9gKj88=-?dSk
 	defaultUsername  = "admin"                // user para a conexão á base de dados, não o utilisador admin do sistema
