@@ -4,6 +4,7 @@ import (
 	"context"
 	"time"
 
+	"github.com/tomascpmarques/PAP/backend/robinservicoequipamento/loggers"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
 	"go.mongodb.org/mongo-driver/mongo/readpref"
@@ -21,7 +22,7 @@ type MongoConexaoParams struct {
 var mongoCtx, mongoCtxCancel = context.WithTimeout(context.Background(), 10*time.Second)
 
 // CriarConexaoMongoDB -
-func CriarConexaoMongoDB(params MongoConexaoParams) (*mongo.Client, error) {
+func CriarConexaoMongoDB(params MongoConexaoParams) *mongo.Client {
 	if params.Ctx == nil {
 		params.Ctx = mongoCtx
 	}
@@ -34,15 +35,17 @@ func CriarConexaoMongoDB(params MongoConexaoParams) (*mongo.Client, error) {
 
 	client, err := mongo.Connect(params.Ctx, options.Client().ApplyURI(params.URI))
 	if err != nil {
-		return nil, err
+		panic(err)
 	}
+	loggers.MongoDBLogger.Println("Cliente MongoDB criado!")
 
 	err = CheckConexaoMongo(params.Ctx, client, params.Cancel)
 	if err != nil {
-		return nil, err
+		panic(err)
 	}
+	loggers.MongoDBLogger.Println("Ping com sucesso, DB está UP")
 
-	return client, nil
+	return client
 }
 
 // CheckConexaoMongo -
@@ -50,4 +53,14 @@ func CheckConexaoMongo(ctx context.Context, client *mongo.Client, cancelFunc con
 	err := client.Ping(ctx, readpref.Primary())
 	defer cancelFunc()
 	return err
+}
+
+// GetMongoDatabase -
+func GetMongoDatabase(cl *mongo.Client, dbName string) *mongo.Database {
+	return cl.Database(dbName)
+}
+
+// GetMongoCollection -
+func GetMongoCollection(db *mongo.Database, collName string) *mongo.Collection {
+	return db.Collection(collName)
 }
