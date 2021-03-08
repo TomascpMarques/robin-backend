@@ -24,8 +24,9 @@ func main() {
 	flag.Parse()
 
 	actions.FuncsStorage["Hello"] = endpointfuncs.Hello
-	actions.FuncsStorage["AdicionarRegistoDeItem"] = endpointfuncs.AdicionarRegisto
+	actions.FuncsStorage["AdicionarRegisto"] = endpointfuncs.AdicionarRegisto
 	actions.FuncsStorage["ApagarRegistoDeItem"] = endpointfuncs.ApagarRegistoDeItem
+	actions.FuncsStorage["BuscarRegisto"] = endpointfuncs.BuscarRegistoPorObjID
 
 	router := mux.NewRouter()
 	router.HandleFunc("/", actions.Handler)
@@ -37,7 +38,7 @@ func main() {
 		WriteTimeout: time.Second * 3,
 		ReadTimeout:  time.Second * 2,
 		ErrorLog:     loggers.ServerErrorLogger,
-	}	
+	}
 
 	if err := server.ListenAndServe(); err != nil {
 		log.Println("Erro: ", err)

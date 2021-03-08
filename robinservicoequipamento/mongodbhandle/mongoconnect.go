@@ -10,7 +10,7 @@ import (
 	"go.mongodb.org/mongo-driver/mongo/readpref"
 )
 
-// MongoConexaoParams -
+// MongoConexaoParams - Parametros base para uma conexão á mongo bd
 type MongoConexaoParams struct {
 	Ctx    context.Context
 	Cancel context.CancelFunc
@@ -23,6 +23,7 @@ var mongoCtx, mongoCtxCancel = context.WithTimeout(context.Background(), 10*time
 
 // CriarConexaoMongoDB -
 func CriarConexaoMongoDB(params MongoConexaoParams) *mongo.Client {
+	// Verifica para valores default
 	if params.Ctx == nil {
 		params.Ctx = mongoCtx
 	}
@@ -33,12 +34,14 @@ func CriarConexaoMongoDB(params MongoConexaoParams) *mongo.Client {
 		params.URI = "mongodb://localhost:27017"
 	}
 
+	// Liga à instância mongo apontada pelos parametros
 	client, err := mongo.Connect(params.Ctx, options.Client().ApplyURI(params.URI))
 	if err != nil {
 		panic(err)
 	}
 	loggers.MongoDBLogger.Println("Cliente MongoDB criado!")
 
+	// Verifica a conexão ao mongoDB, antes de devolver o cliente
 	err = CheckConexaoMongo(params.Ctx, client, params.Cancel)
 	if err != nil {
 		panic(err)
@@ -48,19 +51,19 @@ func CriarConexaoMongoDB(params MongoConexaoParams) *mongo.Client {
 	return client
 }
 
-// CheckConexaoMongo -
+// CheckConexaoMongo - Verifica a conexão à instância mongodb especificada, e se está alive
 func CheckConexaoMongo(ctx context.Context, client *mongo.Client, cancelFunc context.CancelFunc) error {
 	err := client.Ping(ctx, readpref.Primary())
 	defer cancelFunc()
 	return err
 }
 
-// GetMongoDatabase -
+// GetMongoDatabase - Devolve a db especificada pelo parametro dbName
 func GetMongoDatabase(cl *mongo.Client, dbName string) *mongo.Database {
 	return cl.Database(dbName)
 }
 
-// GetMongoCollection -
+// GetMongoCollection - Devolve a coleção apontada por collName, da base de dados db
 func GetMongoCollection(db *mongo.Database, collName string) *mongo.Collection {
 	return db.Collection(collName)
 }
