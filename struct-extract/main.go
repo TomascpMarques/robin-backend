@@ -43,10 +43,44 @@ type AAAA struct {
 	Nome string `json:"nome,omitempty"`
 }
 
+// Examplestruct -
+type Examplestruct struct {
+	ID   string
+	Nome string
+	Info Infoo
+}
+
+// Infoo -
+type Infoo struct {
+	Idade int
+	Alive bool
+}
+
 // CustomExtractSchema -
 type CustomExtractSchema map[string][]string
 
+// FromMapToStruct -
+func FromMapToStruct(param1 *map[string]interface{}) interface{} {
+	var exampStruct Examplestruct
+	temp, _ := json.Marshal(param1)
+	_ = json.Unmarshal(temp, &exampStruct)
+
+	return exampStruct
+}
+
 func main() {
+	var examp map[string]interface{} = map[string]interface{}{
+		"id":   "aaaaa",
+		"nome": "aaaaa",
+		"info": map[string]interface{}{
+			"idade": 18,
+			"alive": true,
+		},
+	}
+
+	var exampStruct = FromMapToStruct(&examp)
+	fmt.Println(exampStruct)
+
 	// Example -
 	var Example = PC{
 		ID:   "PC1",

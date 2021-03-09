@@ -12,37 +12,39 @@ import (
 
 // MongoConexaoParams - Parametros base para uma conexão á mongo bd
 type MongoConexaoParams struct {
-	Ctx    context.Context
-	Cancel context.CancelFunc
-	URI    string
+	URI string
 }
 
 // mongoCtx       - contexto para a conexão ao serviço mongodb
 // mongoCtxCancel - Contexto cancel para usar na conexão ao serviço mongodb
 var mongoCtx, mongoCtxCancel = context.WithTimeout(context.Background(), 10*time.Second)
 
+// MongoCtxMaker -
+func MongoCtxMaker(ctxTipo string, duracao time.Duration) (context.Context, context.CancelFunc) {
+	if ctxTipo == "bg" {
+		return context.WithTimeout(context.Background(), duracao*time.Second)
+	}
+	return context.WithTimeout(context.TODO(), duracao*time.Second)
+}
+
 // CriarConexaoMongoDB -
 func CriarConexaoMongoDB(params MongoConexaoParams) *mongo.Client {
 	// Verifica para valores default
-	if params.Ctx == nil {
-		params.Ctx = mongoCtx
-	}
-	if params.Cancel == nil {
-		params.Cancel = mongoCtxCancel
-	}
 	if params.URI == "" {
 		params.URI = "mongodb://localhost:27017"
 	}
 
+	ctx, cancel := MongoCtxMaker("bg", time.Duration(10))
+
 	// Liga à instância mongo apontada pelos parametros
-	client, err := mongo.Connect(params.Ctx, options.Client().ApplyURI(params.URI))
+	client, err := mongo.Connect(ctx, options.Client().ApplyURI(params.URI))
 	if err != nil {
 		panic(err)
 	}
 	loggers.MongoDBLogger.Println("Cliente MongoDB criado!")
 
 	// Verifica a conexão ao mongoDB, antes de devolver o cliente
-	err = CheckConexaoMongo(params.Ctx, client, params.Cancel)
+	err = CheckConexaoMongo(ctx, client, cancel)
 	if err != nil {
 		panic(err)
 	}

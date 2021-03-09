@@ -12,9 +12,7 @@ import (
 )
 
 var mongoParams = mongodbhandle.MongoConexaoParams{
-	Ctx:    context.Background(),
-	Cancel: nil,
-	URI:    "mongodb://0.0.0.0:27018",
+	URI: "mongodb://0.0.0.0:27018",
 }
 
 // MongoClient -
