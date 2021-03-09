@@ -21,6 +21,7 @@ require (
 	github.com/onsi/gomega v1.10.5 // indirect
 	github.com/pmezard/go-difflib v1.0.0 // indirect
 	github.com/stretchr/testify v1.7.0 // indirect
+	github.com/tomascpmarques/custom-schema-go v0.4.4 // indirect
 	go.mongodb.org/mongo-driver v1.4.6 // indirect
 	go.opentelemetry.io/otel v0.17.0 // indirect
 	go.opentelemetry.io/otel/metric v0.17.0 // indirect

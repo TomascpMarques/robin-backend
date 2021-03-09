@@ -139,6 +139,10 @@ github.com/stretchr/testify v1.6.1/go.mod h1:6Fq8oRcR53rry900zMqJjRRixrwX3KX962/
 github.com/stretchr/testify v1.7.0 h1:nwc3DEeHmmLAfoZucVR881uASk0Mfjw8xYJ99tb5CcY=
 github.com/stretchr/testify v1.7.0/go.mod h1:6Fq8oRcR53rry900zMqJjRRixrwX3KX962/h/Wwjteg=
 github.com/tidwall/pretty v1.0.0/go.mod h1:XNkn88O1ChpSDQmQeStsy+sBenx6DDtFZJxhVysOjyk=
+github.com/tomascpmarques/custom-schema-go v0.4.3 h1:fuaXPzAIO4FfFRx0JY4wnA5k8x9lB6TWehBdUY4xNTM=
+github.com/tomascpmarques/custom-schema-go v0.4.3/go.mod h1:k3DyBrLuo1R8cujUOmYcgkrJEjMSp48xcOjaY8v7WlU=
+github.com/tomascpmarques/custom-schema-go v0.4.4 h1:IwzFeol9jrHxuhlr4uuQ7MD2bbRnzki/Bqp/sgcPG9Y=
+github.com/tomascpmarques/custom-schema-go v0.4.4/go.mod h1:k3DyBrLuo1R8cujUOmYcgkrJEjMSp48xcOjaY8v7WlU=
 github.com/xdg/scram v0.0.0-20180814205039-7eeb5667e42c h1:u40Z8hqBAAQyv+vATcGgV0YCnDjqSL7/q/JyPhhJSPk=
 github.com/xdg/scram v0.0.0-20180814205039-7eeb5667e42c/go.mod h1:lB8K/P019DLNhemzwFU4jHLhdvlE6uDZjXFejJXr49I=
 github.com/xdg/stringprep v0.0.0-20180714160509-73f8eece6fdc h1:n+nNi93yXLkJvKwXNP9d55HC7lGK4H/SRcwB5IaUZLo=
