@@ -2,11 +2,13 @@ package endpointfuncs
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 	"time"
 
 	"github.com/tomascpmarques/PAP/backend/robinservicoequipamento/loggers"
 	"github.com/tomascpmarques/PAP/backend/robinservicoequipamento/mongodbhandle"
+	"github.com/tomascpmarques/PAP/backend/robinservicoequipamento/structextract"
 
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
@@ -134,6 +136,59 @@ func BuscarRegistosCamposCustom(dbCollPar map[string]interface{}, query map[stri
 	return result
 }
 
+// BuscarInfoItem -
+func BuscarInfoItem(dbCollPar map[string]interface{}, id string, query map[string]interface{}, token string) map[string]interface{} {
+	result := make(map[string]interface{}, 0)
+
+	// if VerificarTokenUser(token) != "OK" {
+	// 	fmt.Println("Erro: A token fornecida é inválida ou expirou")
+	// 	result["erro"] = "A token fornecida é inválida ou expirou"
+	// 	return result
+	// }
+
+	// Converte o ID de uma String para um ObjectID
+	idOBJ, err := primitive.ObjectIDFromHex(id)
+	if err != nil {
+		loggers.ServerErrorLogger.Println()
+		fmt.Println("Error: ID de registo não pode ser convertido")
+		result["Erro"] = err
+		return result
+	}
+
+	bsonFilter := bson.M{"_id": idOBJ}
+
+	// Get collection da db fornecida
+	coll := MongoClient.Database(dbCollPar["db"].(string)).Collection(dbCollPar["cl"].(string))
+
+	var temp map[string]interface{}
+	cntx, cancel := mongodbhandle.MongoCtxMaker("bg", time.Duration(10))
+
+	err = coll.FindOne(cntx, bsonFilter, options.FindOne()).Decode(&temp)
+	defer cancel()
+	if err != nil {
+		loggers.ServerErrorLogger.Println("Error: Registo não encontrado para id fornecido")
+		result["Erro"] = "Registo não encontrado para itemID: " + id
+		return result
+	}
+
+	retStruct := mongodbhandle.ParseTipoDeRegisto(temp)
+	if retStruct == nil {
+		loggers.ServerErrorLogger.Println("Error: Não foi possível converter o registo")
+		result["Erro"] = "Não foi possível converter o registo"
+		return result
+	}
+
+	xx := make(map[string][]string)
+	fmt.Println(query)
+	res, _ := json.Marshal(query)
+	_ = json.Unmarshal(res, &xx)
+
+	x := structextract.ExtrairCamposEspecificosStruct(retStruct, xx)
+
+	result["Registo"] = x
+	return result
+}
+
 // ApagarRegistoDeItem :
 // 	Apaga um registo pelo seu ObjectID, na bd e coleção fornecida
 func ApagarRegistoDeItem(dbCollPar map[string]interface{}, idItem string, token string) map[string]interface{} {
@@ -180,6 +235,3 @@ func AtualizararRegistoDeItem() {}
 
 // BuscarInfoItems -
 func BuscarInfoItems() {}
-
-// BuscarInfoItem -
-func BuscarInfoItem() {}

@@ -27,6 +27,7 @@ func main() {
 	actions.FuncsStorage["ApagarRegistoDeItem"] = endpointfuncs.ApagarRegistoDeItem
 	actions.FuncsStorage["BuscarRegisto"] = endpointfuncs.BuscarRegistoPorObjID
 	actions.FuncsStorage["BuscarRegistosCamposCustom"] = endpointfuncs.BuscarRegistosCamposCustom
+	actions.FuncsStorage["BuscarInfoItem"] = endpointfuncs.BuscarInfoItem
 
 	router := mux.NewRouter()
 	router.HandleFunc("/", actions.Handler)
