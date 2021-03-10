@@ -20,50 +20,8 @@ var mongoParams = mongodbhandle.MongoConexaoParams{
 // MongoClient -
 var MongoClient = mongodbhandle.CriarConexaoMongoDB(mongoParams)
 
-type a struct {
-	ID         string
-	Nome       string
-	Info       Info
-	Manutencao Manutencao
-}
-
-// Info -
-type Info struct {
-	Sala  int
-	Piso  int
-	Notas string
-}
-
-// Manutencao -
-type Manutencao struct {
-	Status           string
-	UltimaManutencao string
-}
-
-// Hello - HELLOs back
-func Hello(str string) map[string]interface{} {
-	res := make(map[string]interface{})
-
-	mongoDB := mongodbhandle.GetMongoDatabase(MongoClient, "local")
-	mongoDBCollection := mongodbhandle.GetMongoCollection(mongoDB, "startup_log")
-
-	filter := bson.M{"id": "PC1"}
-	var temp a
-	err := mongoDBCollection.FindOne(context.Background(), filter, options.FindOne()).Decode(&temp)
-	if err != nil {
-		println("Error: ", err)
-		res["Error"] = err
-		return nil
-	}
-	fmt.Println(temp)
-
-	res["Result"] = temp
-
-	return res
-}
-
-// AdicionarRegisto -
-func AdicionarRegisto(tipoDeIndex string, item map[string]interface{}, token string) map[string]interface{} {
+// AdicionarRegisto Adiciona um registo numa base de dados e coleção especifícada
+func AdicionarRegisto(tipoDeIndex string, dbCollPar map[string]interface{}, item map[string]interface{}, token string) map[string]interface{} {
 	result := make(map[string]interface{}, 0)
 
 	// if VerificarTokenUser(token) != "OK" {
@@ -76,23 +34,25 @@ func AdicionarRegisto(tipoDeIndex string, item map[string]interface{}, token str
 	// Para apontarem para structs compativeis
 	item["tipo_de_registo"] = tipoDeIndex
 
-	mongoCollection := mongodbhandle.GetMongoDatabase(MongoClient, "testing").Collection("base_collection")
+	// Get the mongo colection
+	mongoCollection := MongoClient.Database(dbCollPar["db"].(string)).Collection(dbCollPar["cl"].(string))
 
+	// Insser um registo na coleção e base de dados especificada
 	record, err := mongodbhandle.InsserirUmRegisto(item, mongoCollection, 10)
 
 	if err != nil {
-		fmt.Println("Error: ", err)
+		loggers.ServerErrorLogger.Println("Error: ", err)
 		result["Error"] = err
 		return nil
 	}
-	result["Result"] = record
+	result["resultado"] = record
 
 	loggers.MongoDBLogger.Println("Registo ensserido!")
 	return result
 }
 
 // BuscarRegistoPorObjID Busca um registo na base de dados pelo ID especificado
-func BuscarRegistoPorObjID(id string, token string) map[string]interface{} {
+func BuscarRegistoPorObjID(dbCollPar map[string]interface{}, id string, token string) map[string]interface{} {
 	result := make(map[string]interface{}, 0)
 
 	// if VerificarTokenUser(token) != "OK" {
@@ -104,14 +64,15 @@ func BuscarRegistoPorObjID(id string, token string) map[string]interface{} {
 	// Converte o ID de uma String para um ObjectID
 	idOBJ, err := primitive.ObjectIDFromHex(id)
 	if err != nil {
-		fmt.Println("Error:  encontrado")
+		loggers.ServerErrorLogger.Println()
+		fmt.Println("Error: ID de registo não pode ser convertido")
 		result["Erro"] = err
 		return result
 	}
 
 	// Setup do filtro e coleção a usar
 	filter := bson.M{"_id": idOBJ}
-	collection := MongoClient.Database("testing").Collection("base_collection")
+	collection := MongoClient.Database(dbCollPar["db"].(string)).Collection(dbCollPar["cl"].(string))
 
 	// Var temporária para guardar o valor recebido da base de dados
 	var target map[string]interface{}
@@ -120,26 +81,35 @@ func BuscarRegistoPorObjID(id string, token string) map[string]interface{} {
 	// Procura na coleção o registo com o ID igual
 	res := collection.FindOne(cntx, filter).Decode(&target)
 	defer cancel()
-
-	// Converte o registo de um map[string]interface{} para a struct adequada
-	registoStruct := mongodbhandle.ParseTipoDeRegisto(target)
-
 	if res != nil {
-		fmt.Println("Error: Registo não encontrado")
+		loggers.ServerErrorLogger.Println("Error: Registo não encontrado")
 		result["Erro"] = "Registo não encontrado!"
 		return result
 	}
 
+	// Converte o registo de um map[string]interface{} para a struct adequada
+	registoStruct := mongodbhandle.ParseTipoDeRegisto(target)
+	if registoStruct == nil {
+		loggers.ServerErrorLogger.Println("Error: Ao cinverter o registo")
+		result["Erro"] = "Impossível de converter!"
+		return result
+	}
+
 	loggers.DbFuncsLogger.Println("Registo Encontrado, pronto a enviar...")
-	result["Result"] = registoStruct
-	result["_id"] = target["_id"]
-	result["tipo_de_registo"] = target["tipo_de_registo"]
+	result["resultado"] = registoStruct
+	result["meta_data"] = map[string]interface{}{
+		"id":              target["_id"],
+		"tipo_de_registo": target["tipo_de_registo"],
+	}
 
 	return result
 }
 
-// BuscarRegistosCustomQuery -
-func BuscarRegistosCustomQuery(query map[string]interface{}, token string) map[string]interface{} {
+// BuscarRegistosCamposCustom :
+//	Toma um nome de uma bd e uma coleção como alvos do query.
+// 	O query em sí é um map, que vai fornecer os valores ao filtro do tipo bson.M.
+//	Toma uma token para autorização
+func BuscarRegistosCamposCustom(dbCollPar map[string]interface{}, query map[string]interface{}, token string) map[string]interface{} {
 	result := make(map[string]interface{}, 0)
 
 	// if VerificarTokenUser(token) != "OK" {
@@ -148,32 +118,60 @@ func BuscarRegistosCustomQuery(query map[string]interface{}, token string) map[s
 	// 	return result
 	// }
 
-	bsonFilter := make(bson.M, 0)
-	bsonFilter = query
+	// Get collection da db fornecida
+	coll := MongoClient.Database(dbCollPar["db"].(string)).Collection(dbCollPar["cl"].(string))
 
-	collection := MongoClient.Database("testing").Collection("base_collection")
+	// Chama a função que procura todos os registos, validados pelo query
+	temp := mongodbhandle.PesquisaComQueryCustom(coll, query)
+	if temp == nil {
+		result["erro"] = "Valor não encontrado para parametros:"
+		result["parametros"] = query
+		return result
+	}
 
-	var temp map[string]interface{}
-	err := collection.FindOne(context.Background(), bsonFilter, options.FindOne()).Decode(&temp)
+	// O retorno são esses valores traduzidos para as suas estruturas correspondentes
+	result["resultado"] = mongodbhandle.MongoRecordsParssedArrays(temp)
+	return result
+}
+
+// ApagarRegistoDeItem :
+// 	Apaga um registo pelo seu ObjectID, na bd e coleção fornecida
+func ApagarRegistoDeItem(dbCollPar map[string]interface{}, idItem string, token string) map[string]interface{} {
+	result := make(map[string]interface{}, 0)
+
+	// if VerificarTokenUser(token) != "OK" {
+	// 	fmt.Println("Erro: A token fornecida é inválida ou expirou")
+	// 	result["erro"] = "A token fornecida é inválida ou expirou"
+	// 	return result
+	// }
+
+	// Converte o ID de uma String para um ObjectID
+	idOBJ, err := primitive.ObjectIDFromHex(idItem)
 	if err != nil {
+		loggers.ServerErrorLogger.Println()
+		fmt.Println("Error: ID de registo não pode ser convertido")
 		result["Erro"] = err
 		return result
 	}
 
-	result["Resultado"] = temp
-	return result
-}
+	// Set-up do filtro
+	filter := bson.M{"_id": idOBJ}
 
-// ApagarRegistoDeItem -
-func ApagarRegistoDeItem(idItem string, token string) map[string]interface{} {
-	result := make(map[string]interface{}, 0)
+	// Get collection
+	coll := MongoClient.Database(dbCollPar["db"].(string)).Collection(dbCollPar["cl"].(string))
+	cntx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 
-	// if VerificarTokenUser(token) != "OK" {
-	// 	fmt.Println("Erro: A token fornecida é inválida ou expirou")
-	// 	result["erro"] = "A token fornecida é inválida ou expirou"
-	// 	return result
-	// }
+	// Operação de delete de um só registo
+	item, err := coll.DeleteOne(cntx, filter, options.Delete())
+	defer cancel()
+	if err != nil {
+		loggers.ServerErrorLogger.Println()
+		fmt.Println("Erro: Não foi possível apagar o registo de id: ", idItem)
+		result["Erro"] = "Error: Não foi possível apagar o item de registo:" + idItem
+		return result
+	}
 
+	result["registo_apagado"] = item
 	return result
 }
 

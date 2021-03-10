@@ -59,13 +59,3 @@ func CheckConexaoMongo(ctx context.Context, client *mongo.Client, cancelFunc con
 	defer cancelFunc()
 	return err
 }
-
-// GetMongoDatabase - Devolve a db especificada pelo parametro dbName
-func GetMongoDatabase(cl *mongo.Client, dbName string) *mongo.Database {
-	return cl.Database(dbName)
-}
-
-// GetMongoCollection - Devolve a coleção apontada por collName, da base de dados db
-func GetMongoCollection(db *mongo.Database, collName string) *mongo.Collection {
-	return db.Collection(collName)
-}
