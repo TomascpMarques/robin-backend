@@ -16,4 +16,3 @@ func ItemParaStruct(param1 *map[string]interface{}) Item {
 	}
 	return returnStruct
 }
-

@@ -178,14 +178,29 @@ func BuscarInfoItem(dbCollPar map[string]interface{}, id string, query map[strin
 		return result
 	}
 
-	xx := make(map[string][]string)
-	fmt.Println(query)
-	res, _ := json.Marshal(query)
-	_ = json.Unmarshal(res, &xx)
+	mapConvertido := make(map[string][]string, 0)
+	res, err := json.Marshal(query)
+	if err != nil {
+		loggers.ServerErrorLogger.Println("Error: ", err)
+		result["Erro"] = "err"
+		return result
+	}
 
-	x := structextract.ExtrairCamposEspecificosStruct(retStruct, xx)
+	err = json.Unmarshal(res, &mapConvertido)
+	if err != nil {
+		loggers.ServerErrorLogger.Println("Error: ", err)
+		result["Erro"] = "err"
+		return result
+	} 
 
-	result["Registo"] = x
+	temp = structextract.ExtrairCamposEspecificosStruct(retStruct, mapConvertido)
+	if temp == nil {
+		loggers.ServerErrorLogger.Println("Error: Não foi possível extrair os valores pedidos")
+		result["Erro"] = "Não foi possível extrair os valores pedidos"
+		return result
+	}
+
+	result["Registo"] = temp
 	return result
 }
 
