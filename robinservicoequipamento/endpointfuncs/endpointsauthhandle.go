@@ -13,7 +13,7 @@ var hmacSecret = hmac.New(sha256.New, []byte(`SUPPER_SECRET_DEVELOPMENT_KEY`)).S
 // User define um utilizador
 type User struct {
 	Username string `json:"user,omitempty"`
-	Password string `json:"passwd,omitempty,-"`
+	Password string `json:"passwd,omitempty"`
 
 	Permissoes int    `json:"perms,omitempty"`
 	JWT        string `json:"jwt,omitempty"`
@@ -25,7 +25,7 @@ func VerificarTokenUser(userToken string) string {
 	token, err := jwt.Parse(userToken, func(token *jwt.Token) (interface{}, error) {
 		// valida o metodo de assinatura da key
 		if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
-			return nil, fmt.Errorf("Metodo de assinatura inesperado: %v", token.Header["alg"])
+			return nil, fmt.Errorf("metodo de assinatura inesperado: %v", token.Header["alg"])
 		}
 
 		// hmacSampleSecret é o []byte que contem o segredo de assinatura
@@ -49,7 +49,7 @@ func VerificarTokenAdmin(userToken string) string {
 	token, err := jwt.Parse(userToken, func(token *jwt.Token) (interface{}, error) {
 		// valida o metodo de assinatura da key
 		if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
-			return nil, fmt.Errorf("Metodo de assinatura inesperado: %v", token.Header["alg"])
+			return nil, fmt.Errorf("metodo de assinatura inesperado: %v", token.Header["alg"])
 		}
 
 		// hmacSampleSecret é o []byte que contem o segredo de assinatura

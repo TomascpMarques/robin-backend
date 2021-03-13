@@ -7,6 +7,7 @@ import (
 	"net/http"
 	"os"
 	"os/signal"
+	"syscall"
 	"time"
 
 	"github.com/TomascpMarques/dynamic-querys-go/actions"
@@ -26,8 +27,9 @@ func main() {
 	actions.FuncsStorage["AdicionarRegisto"] = endpointfuncs.AdicionarRegisto
 	actions.FuncsStorage["ApagarRegistoDeItem"] = endpointfuncs.ApagarRegistoDeItem
 	actions.FuncsStorage["BuscarRegisto"] = endpointfuncs.BuscarRegistoPorObjID
-	actions.FuncsStorage["BuscarRegistosCamposCustom"] = endpointfuncs.BuscarRegistosCamposCustom
-	actions.FuncsStorage["BuscarInfoItem"] = endpointfuncs.BuscarInfoItem
+	actions.FuncsStorage["BuscarRegistosCamposCustom"] = endpointfuncs.BuscarRegistosQueryCustom
+	actions.FuncsStorage["BuscarInfoItem"] = endpointfuncs.BuscarInfoItemQuery
+	actions.FuncsStorage["BuscarInfoItems"] = endpointfuncs.BuscarInfoItems
 
 	router := mux.NewRouter()
 	router.HandleFunc("/", actions.Handler)
@@ -50,7 +52,7 @@ func main() {
 	c := make(chan os.Signal, 1)
 	// We'll accept graceful shutdowns when quit via SIGINT (Ctrl+C) or SIGKILL,
 	// SIGQUIT or SIGTERM (Ctrl+/) will not be caught.
-	signal.Notify(c, os.Interrupt, os.Kill)
+	signal.Notify(c, os.Interrupt, syscall.SIGTERM)
 
 	// Block until we receive our signal.
 	<-c

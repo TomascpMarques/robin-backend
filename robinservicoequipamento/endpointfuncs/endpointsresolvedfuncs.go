@@ -24,7 +24,7 @@ var MongoClient = mongodbhandle.CriarConexaoMongoDB(mongoParams)
 
 // AdicionarRegisto Adiciona um registo numa base de dados e coleção especifícada
 func AdicionarRegisto(tipoDeIndex string, dbCollPar map[string]interface{}, item map[string]interface{}, token string) map[string]interface{} {
-	result := make(map[string]interface{}, 0)
+	result := make(map[string]interface{})
 
 	// if VerificarTokenUser(token) != "OK" {
 	// 	fmt.Println("Erro: A token fornecida é inválida ou expirou")
@@ -55,13 +55,13 @@ func AdicionarRegisto(tipoDeIndex string, dbCollPar map[string]interface{}, item
 
 // BuscarRegistoPorObjID Busca um registo na base de dados pelo ID especificado
 func BuscarRegistoPorObjID(dbCollPar map[string]interface{}, id string, token string) map[string]interface{} {
-	result := make(map[string]interface{}, 0)
+	result := make(map[string]interface{})
 
-	// if VerificarTokenUser(token) != "OK" {
-	// 	fmt.Println("Erro: A token fornecida é inválida ou expirou")
-	// 	result["erro"] = "A token fornecida é inválida ou expirou"
-	// 	return result
-	// }
+	if VerificarTokenUser(token) != "OK" {
+		fmt.Println("Erro: A token fornecida é inválida ou expirou")
+		result["erro"] = "A token fornecida é inválida ou expirou"
+		return result
+	}
 
 	// Converte o ID de uma String para um ObjectID
 	idOBJ, err := primitive.ObjectIDFromHex(id)
@@ -107,18 +107,18 @@ func BuscarRegistoPorObjID(dbCollPar map[string]interface{}, id string, token st
 	return result
 }
 
-// BuscarRegistosCamposCustom :
+// BuscarRegistosQueryCustom :
 //	Toma um nome de uma bd e uma coleção como alvos do query.
 // 	O query em sí é um map, que vai fornecer os valores ao filtro do tipo bson.M.
 //	Toma uma token para autorização
-func BuscarRegistosCamposCustom(dbCollPar map[string]interface{}, query map[string]interface{}, token string) map[string]interface{} {
-	result := make(map[string]interface{}, 0)
+func BuscarRegistosQueryCustom(dbCollPar map[string]interface{}, query map[string]interface{}, token string) map[string]interface{} {
+	result := make(map[string]interface{})
 
-	// if VerificarTokenUser(token) != "OK" {
-	// 	fmt.Println("Erro: A token fornecida é inválida ou expirou")
-	// 	result["erro"] = "A token fornecida é inválida ou expirou"
-	// 	return result
-	// }
+	if VerificarTokenUser(token) != "OK" {
+		fmt.Println("Erro: A token fornecida é inválida ou expirou")
+		result["erro"] = "A token fornecida é inválida ou expirou"
+		return result
+	}
 
 	// Get collection da db fornecida
 	coll := MongoClient.Database(dbCollPar["db"].(string)).Collection(dbCollPar["cl"].(string))
@@ -136,15 +136,15 @@ func BuscarRegistosCamposCustom(dbCollPar map[string]interface{}, query map[stri
 	return result
 }
 
-// BuscarInfoItem -
-func BuscarInfoItem(dbCollPar map[string]interface{}, id string, query map[string]interface{}, token string) map[string]interface{} {
-	result := make(map[string]interface{}, 0)
+// BuscarInfoItemQuery Busca um registo e devolve os campos especificados no query
+func BuscarInfoItemQuery(dbCollPar map[string]interface{}, id string, query map[string]interface{}, token string) map[string]interface{} {
+	result := make(map[string]interface{})
 
-	// if VerificarTokenUser(token) != "OK" {
-	// 	fmt.Println("Erro: A token fornecida é inválida ou expirou")
-	// 	result["erro"] = "A token fornecida é inválida ou expirou"
-	// 	return result
-	// }
+	if VerificarTokenUser(token) != "OK" {
+		fmt.Println("Erro: A token fornecida é inválida ou expirou")
+		result["erro"] = "A token fornecida é inválida ou expirou"
+		return result
+	}
 
 	// Converte o ID de uma String para um ObjectID
 	idOBJ, err := primitive.ObjectIDFromHex(id)
@@ -155,14 +155,17 @@ func BuscarInfoItem(dbCollPar map[string]interface{}, id string, query map[strin
 		return result
 	}
 
+	// Bson filter setup
 	bsonFilter := bson.M{"_id": idOBJ}
 
 	// Get collection da db fornecida
 	coll := MongoClient.Database(dbCollPar["db"].(string)).Collection(dbCollPar["cl"].(string))
 
+	// Resultado temporário, e contexto/cancel para uso no MongoClient
 	var temp map[string]interface{}
 	cntx, cancel := mongodbhandle.MongoCtxMaker("bg", time.Duration(10))
 
+	// Procura um registo
 	err = coll.FindOne(cntx, bsonFilter, options.FindOne()).Decode(&temp)
 	defer cancel()
 	if err != nil {
@@ -171,6 +174,7 @@ func BuscarInfoItem(dbCollPar map[string]interface{}, id string, query map[strin
 		return result
 	}
 
+	// Traduz o registo de um mpa para a struct equivalente
 	retStruct := mongodbhandle.ParseTipoDeRegisto(temp)
 	if retStruct == nil {
 		loggers.ServerErrorLogger.Println("Error: Não foi possível converter o registo")
@@ -178,7 +182,9 @@ func BuscarInfoItem(dbCollPar map[string]interface{}, id string, query map[strin
 		return result
 	}
 
-	mapConvertido := make(map[string][]string, 0)
+	/* Iníco da conversão de um map[string]interface{} para um map[string][]string */
+	mapConvertido := make(map[string][]string)
+	// Tradução do query para json
 	res, err := json.Marshal(query)
 	if err != nil {
 		loggers.ServerErrorLogger.Println("Error: ", err)
@@ -186,13 +192,16 @@ func BuscarInfoItem(dbCollPar map[string]interface{}, id string, query map[strin
 		return result
 	}
 
+	// Tradução do valor em bytes do query para o mapa que se quer
 	err = json.Unmarshal(res, &mapConvertido)
 	if err != nil {
 		loggers.ServerErrorLogger.Println("Error: ", err)
 		result["Erro"] = "err"
 		return result
-	} 
+	}
+	/* Fim da conversão de mapas */
 
+	// Extráção dos campos
 	temp = structextract.ExtrairCamposEspecificosStruct(retStruct, mapConvertido)
 	if temp == nil {
 		loggers.ServerErrorLogger.Println("Error: Não foi possível extrair os valores pedidos")
@@ -204,10 +213,70 @@ func BuscarInfoItem(dbCollPar map[string]interface{}, id string, query map[strin
 	return result
 }
 
-// ApagarRegistoDeItem :
-// 	Apaga um registo pelo seu ObjectID, na bd e coleção fornecida
+// BuscarInfoItems Busca vários registos, com campos que satisfazem o queryBD e devolve os campos especificados no query
+func BuscarInfoItems(dbCollPar map[string]interface{}, queryDB map[string]interface{}, query map[string]interface{}, token string) (result map[string]interface{}) {
+	result = make(map[string]interface{})
+
+	bsonFilter := queryDB
+
+	// Get collection da db fornecida
+	coll := MongoClient.Database(dbCollPar["db"].(string)).Collection(dbCollPar["cl"].(string))
+
+	// Resultado temporário, e contexto/cancel para uso no MongoClient
+	var temp []map[string]interface{}
+	cntx, cancel := mongodbhandle.MongoCtxMaker("bg", time.Duration(10))
+
+	cursor, _ := coll.Find(cntx, bsonFilter, options.Find())
+	defer cancel()
+
+	if err := cursor.All(cntx, &temp); err != nil {
+		loggers.DbFuncsLogger.Println("erro a decodificar valores bson para interface{}")
+		result["erro"] = "Erro a decodificar valores bson para interface{}"
+		return
+	}
+
+	/* Iníco da conversão de um map[string]interface{} para um map[string][]string */
+	mapConvertido := make(map[string][]string)
+	// Tradução do query para json
+	res, err := json.Marshal(query)
+	if err != nil {
+		loggers.ServerErrorLogger.Println("Error: ", err)
+		result["Erro"] = "err"
+		return result
+	}
+
+	// Tradução do valor em bytes do query para o mapa que se quer
+	err = json.Unmarshal(res, &mapConvertido)
+	if err != nil {
+		loggers.ServerErrorLogger.Println("Error: ", err)
+		result["Erro"] = "err"
+		return result
+	}
+	/* Fim da conversão de mapas */
+
+	// Resultados da extação de campos do query
+	results := make([]interface{}, len(temp))
+
+	// Itera sobre todos os mapas retirados da BD
+	for k, v := range temp {
+		// Traduz o registo de um mpa para a struct equivalente
+		retStruct := mongodbhandle.ParseTipoDeRegisto(v)
+		if retStruct == nil {
+			loggers.ServerErrorLogger.Println("Error: Não foi possível converter o registo")
+			result["Erro"] = "Não foi possível converter o registo"
+			return result
+		}
+		// Adiciona o resultado da extração dos campos da struct currente
+		results[k] = structextract.ExtrairCamposEspecificosStruct(retStruct, mapConvertido)
+	}
+
+	result["registos"] = results
+	return
+}
+
+// ApagarRegistoDeItem Apaga um registo pelo seu ObjectID, na bd e coleção fornecida
 func ApagarRegistoDeItem(dbCollPar map[string]interface{}, idItem string, token string) map[string]interface{} {
-	result := make(map[string]interface{}, 0)
+	result := make(map[string]interface{})
 
 	// if VerificarTokenUser(token) != "OK" {
 	// 	fmt.Println("Erro: A token fornecida é inválida ou expirou")
@@ -247,6 +316,3 @@ func ApagarRegistoDeItem(dbCollPar map[string]interface{}, idItem string, token 
 
 // AtualizararRegistoDeItem -
 func AtualizararRegistoDeItem() {}
-
-// BuscarInfoItems -
-func BuscarInfoItems() {}
