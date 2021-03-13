@@ -1,6 +1,5 @@
 # Backend Projeto Robin
 
-![projeto Robin](https://github.com/TomascpMarques/PAP-Backend/blob/master/Robin%20Logo.png?raw=true)
 
 PAP Tomás Marques
 
