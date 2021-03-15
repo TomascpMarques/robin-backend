@@ -15,10 +15,6 @@ type MongoConexaoParams struct {
 	URI string
 }
 
-// mongoCtx       - contexto para a conexão ao serviço mongodb
-// mongoCtxCancel - Contexto cancel para usar na conexão ao serviço mongodb
-var mongoCtx, mongoCtxCancel = context.WithTimeout(context.Background(), 10*time.Second)
-
 // MongoCtxMaker -
 func MongoCtxMaker(ctxTipo string, duracao time.Duration) (context.Context, context.CancelFunc) {
 	if ctxTipo == "bg" {

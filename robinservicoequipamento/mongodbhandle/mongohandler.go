@@ -5,7 +5,6 @@ import (
 	"time"
 
 	"github.com/tomascpmarques/PAP/backend/robinservicoequipamento/loggers"
-	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
 )
@@ -32,8 +31,7 @@ func InsserirUmRegisto(registo interface{}, colecao *mongo.Collection, inssertTi
 // 	Pesquisa e encontra todos os registos que satisfaçam as condições do query
 func PesquisaComQueryCustom(collection *mongo.Collection, query map[string]interface{}) []map[string]interface{} {
 	// Setup do filtro e atribuição
-	bsonFilter := make(bson.M)
-	bsonFilter = query
+	bsonFilter := query
 
 	// Busca e decoding do retorno
 	var temp []map[string]interface{}

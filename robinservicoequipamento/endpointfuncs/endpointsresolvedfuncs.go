@@ -108,10 +108,9 @@ func BuscarRegistoPorObjID(dbCollPar map[string]interface{}, id string, token st
 	return result
 }
 
-// BuscarRegistosQueryCustom :
-//	Toma um nome de uma bd e uma coleção como alvos do query.
-// 	O query em sí é um map, que vai fornecer os valores ao filtro do tipo bson.M.
-//	Toma uma token para autorização
+// BuscarRegistosQueryCustom Toma um nome de uma bd e uma coleção como alvos do query.
+// O query em sí é um map, que vai fornecer os valores ao filtro do tipo bson.M.
+// Toma uma token para autorização
 func BuscarRegistosQueryCustom(dbCollPar map[string]interface{}, query map[string]interface{}, token string) map[string]interface{} {
 	result := make(map[string]interface{})
 
@@ -224,8 +223,6 @@ func BuscarInfoItems(dbCollPar map[string]interface{}, queryDB map[string]interf
 		return result
 	}
 
-	bsonFilter := queryDB
-
 	// Get collection da db fornecida
 	coll := MongoClient.Database(dbCollPar["db"].(string)).Collection(dbCollPar["cl"].(string))
 
@@ -233,8 +230,13 @@ func BuscarInfoItems(dbCollPar map[string]interface{}, queryDB map[string]interf
 	var temp []map[string]interface{}
 	cntx, cancel := mongodbhandle.MongoCtxMaker("bg", time.Duration(10))
 
-	cursor, _ := coll.Find(cntx, bsonFilter, options.Find())
+	cursor, err := coll.Find(cntx, queryDB, options.Find())
 	defer cancel()
+	if err != nil {
+		loggers.DbFuncsLogger.Println("Erro ao procurar os registos")
+		result["erro"] = "Erro ao procurar os registos"
+		return
+	}
 
 	if err := cursor.All(cntx, &temp); err != nil {
 		loggers.DbFuncsLogger.Println("erro a decodificar valores bson para interface{}")
