@@ -7,6 +7,7 @@ import (
 	"net/http"
 	"os"
 	"os/signal"
+	"syscall"
 	"time"
 
 	"github.com/TomascpMarques/dynamic-querys-go/actions"
@@ -23,9 +24,13 @@ func main() {
 	flag.DurationVar(&wait, "graceful-timeout", time.Second*15, "the duration for which the server gracefully wait for existing connections to finish - e.g. 15s or 1m")
 	flag.Parse()
 
-	actions.FuncsStorage["Hello"] = endpointfuncs.Hello
-	actions.FuncsStorage["AdicionarRegistoDeItem"] = endpointfuncs.AdicionarRegisto
+	actions.FuncsStorage["AdicionarRegisto"] = endpointfuncs.AdicionarRegisto
 	actions.FuncsStorage["ApagarRegistoDeItem"] = endpointfuncs.ApagarRegistoDeItem
+	actions.FuncsStorage["BuscarRegisto"] = endpointfuncs.BuscarRegistoPorObjID
+	actions.FuncsStorage["BuscarRegistosQueryCustom"] = endpointfuncs.BuscarRegistosQueryCustom
+	actions.FuncsStorage["BuscarInfoItem"] = endpointfuncs.BuscarInfoItemQuery
+	actions.FuncsStorage["BuscarInfoItems"] = endpointfuncs.BuscarInfoItems
+	actions.FuncsStorage["AtualizarRegistoID"] = endpointfuncs.AtualizararRegistoDeItem
 
 	router := mux.NewRouter()
 	router.HandleFunc("/", actions.Handler)
@@ -37,7 +42,7 @@ func main() {
 		WriteTimeout: time.Second * 3,
 		ReadTimeout:  time.Second * 2,
 		ErrorLog:     loggers.ServerErrorLogger,
-	}	
+	}
 
 	if err := server.ListenAndServe(); err != nil {
 		log.Println("Erro: ", err)
@@ -48,7 +53,7 @@ func main() {
 	c := make(chan os.Signal, 1)
 	// We'll accept graceful shutdowns when quit via SIGINT (Ctrl+C) or SIGKILL,
 	// SIGQUIT or SIGTERM (Ctrl+/) will not be caught.
-	signal.Notify(c, os.Interrupt, os.Kill)
+	signal.Notify(c, os.Interrupt, syscall.SIGTERM)
 
 	// Block until we receive our signal.
 	<-c

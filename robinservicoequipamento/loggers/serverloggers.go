@@ -6,7 +6,7 @@ import (
 )
 
 // ResolverLogger - loger para os resolvers da schema GraphQL
-var ResolverLogger = log.New(os.Stdout, "Equipamento-Resolver (*) ", log.LstdFlags)
+var ResolverLogger = log.New(os.Stdout, "Equipamento-Resolver.(*) ", log.LstdFlags)
 
 // RedisLogger - logger para o o tratamento e criação do cliente que liga ao serviço redis
 var RedisLogger = log.New(os.Stdout, "Redis-Setup......[*] ", log.LstdFlags)
@@ -19,3 +19,6 @@ var OperacoesBDLogger = log.New(os.Stdout, "Operações-BD.....|*| ", log.LstdFl
 
 // ServerErrorLogger - Logger para erros do servidor
 var ServerErrorLogger = log.New(os.Stdout, "Erro-Server-BD...|*| ", log.LstdFlags)
+
+// MongoDBLogger - Logger para as operações com MongoDB
+var MongoDBLogger = log.New(os.Stdout, "MongoDB-Handler....{*}", log.LstdFlags)

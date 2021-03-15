@@ -5,7 +5,6 @@ import (
 	"crypto/sha256"
 	"encoding/json"
 	"fmt"
-	"os"
 
 	"github.com/dgrijalva/jwt-go"
 	"github.com/tomascpmarques/PAP/backend/robinservicologin/loggers"
@@ -16,8 +15,10 @@ var hmacSecret = hmac.New(sha256.New, []byte(`SUPPER_SECRET_DEVELOPMENT_KEY`)).S
 
 //RedisClientDB -
 var RedisClientDB = redishandle.NovoClienteRedis(
-	os.Getenv("REDISADDRESS"),
-	os.Getenv("AUTH_SERVER_REDIS_PORT"),
+	//os.Getenv("REDISADDRESS"),
+	//os.Getenv("AUTH_SERVER_REDIS_PORT"),
+	"0.0.0.0",
+	"6379",
 	"Pg+V@j+Z9gKj88=-?dSk",
 	"admin",
 	0,
