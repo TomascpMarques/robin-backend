@@ -46,6 +46,7 @@ func CriarConexaoMongoDB(params MongoConexaoParams) *mongo.Client {
 	// Verifica a conexão ao mongoDB, antes de devolver o cliente
 	err = CheckConexaoMongo(ctx, client, cancel)
 	if err != nil {
+		loggers.MongoDBLogger.Println("Erro: conexão não establecida à instância MongoDB, a saír. . .")
 		panic(err)
 	}
 	loggers.MongoDBLogger.Println("Ping com sucesso, DB está UP")

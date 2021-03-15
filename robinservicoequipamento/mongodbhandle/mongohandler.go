@@ -32,7 +32,7 @@ func InsserirUmRegisto(registo interface{}, colecao *mongo.Collection, inssertTi
 // 	Pesquisa e encontra todos os registos que satisfaçam as condições do query
 func PesquisaComQueryCustom(collection *mongo.Collection, query map[string]interface{}) []map[string]interface{} {
 	// Setup do filtro e atribuição
-	bsonFilter := make(bson.M, 0)
+	bsonFilter := make(bson.M)
 	bsonFilter = query
 
 	// Busca e decoding do retorno
