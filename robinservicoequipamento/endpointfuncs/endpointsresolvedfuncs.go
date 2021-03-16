@@ -140,11 +140,11 @@ func BuscarRegistosQueryCustom(dbCollPar map[string]interface{}, query map[strin
 func BuscarInfoItemQuery(dbCollPar map[string]interface{}, id string, query map[string]interface{}, token string) map[string]interface{} {
 	result := make(map[string]interface{})
 
-	if VerificarTokenUser(token) != "OK" {
-		fmt.Println("Erro: A token fornecida é inválida ou expirou")
-		result["erro"] = "A token fornecida é inválida ou expirou"
-		return result
-	}
+	// if VerificarTokenUser(token) != "OK" {
+	// 	fmt.Println("Erro: A token fornecida é inválida ou expirou")
+	// 	result["erro"] = "A token fornecida é inválida ou expirou"
+	// 	return result
+	// }
 
 	// Converte o ID de uma String para um ObjectID
 	idOBJ, err := primitive.ObjectIDFromHex(id)
