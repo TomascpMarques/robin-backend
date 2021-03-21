@@ -27,10 +27,10 @@ func MongoCtxMaker(ctxTipo string, duracao time.Duration) (context.Context, cont
 func CriarConexaoMongoDB(params MongoConexaoParams) *mongo.Client {
 	// Verifica para valores default
 	if params.URI == "" {
-		params.URI = "mongodb://localhost:27017"
+		params.URI = "mongodb://0.0.0.0:27018"
 	}
 
-	ctx, cancel := MongoCtxMaker("bg", time.Duration(10))
+	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 
 	// Liga à instância mongo apontada pelos parametros
 	client, err := mongo.Connect(ctx, options.Client().ApplyURI(params.URI))

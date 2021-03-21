@@ -23,6 +23,14 @@ var mongoParams = mongodbhandle.MongoConexaoParams{
 // MongoClient cliente com a conexão à instancia mongo
 var MongoClient = mongodbhandle.CriarConexaoMongoDB(mongoParams)
 
+// PingServico responde que o serviço está online
+func PingServico() map[string]interface{} {
+	result := make(map[string]interface{})
+
+	result["status"] = "Alive and OK"
+	return result
+}
+
 // AdicionarRegisto Adiciona um registo numa base de dados e coleção especifícada
 func AdicionarRegisto(tipoDeIndex string, dbCollPar map[string]interface{}, item map[string]interface{}, token string) map[string]interface{} {
 	result := make(map[string]interface{})
