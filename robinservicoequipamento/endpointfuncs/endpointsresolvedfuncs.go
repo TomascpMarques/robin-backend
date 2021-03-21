@@ -17,7 +17,7 @@ import (
 )
 
 var mongoParams = mongodbhandle.MongoConexaoParams{
-	URI: "mongodb://0.0.0.0:27018",
+	URI: "mongodb://0.0.0.0:27018/",
 }
 
 // MongoClient cliente com a conexão à instancia mongo

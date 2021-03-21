@@ -34,6 +34,7 @@ func CriarConexaoMongoDB(params MongoConexaoParams) *mongo.Client {
 
 	// Liga à instância mongo apontada pelos parametros
 	client, err := mongo.Connect(ctx, options.Client().ApplyURI(params.URI))
+	defer cancel()
 	if err != nil {
 		panic(err)
 	}
