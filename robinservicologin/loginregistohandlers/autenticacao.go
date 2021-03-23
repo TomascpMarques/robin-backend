@@ -34,7 +34,7 @@ func VerificarTokenUser(userToken string) string {
 	token, err := jwt.Parse(userToken, func(token *jwt.Token) (interface{}, error) {
 		// valida o metodo de assinatura da key
 		if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
-			return nil, fmt.Errorf("Metodo de assinatura inesperado: %v", token.Header["alg"])
+			return nil, fmt.Errorf("metodo de assinatura inesperado: %v", token.Header["alg"])
 		}
 
 		// hmacSampleSecret é o []byte que contem o segredo de assinatura
@@ -58,7 +58,7 @@ func VerificarTokenAdmin(userToken string) string {
 	token, err := jwt.Parse(userToken, func(token *jwt.Token) (interface{}, error) {
 		// valida o metodo de assinatura da key
 		if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
-			return nil, fmt.Errorf("Metodo de assinatura inesperado: %v", token.Header["alg"])
+			return nil, fmt.Errorf("metodo de assinatura inesperado: %v", token.Header["alg"])
 		}
 
 		// hmacSampleSecret é o []byte que contem o segredo de assinatura
@@ -80,7 +80,7 @@ func VerificarTokenAdmin(userToken string) string {
 // Login Recebe dois parametros, o username e a passwd, cria uma token com esses dados e compara com o utilisador pedido
 // devolve uma token com o tempo de expiração de time.Now().Add(time.Minute * 40).Unix()
 func Login(user string, passwd string) map[string]interface{} {
-	returnVal := make(map[string]interface{}, 0)
+	returnVal := make(map[string]interface{})
 
 	// Busca o registo de utilisador que se está a usar para fazer login
 	utilizadorPedido, err := GetUserParaValorStruct(user)
@@ -116,7 +116,7 @@ func Login(user string, passwd string) map[string]interface{} {
 // ela verifica se quem está a fazer o pedido é o administrador, só administradores podem registar utilisadores.
 // Se todas as regras forem cumpridas, a função devolve a jwt token desse novo utilizador.
 func Registar(user string, password string, perms int, token string) map[string]interface{} {
-	returnVal := make(map[string]interface{}, 0)
+	returnVal := make(map[string]interface{})
 
 	// Se a token não for igual ao do admin não se regista nenhumuser novo
 	if VerificarTokenAdmin(token) != "OK" {
@@ -166,7 +166,7 @@ func Registar(user string, password string, perms int, token string) map[string]
 
 // AtualizarUser atualiza os dados dos utilizador fornecido, depois de verificar a token fornecida
 func AtualizarUser(user string, userInfo map[string]interface{}, token string) map[string]interface{} {
-	returnVal := make(map[string]interface{}, 0)
+	returnVal := make(map[string]interface{})
 
 	if VerificarTokenAdmin(token) != "OK" {
 		loggers.LoginAuthLogger.Println("Token inválida.")
