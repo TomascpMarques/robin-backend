@@ -6,10 +6,12 @@ import (
 	"net/http"
 	"os"
 	"os/signal"
+	"syscall"
 	"time"
 
 	"github.com/TomascpMarques/dynamic-querys-go/actions"
 	"github.com/gorilla/mux"
+	"github.com/rs/cors"
 	"github.com/tomascpmarques/PAP/backend/robinservicologin/loggers"
 	"github.com/tomascpmarques/PAP/backend/robinservicologin/loginregistohandlers"
 )
@@ -40,9 +42,16 @@ func main() {
 	router := mux.NewRouter()
 	router.HandleFunc("/auth", actions.Handler)
 
+	// cor := cors.New(cors.Options{
+	// 	AllowedOrigins:   []string{"http://localhost:8081/auth"},
+	// 	AllowCredentials: true,
+	// })
+
+	handler := cors.Default().Handler(router)
+
 	srv := &http.Server{
+		Handler:      handler,
 		Addr:         "0.0.0.0:" + HTTPport,
-		Handler:      router,
 		WriteTimeout: 2 * time.Second,
 		ReadTimeout:  2 * time.Second,
 		IdleTimeout:  4 * time.Second,
@@ -58,7 +67,7 @@ func main() {
 	c := make(chan os.Signal, 1)
 	// We'll accept graceful shutdowns when quit via SIGINT (Ctrl+C) or SIGKILL,
 	// SIGQUIT or SIGTERM (Ctrl+/) will not be caught.
-	signal.Notify(c, os.Interrupt, os.Kill)
+	signal.Notify(c, os.Interrupt, syscall.SIGTERM)
 
 	// Block until we receive our signal.
 	<-c
