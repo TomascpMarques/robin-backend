@@ -12,6 +12,7 @@ import (
 
 	"github.com/TomascpMarques/dynamic-querys-go/actions"
 	"github.com/gorilla/mux"
+	"github.com/rs/cors"
 	"github.com/tomascpmarques/PAP/backend/robinservicoequipamento/endpointfuncs"
 	"github.com/tomascpmarques/PAP/backend/robinservicoequipamento/loggers"
 )
@@ -31,12 +32,20 @@ func main() {
 	actions.FuncsStorage["BuscarInfoItem"] = endpointfuncs.BuscarInfoItemQuery
 	actions.FuncsStorage["BuscarInfoItems"] = endpointfuncs.BuscarInfoItems
 	actions.FuncsStorage["AtualizarRegistoID"] = endpointfuncs.AtualizararRegistoDeItem
+	actions.FuncsStorage["PingServico"] = endpointfuncs.PingServico
+
+	// cor := cors.New(cors.Options{
+	// 	AllowedOrigins:   []string{"http://localhost:8000/"},
+	// 	AllowCredentials: false,
+	// })
 
 	router := mux.NewRouter()
 	router.HandleFunc("/", actions.Handler)
 
+	handler := cors.Default().Handler(router)
+
 	server := &http.Server{
-		Handler:      router,
+		Handler:      handler,
 		Addr:         "0.0.0.0:" + os.Getenv("ENV_ROBINEQUIPAMENTO_PORT"),
 		IdleTimeout:  time.Second * 5,
 		WriteTimeout: time.Second * 3,

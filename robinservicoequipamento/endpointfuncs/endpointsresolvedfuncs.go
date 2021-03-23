@@ -24,10 +24,10 @@ var mongoParams = mongodbhandle.MongoConexaoParams{
 var MongoClient = mongodbhandle.CriarConexaoMongoDB(mongoParams)
 
 // PingServico responde que o serviço está online
-func PingServico() map[string]interface{} {
+func PingServico(name string) map[string]interface{} {
 	result := make(map[string]interface{})
 
-	result["status"] = "Alive and OK"
+	result["status"] = fmt.Sprintf("Hello %s, I'm alive and OK", name)
 	return result
 }
 
