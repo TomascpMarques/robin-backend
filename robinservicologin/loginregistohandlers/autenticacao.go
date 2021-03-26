@@ -86,7 +86,7 @@ func Login(user string, passwd string) map[string]interface{} {
 	utilizadorPedido, err := GetUserParaValorStruct(user)
 	if err != nil {
 		loggers.LoginAuthLogger.Println("Erro: ", err)
-		returnVal["erro"] = err
+		returnVal["erro"] = "Erro ao converter os dados pedidos."
 		return returnVal
 	}
 
