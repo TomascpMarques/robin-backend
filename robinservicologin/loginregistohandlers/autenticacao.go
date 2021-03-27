@@ -214,3 +214,5 @@ func AtualizarUser(user string, userInfo map[string]interface{}, token string) m
 	returnVal["Menssagem"] = "Sucesso ao alterar dados."
 	return returnVal
 }
+
+// sessActualStatus Atualiza a mensagem de status

@@ -1,0 +1,5 @@
+tipo Utilizador
+    Nome string
+    Status string
+    Contribuicoes string > string
+    Especialidades lista string

@@ -33,7 +33,7 @@ Notas:
 		devem ser iguais aos defenidos nos campos das structs
 */
 func ExtrairCamposEspecificosStruct(estrutura interface{}, listaCampos map[string][]string) (retorno map[string]interface{}) {
-	retorno = make(map[string]interface{}, 0)
+	retorno = make(map[string]interface{})
 
 	// Valore refletido da estrutura passada
 	estruturaReflect := reflect.ValueOf(estrutura)
