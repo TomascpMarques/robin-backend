@@ -50,13 +50,21 @@ func GetInfoUtilizador(usrNome string) (result map[string]interface{}) {
 }
 
 // UpdateInfoUrilizador Atualiza todos os dados especificádos, nos parametros da func, de um utilizador.
-func UpdateInfoUrilizador(usrNome string, params ...map[string]interface{}) (result map[string]interface{}) {
+func UpdateInfoUrilizador(usrNome string, params map[string]interface{}) (result map[string]interface{}) {
 	result = make(map[string]interface{})
 
 	filter := bson.M{"nome": usrNome}
 	colecao := MongoClient.Database("users_data").Collection("account_info")
+	context, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 
-	
+	registosUpdt, err := colecao.UpdateOne(context, filter, params, options.MergeUpdateOptions())
+	defer cancel()
+	if err != nil {
+		loggers.OperacoesBDLogger.Println("Erro ao atualizar a info do utilizador: ", usrNome)
+		result["erro"] = "Erro ao atualizar a info do utilizador: " + usrNome
+		return
+	}
 
+	result["num_campos_updt"] = registosUpdt
 	return
 }
