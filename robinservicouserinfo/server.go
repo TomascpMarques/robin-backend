@@ -27,6 +27,7 @@ func main() {
 
 	actions.FuncsStorage["Ping"] = endpointfuncs.PingServico
 	actions.FuncsStorage["GetInfoUtilizador"] = endpointfuncs.GetInfoUtilizador
+	actions.FuncsStorage["UpdateInfoUrilizador"] = endpointfuncs.UpdateInfoUrilizador
 
 	router := mux.NewRouter()
 	router.HandleFunc("/", actions.Handler)

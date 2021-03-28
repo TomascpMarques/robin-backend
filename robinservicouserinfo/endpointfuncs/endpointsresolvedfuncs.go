@@ -60,11 +60,11 @@ func UpdateInfoUrilizador(usrNome string, params map[string]interface{}) (result
 	registosUpdt, err := colecao.UpdateOne(context, filter, params, options.MergeUpdateOptions())
 	defer cancel()
 	if err != nil {
-		loggers.OperacoesBDLogger.Println("Erro ao atualizar a info do utilizador: ", usrNome)
+		loggers.OperacoesBDLogger.Println("Erro ao atualizar a info do utilizador, erro: ", err)
 		result["erro"] = "Erro ao atualizar a info do utilizador: " + usrNome
 		return
 	}
 
-	result["num_campos_updt"] = registosUpdt
+	result["num_campos_updt"] = registosUpdt.ModifiedCount
 	return
 }

@@ -1,6 +1,6 @@
 package resolvedschema
 
-// Utilizador -
+// Utilizador  -
 type Utilizador struct {
 	Nome           string            `json:"nome"`
 	Status         string            `json:"status"`
