@@ -49,8 +49,8 @@ func GetInfoUtilizador(usrNome string) (result map[string]interface{}) {
 	return
 }
 
-// UpdateInfoUrilizador Atualiza todos os dados especificádos, nos parametros da func, de um utilizador.
-func UpdateInfoUrilizador(usrNome string, params map[string]interface{}) (result map[string]interface{}) {
+// UpdateInfoUtilizador Atualiza todos os dados especificádos, nos parametros da func, de um utilizador.
+func UpdateInfoUtilizador(usrNome string, params map[string]interface{}) (result map[string]interface{}) {
 	result = make(map[string]interface{})
 
 	filter := bson.M{"nome": usrNome}
