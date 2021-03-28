@@ -1,12 +1,14 @@
 package loginregistohandlers
 
 import (
+	"bytes"
 	"crypto/hmac"
 	"crypto/sha256"
 	"encoding/json"
 	"fmt"
+	"io/ioutil"
+	"net/http"
 
-	"github.com/dgrijalva/jwt-go"
 	"github.com/tomascpmarques/PAP/backend/robinservicologin/loggers"
 	"github.com/tomascpmarques/PAP/backend/robinservicologin/redishandle"
 )
@@ -27,55 +29,6 @@ var RedisClientDB = redishandle.NovoClienteRedis(
 // Verifica se o utilisador admin já existe ou não
 // Se não, cria o utilizador admin com as crdênciais default
 var _ = VerificarAdminFirstBoot()
-
-// VerificarTokenUser verifica se a token passada é válida, logo vê se já expirou
-// se o modo de assinatura é o correto, e se o emissor é o servidor de autenticação
-func VerificarTokenUser(userToken string) string {
-	token, err := jwt.Parse(userToken, func(token *jwt.Token) (interface{}, error) {
-		// valida o metodo de assinatura da key
-		if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
-			return nil, fmt.Errorf("metodo de assinatura inesperado: %v", token.Header["alg"])
-		}
-
-		// hmacSampleSecret é o []byte que contem o segredo de assinatura
-		return hmacSecret, nil
-	})
-	// Se a token for assinada por outro metodo ou a key for diferente dá erro
-	if err != nil {
-		return fmt.Sprint(err)
-	}
-
-	// Verifica que a token é válida e assinada pelo servidor de login
-	if claims, ok := token.Claims.(jwt.MapClaims); ok && token.Valid && claims["iss"] == "Robin-Servico-Auth" {
-		return "OK"
-	}
-	return "Token inválida ou expirada"
-}
-
-// VerificarTokenAdmin verifica tudo o que a função VerificarTokenUser verifica,
-// e ainda verifica se o utilisador é o administrador
-func VerificarTokenAdmin(userToken string) string {
-	token, err := jwt.Parse(userToken, func(token *jwt.Token) (interface{}, error) {
-		// valida o metodo de assinatura da key
-		if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
-			return nil, fmt.Errorf("metodo de assinatura inesperado: %v", token.Header["alg"])
-		}
-
-		// hmacSampleSecret é o []byte que contem o segredo de assinatura
-		return hmacSecret, nil
-	})
-	// Se a token for assinada por outro metodo ou a key for diferente dá erro
-	if err != nil {
-		return fmt.Sprint(err)
-	}
-
-	// Verifica que a token é válida e assinada pelo servidor de login
-	if claims, ok := token.Claims.(jwt.MapClaims); ok && token.Valid && claims["iss"] == "Robin-Servico-Auth" &&
-		claims["perms"].(float64) == 2 {
-		return "OK"
-	}
-	return "Token inválida ou expirada"
-}
 
 // Login Recebe dois parametros, o username e a passwd, cria uma token com esses dados e compara com o utilisador pedido
 // devolve uma token com o tempo de expiração de time.Now().Add(time.Minute * 40).Unix()
@@ -215,4 +168,24 @@ func AtualizarUser(user string, userInfo map[string]interface{}, token string) m
 	return returnVal
 }
 
-// sessActualStatus Atualiza a mensagem de status
+// SessActualStatus Atualiza a mensagem de status
+func SessActualStatus(usrNome string, status string) (results map[string]interface{}) {
+	results = make(map[string]interface{})
+
+	updateQuery := "{\"$set\":{\"status\": \"" + status + "\"}}"
+	action := fmt.Sprintf("action:\n\"%s\":\n\"%s\",\n%s,", "UpdateInfoUtilizador", usrNome, updateQuery)
+
+	resp, err := http.Post("http://0.0.0.0:8001", "text/plain", bytes.NewBufferString(action))
+	if err != nil {
+		loggers.LoginAuthLogger.Println("Error: ", err)
+		results["error"] = err
+		return
+	}
+	defer resp.Body.Close()
+	bodyContentBytes, _ := ioutil.ReadAll(resp.Body)
+
+	loggers.LoginResolverLogger.Printf("Update status: %v", string(bodyContentBytes))
+
+	results["sucesso"] = string(bodyContentBytes)
+	return
+}

@@ -35,6 +35,7 @@ func main() {
 	// Mapeamento das funções desponíveis aos action requests
 	actions.FuncsStorage["VerificarTokenAdmin"] = loginregistohandlers.VerificarTokenAdmin
 	actions.FuncsStorage["VerificarTokenUser"] = loginregistohandlers.VerificarTokenUser
+	actions.FuncsStorage["SessActualStatus"] = loginregistohandlers.SessActualStatus
 	actions.FuncsStorage["AtualizarUsers"] = loginregistohandlers.AtualizarUser
 	actions.FuncsStorage["Registar"] = loginregistohandlers.Registar
 	actions.FuncsStorage["Login"] = loginregistohandlers.Login
