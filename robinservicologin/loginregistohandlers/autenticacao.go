@@ -186,6 +186,6 @@ func SessActualStatus(usrNome string, status string) (results map[string]interfa
 
 	loggers.LoginResolverLogger.Printf("Update status: %v", string(bodyContentBytes))
 
-	results["sucesso"] = string(bodyContentBytes)
+	results["sucesso"] = "Campo atualizado!"
 	return
 }
