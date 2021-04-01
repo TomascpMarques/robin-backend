@@ -30,7 +30,7 @@ func PingServico(name string) (result map[string]interface{}) {
 func GetInfoUtilizador(usrNome string) (result map[string]interface{}) {
 	result = make(map[string]interface{})
 
-	filter := bson.M{"usr_nome": usrNome}
+	filter := bson.M{"user": usrNome}
 	colecao := MongoClient.Database("users_data").Collection("account_info")
 
 	var registoUser resolvedschema.Utilizador
@@ -53,7 +53,7 @@ func GetInfoUtilizador(usrNome string) (result map[string]interface{}) {
 func UpdateInfoUtilizador(usrNome string, params map[string]interface{}) (result map[string]interface{}) {
 	result = make(map[string]interface{})
 
-	filter := bson.M{"usr_nome": usrNome}
+	filter := bson.M{"nome": usrNome}
 	colecao := MongoClient.Database("users_data").Collection("account_info")
 	context, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 
