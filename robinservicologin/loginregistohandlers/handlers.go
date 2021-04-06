@@ -33,6 +33,10 @@ type User struct {
 	JWT        string `json:"jwt,omitempty"`
 }
 
+type UserFuncs interface {
+	CriarJWT() *jwt.Token
+}
+
 // CriarNovoUser através de um username, password e permissões cria e devolve um novo utilizador (struct)
 func CriarNovoUser(user string, password string, perms int) User {
 	return User{
@@ -42,8 +46,8 @@ func CriarNovoUser(user string, password string, perms int) User {
 	}
 }
 
-// CriarUserJWT Cria as JWT Token para cada utilisador, a partir dos dados da struct User
-func (user User) CriarUserJWT() *jwt.Token {
+// CriarJWT Cria as JWT Token para cada utilisador, a partir dos dados da struct User
+func (user User) CriarJWT() *jwt.Token {
 	jwtToken := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{
 		"user":  user.Username,
 		"perms": user.Permissoes,
@@ -109,7 +113,7 @@ func VerificarTokenUser(userToken string) string {
 		}
 
 		// hmacSampleSecret é o []byte que contem o segredo de assinatura
-		return hmacSecret, nil
+		return assinaturaSecretaServer, nil
 	})
 	// Se a token for assinada por outro metodo ou a key for diferente dá erro
 	if err != nil {
@@ -133,7 +137,7 @@ func VerificarTokenAdmin(userToken string) string {
 		}
 
 		// hmacSampleSecret é o []byte que contem o segredo de assinatura
-		return hmacSecret, nil
+		return assinaturaSecretaServer, nil
 	})
 	// Se a token for assinada por outro metodo ou a key for diferente dá erro
 	if err != nil {

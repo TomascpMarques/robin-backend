@@ -28,8 +28,8 @@ func main() {
 	}
 
 	// flag setup fo graceful-shutdown
-	var wait time.Duration
-	flag.DurationVar(&wait, "graceful-timeout", time.Second*15, "the duration for which the server gracefully wait for existing connections to finish - e.g. 15s or 1m")
+	var flagWait time.Duration
+	flag.DurationVar(&flagWait, "graceful-timeout", time.Second*15, "the duration for which the server gracefully wait for existing connections to finish - e.g. 15s or 1m")
 	flag.Parse()
 
 	// Mapeamento das funções desponíveis aos action requests
@@ -37,6 +37,7 @@ func main() {
 	actions.FuncsStorage["VerificarTokenUser"] = loginregistohandlers.VerificarTokenUser
 	actions.FuncsStorage["SessActualStatus"] = loginregistohandlers.SessActualStatus
 	actions.FuncsStorage["AtualizarUsers"] = loginregistohandlers.AtualizarUser
+	actions.FuncsStorage["ApagarUser"] = loginregistohandlers.ApagarUser
 	actions.FuncsStorage["Registar"] = loginregistohandlers.Registar
 	actions.FuncsStorage["Login"] = loginregistohandlers.Login
 
@@ -74,7 +75,7 @@ func main() {
 	<-c
 
 	// Create a deadline to wait for.
-	ctx, cancel := context.WithTimeout(context.Background(), wait)
+	ctx, cancel := context.WithTimeout(context.Background(), flagWait)
 	defer cancel()
 	// Doesn't block if no connections, but will otherwise wait
 	// until the timeout deadline.

@@ -43,13 +43,16 @@ Params
 	regID - []string / Ids dos registos a apagar
 */
 func DelRegistoBD(cr *redis.Client, regID ...string) error {
+	// sets regex for finding numbers
 	pattern := regexp.MustCompile(`\d+$`)
-	err := cr.Del(context.Background(), regID...)
-	if pattern.FindString(err.String()) != fmt.Sprintf("%v", len(regID)) {
-		operacoesBDLogger.Panicf("[!] Erro ao apagar o registo de keys: %v", regID)
+	// devolve um número correspondente de items apagados
+	delReturn := cr.Del(context.Background(), regID...)
+	// Se o numero de items apagados for diferente do numero de IDs dados
+	// Informa-se que hove um erro no delete desses dados
+	if pattern.FindString(delReturn.String()) != fmt.Sprintf("%v", len(regID)) {
+		operacoesBDLogger.Println("[!] Erro ao apagar um ou mais registos")
 		return errors.New("[!!] ID de registo inválido")
 	}
-
 	return nil
 }
 
