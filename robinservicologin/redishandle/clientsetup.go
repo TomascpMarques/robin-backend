@@ -11,10 +11,10 @@ import (
 )
 
 const (
-	defaultRedisPort = "6379" // porta base onde o serviçio redis está exposto
-	defaultDB        = 0
-	defaultPassword  = "Pg+V@j+Z9gKj88=-?dSk" // Pg+V@j+Z9gKj88=-?dSk
+	defaultPassword  = "Pg+V@j+Z9gKj88=-?dSk" // Palavra passe do user admin da bd redis
 	defaultUsername  = "admin"                // user para a conexão á base de dados, não o utilisador admin do sistema
+	defaultRedisPort = "6379"                 // porta base onde o serviçio redis está exposto
+	defaultDB        = 0
 )
 
 // DefClienteRedis -
@@ -52,8 +52,8 @@ Params:
 	db - Int Indica se vai usar a data-base default do redis
 */
 func NovoClienteRedis(addres, port, password, username string, db int) redis.Client {
-	// verifica as variaveis env passadas
-	// e define valores default se não forem defenidos valores por vars env
+	// Verifica as variaveis env passadas e define valores default
+	// se não forem defenidos valores por vars env
 	if port == "" {
 		port = defaultRedisPort
 	}

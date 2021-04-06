@@ -111,8 +111,7 @@ func VerificarTokenUser(userToken string) string {
 		if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
 			return nil, fmt.Errorf("metodo de assinatura inesperado: %v", token.Header["alg"])
 		}
-
-		// hmacSampleSecret é o []byte que contem o segredo de assinatura
+		// assinaturaSecretaServer é o []byte que contem o segredo de assinatura
 		return assinaturaSecretaServer, nil
 	})
 	// Se a token for assinada por outro metodo ou a key for diferente dá erro
