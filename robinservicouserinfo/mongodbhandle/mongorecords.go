@@ -14,7 +14,7 @@ func ParseTipoDeRegisto(alvo map[string]interface{}) interface{} {
 }
 
 // MongoRecordsParssedArrays :
-// 	Utiliza o vetor de maps fornecido para traduzir e formatar os dados da seguinte maneira
+// 	Utiliza o vetor de maps fornecido para traduzir e formatar os com campos JSON custom para melhor relacionamento
 func MongoRecordsParssedArrays(registos []map[string]interface{}) []map[string]interface{} {
 	returns := make([]map[string]interface{}, 0)
 	// Itera sobre todos os maps

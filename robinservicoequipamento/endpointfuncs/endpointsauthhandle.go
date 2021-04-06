@@ -8,7 +8,7 @@ import (
 	"github.com/dgrijalva/jwt-go"
 )
 
-var hmacSecret = hmac.New(sha256.New, []byte(`SUPPER_SECRET_DEVELOPMENT_KEY`)).Sum(nil)
+var assinaturaSecretaServer = hmac.New(sha256.New, []byte(`SUPPER_SECRET_DEVELOPMENT_KEY`)).Sum(nil)
 
 // User define um utilizador
 type User struct {
@@ -29,7 +29,7 @@ func VerificarTokenUser(userToken string) string {
 		}
 
 		// hmacSampleSecret é o []byte que contem o segredo de assinatura
-		return hmacSecret, nil
+		return assinaturaSecretaServer, nil
 	})
 	// Se a token for assinada por outro metodo ou a key for diferente dá erro
 	if err != nil {
@@ -53,7 +53,7 @@ func VerificarTokenAdmin(userToken string) string {
 		}
 
 		// hmacSampleSecret é o []byte que contem o segredo de assinatura
-		return hmacSecret, nil
+		return assinaturaSecretaServer, nil
 	})
 	// Se a token for assinada por outro metodo ou a key for diferente dá erro
 	if err != nil {

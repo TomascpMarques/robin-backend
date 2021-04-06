@@ -1,4 +1,0 @@
-tipo Item
-    Nome string
-    Tipo string
-    Quantidade int

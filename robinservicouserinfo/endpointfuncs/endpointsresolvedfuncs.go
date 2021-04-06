@@ -26,19 +26,22 @@ func PingServico(name string) (result map[string]interface{}) {
 	return
 }
 
-// GetInfoUtilizador Busca toda a informação do utilizador
+// GetInfoUtilizador Busca toda a informação do utilizador especificado pelo id usrNome
 func GetInfoUtilizador(usrNome string) (result map[string]interface{}) {
 	result = make(map[string]interface{})
 
+	// Defenição do filter a usar nas pesquisas da bd
 	filter := bson.M{"user": usrNome}
+	// Conexão à bd e coleção a usar
 	colecao := MongoClient.Database("users_data").Collection("account_info")
 
+	// defenições de utilitários
 	var registoUser resolvedschema.Utilizador
 	context, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 
+	// Procura por 1 registo que iguale às opções
 	err := colecao.FindOne(context, filter, options.FindOne()).Decode(&registoUser)
 	defer cancel()
-
 	if err != nil {
 		loggers.OperacoesBDLogger.Println("Erro ao procurar pelo utilizador: ", usrNome)
 		result["erro"] = "Erro ao procurar pelo utilizador: " + usrNome
@@ -53,10 +56,12 @@ func GetInfoUtilizador(usrNome string) (result map[string]interface{}) {
 func UpdateInfoUtilizador(usrNome string, params map[string]interface{}) (result map[string]interface{}) {
 	result = make(map[string]interface{})
 
+	// Defenição do filter a usar nas pesquisas da bd
 	filter := bson.M{"nome": usrNome}
 	colecao := MongoClient.Database("users_data").Collection("account_info")
 	context, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 
+	// atualização do registo e retorno da operação
 	registosUpdt, err := colecao.UpdateOne(context, filter, params, options.MergeUpdateOptions())
 	defer cancel()
 	if err != nil {
@@ -64,6 +69,7 @@ func UpdateInfoUtilizador(usrNome string, params map[string]interface{}) (result
 		result["erro"] = "Erro ao atualizar a info do utilizador: " + usrNome
 		return
 	}
+	// Se o numero de registos atualizados for diferente da quantidade pedida dá erro
 	if registosUpdt.ModifiedCount < 1 {
 		loggers.OperacoesBDLogger.Println("Erro ao atualizar a info do utilizador, erro: ", err)
 		result["erro"] = "Erro ao atualizar a info do utilizador pedido, verifica os parametros sff."

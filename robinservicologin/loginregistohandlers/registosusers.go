@@ -66,7 +66,7 @@ func AtualizarUser(user string, userInfo map[string]interface{}, token string) m
 }
 
 // ApagarUser, apaga um user da bd , pelo id especificado
-func ApagarUser(userID, token string) (retorno map[string]interface{}) {
+func ApagarUser(userID string, token string) (retorno map[string]interface{}) {
 	retorno = make(map[string]interface{})
 
 	if VerificarTokenAdmin(token) != "OK" {

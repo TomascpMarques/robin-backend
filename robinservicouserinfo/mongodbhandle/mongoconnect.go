@@ -30,6 +30,7 @@ func CriarConexaoMongoDB(params MongoConexaoParams) *mongo.Client {
 		params.URI = "mongodb://0.0.0.0:27019"
 	}
 
+	// Necessidades da conexão, i.e.: operation-timeout, operation context
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 
 	// Liga à instância mongo apontada pelos parametros
