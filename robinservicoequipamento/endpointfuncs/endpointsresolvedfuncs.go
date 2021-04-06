@@ -62,8 +62,8 @@ func AdicionarRegisto(tipoDeIndex string, dbCollPar map[string]interface{}, item
 	return result
 }
 
-// BuscarRegistoPorObjID Busca um registo na base de dados pelo ID especificado
-func BuscarRegistoPorObjID(dbCollPar map[string]interface{}, id string, token string) map[string]interface{} {
+// QueryRegistoObjID Busca um registo na base de dados pelo ID especificado
+func QueryRegistoObjID(dbCollPar map[string]interface{}, id string, token string) map[string]interface{} {
 	result := make(map[string]interface{})
 
 	if VerificarTokenUser(token) != "OK" {
@@ -77,7 +77,7 @@ func BuscarRegistoPorObjID(dbCollPar map[string]interface{}, id string, token st
 	if err != nil {
 		loggers.ServerErrorLogger.Println()
 		fmt.Println("Error: ID de registo não pode ser convertido")
-		result["Erro"] = err
+		result["erro"] = err
 		return result
 	}
 
@@ -94,7 +94,7 @@ func BuscarRegistoPorObjID(dbCollPar map[string]interface{}, id string, token st
 	defer cancel()
 	if res != nil {
 		loggers.ServerErrorLogger.Println("Error: Registo não encontrado")
-		result["Erro"] = "Registo não encontrado!"
+		result["erro"] = "Registo não encontrado!"
 		return result
 	}
 
@@ -102,7 +102,7 @@ func BuscarRegistoPorObjID(dbCollPar map[string]interface{}, id string, token st
 	registoStruct := mongodbhandle.ParseTipoDeRegisto(target)
 	if registoStruct == nil {
 		loggers.ServerErrorLogger.Println("Error: Ao cinverter o registo")
-		result["Erro"] = "Impossível de converter!"
+		result["erro"] = "Impossível de converter!"
 		return result
 	}
 
@@ -116,10 +116,10 @@ func BuscarRegistoPorObjID(dbCollPar map[string]interface{}, id string, token st
 	return result
 }
 
-// BuscarRegistosQueryCustom Toma um nome de uma bd e uma coleção como alvos do query.
+// QueryRegistosCustom Toma um nome de uma bd e uma coleção como alvos do query.
 // O query em sí é um map, que vai fornecer os valores ao filtro do tipo bson.M.
 // Toma uma token para autorização
-func BuscarRegistosQueryCustom(dbCollPar map[string]interface{}, query map[string]interface{}, token string) map[string]interface{} {
+func QueryRegistosCustom(dbCollPar map[string]interface{}, query map[string]interface{}, token string) map[string]interface{} {
 	result := make(map[string]interface{})
 
 	if VerificarTokenUser(token) != "OK" {
@@ -159,7 +159,7 @@ func BuscarInfoItemQuery(dbCollPar map[string]interface{}, id string, query map[
 	if err != nil {
 		loggers.ServerErrorLogger.Println()
 		fmt.Println("Error: ID de registo não pode ser convertido")
-		result["Erro"] = err
+		result["erro"] = err
 		return result
 	}
 
@@ -178,7 +178,7 @@ func BuscarInfoItemQuery(dbCollPar map[string]interface{}, id string, query map[
 	defer cancel()
 	if err != nil {
 		loggers.ServerErrorLogger.Println("Error: Registo não encontrado para id fornecido")
-		result["Erro"] = "Registo não encontrado para itemID: " + id
+		result["erro"] = "Registo não encontrado para itemID: " + id
 		return result
 	}
 
@@ -186,7 +186,7 @@ func BuscarInfoItemQuery(dbCollPar map[string]interface{}, id string, query map[
 	retStruct := mongodbhandle.ParseTipoDeRegisto(temp)
 	if retStruct == nil {
 		loggers.ServerErrorLogger.Println("Error: Não foi possível converter o registo")
-		result["Erro"] = "Não foi possível converter o registo"
+		result["erro"] = "Não foi possível converter o registo"
 		return result
 	}
 
@@ -196,7 +196,7 @@ func BuscarInfoItemQuery(dbCollPar map[string]interface{}, id string, query map[
 	res, err := json.Marshal(query)
 	if err != nil {
 		loggers.ServerErrorLogger.Println("Error: ", err)
-		result["Erro"] = "err"
+		result["erro"] = "err"
 		return result
 	}
 
@@ -204,7 +204,7 @@ func BuscarInfoItemQuery(dbCollPar map[string]interface{}, id string, query map[
 	err = json.Unmarshal(res, &mapConvertido)
 	if err != nil {
 		loggers.ServerErrorLogger.Println("Error: ", err)
-		result["Erro"] = "err"
+		result["erro"] = "err"
 		return result
 	}
 	/* Fim da conversão de mapas */
@@ -213,11 +213,11 @@ func BuscarInfoItemQuery(dbCollPar map[string]interface{}, id string, query map[
 	temp = structextract.ExtrairCamposEspecificosStruct(retStruct, mapConvertido)
 	if temp == nil {
 		loggers.ServerErrorLogger.Println("Error: Não foi possível extrair os valores pedidos")
-		result["Erro"] = "Não foi possível extrair os valores pedidos"
+		result["erro"] = "Não foi possível extrair os valores pedidos"
 		return result
 	}
 
-	result["Registo"] = temp
+	result["registo"] = temp
 	return result
 }
 
@@ -238,6 +238,7 @@ func BuscarInfoItems(dbCollPar map[string]interface{}, queryDB map[string]interf
 	var temp []map[string]interface{}
 	cntx, cancel := mongodbhandle.MongoCtxMaker("bg", time.Duration(10))
 
+	// Procura por todos os registos que validam o query
 	cursor, err := coll.Find(cntx, queryDB, options.Find())
 	defer cancel()
 	if err != nil {
@@ -246,6 +247,7 @@ func BuscarInfoItems(dbCollPar map[string]interface{}, queryDB map[string]interf
 		return
 	}
 
+	// Transfere os valores do curssor mongoDB para um array de map[string]interface{}
 	if err := cursor.All(cntx, &temp); err != nil {
 		loggers.DbFuncsLogger.Println("erro a decodificar valores bson para interface{}")
 		result["erro"] = "Erro a decodificar valores bson para interface{}"
@@ -258,7 +260,7 @@ func BuscarInfoItems(dbCollPar map[string]interface{}, queryDB map[string]interf
 	res, err := json.Marshal(query)
 	if err != nil {
 		loggers.ServerErrorLogger.Println("Error: ", err)
-		result["Erro"] = "err"
+		result["erro"] = "err"
 		return result
 	}
 
@@ -266,45 +268,44 @@ func BuscarInfoItems(dbCollPar map[string]interface{}, queryDB map[string]interf
 	err = json.Unmarshal(res, &mapConvertido)
 	if err != nil {
 		loggers.ServerErrorLogger.Println("Error: ", err)
-		result["Erro"] = "err"
+		result["erro"] = "err"
 		return result
 	}
 	/* Fim da conversão de mapas */
 
-	// Resultados da extação de campos do query
-	results := make([]map[string]interface{}, len(temp))
+	// Resultados da extração de campos do query
+	resultadoQuery := make([]map[string]interface{}, len(temp))
 
 	// Itera sobre todos os mapas retirados da BD
 	for k, v := range temp {
+		// Traduz o registo de um mapa para a struct equivalente
+		registoEmEstrutura := mongodbhandle.ParseTipoDeRegisto(v)
 
-		// Traduz o registo de um mpa para a struct equivalente
-		retStruct := mongodbhandle.ParseTipoDeRegisto(v)
-
-		if retStruct == nil {
+		if registoEmEstrutura == nil {
 			loggers.ServerErrorLogger.Println("Error: Não foi possível converter o registo")
-			result["Erro"] = "Não foi possível converter o registo"
+			result["erro"] = "Não foi possível converter o registo"
 			return result
 		}
 
 		// Cria o mapa para a estrutura currente e adiciona o id da estrutura
-		results[k] = map[string]interface{}{
+		resultadoQuery[k] = map[string]interface{}{
 			"id": v["_id"],
 		}
 
-		// Extração dos campos
-		temp := structextract.ExtrairCamposEspecificosStruct(retStruct, mapConvertido)
+		// Extração dos campos através de uma lista custom
+		temp := structextract.ExtrairCamposEspecificosStruct(registoEmEstrutura, mapConvertido)
 		for _, value := range reflect.ValueOf(temp).MapKeys() {
-			results[k][value.String()] = temp[value.String()]
+			resultadoQuery[k][value.String()] = temp[value.String()]
 			fmt.Println("<<", value, temp[value.String()])
 		}
 	}
 
-	result["registos"] = results
+	result["registos"] = resultadoQuery
 	return
 }
 
-// ApagarRegistoDeItem Apaga um registo pelo seu ObjectID, na bd e coleção fornecida
-func ApagarRegistoDeItem(dbCollPar map[string]interface{}, idItem string, token string) map[string]interface{} {
+// ApagarRegistoPorID Apaga um registo pelo seu ObjectID, na bd e coleção fornecida
+func ApagarRegistoPorID(dbCollPar map[string]interface{}, idItem string, token string) map[string]interface{} {
 	result := make(map[string]interface{})
 
 	if VerificarTokenUser(token) != "OK" {
@@ -318,7 +319,7 @@ func ApagarRegistoDeItem(dbCollPar map[string]interface{}, idItem string, token 
 	if err != nil {
 		loggers.ServerErrorLogger.Println()
 		fmt.Println("Error: ID de registo não pode ser convertido")
-		result["Erro"] = err
+		result["erro"] = err
 		return result
 	}
 
@@ -334,7 +335,7 @@ func ApagarRegistoDeItem(dbCollPar map[string]interface{}, idItem string, token 
 	defer cancel()
 	if err != nil {
 		loggers.ServerErrorLogger.Println("Erro: Não foi possível apagar o registo de id: ", idItem)
-		result["Erro"] = "Error: Não foi possível apagar o item de registo:" + idItem
+		result["erro"] = "Error: Não foi possível apagar o item de registo:" + idItem
 		return result
 	}
 
@@ -358,7 +359,7 @@ func AtualizararRegistoDeItem(dbCollPar map[string]interface{}, idItem string, i
 	if err != nil {
 		loggers.ServerErrorLogger.Println()
 		fmt.Println("Error: ID de registo não pode ser convertido")
-		result["Erro"] = err
+		result["erro"] = err
 		return result
 	}
 
@@ -374,7 +375,7 @@ func AtualizararRegistoDeItem(dbCollPar map[string]interface{}, idItem string, i
 	defer cancel()
 	if err != nil {
 		loggers.ServerErrorLogger.Println("Erro: ", err, " | registo de id: ", idItem)
-		result["Erro"] = "Error: registo:" + idItem
+		result["erro"] = "Error: registo:" + idItem
 		return result
 	}
 
