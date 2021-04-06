@@ -91,9 +91,12 @@ func ApagarUser(userID, token string) (retorno map[string]interface{}) {
 func SessActualStatus(usrNome string, status string) (results map[string]interface{}) {
 	results = make(map[string]interface{})
 
+	// Mongodb query para atualizar o status do user
 	updateQuery := "{\"$set\":{\"status\": \"" + status + "\"}}"
+	// DynamicGoQuery body para conssumir o endpoint do serviço userinfo
 	action := fmt.Sprintf("action:\n\"%s\":\n\"%s\",\n%s,", "UpdateInfoUtilizador", usrNome, updateQuery)
 
+	// Utilização do endpoint UpdateInfoUtilizador, exposto em http://0.0.0.0:8001
 	resp, err := http.Post("http://0.0.0.0:8001", "text/plain", bytes.NewBufferString(action))
 	if err != nil {
 		loggers.LoginAuthLogger.Println("Error: ", err)
@@ -101,10 +104,14 @@ func SessActualStatus(usrNome string, status string) (results map[string]interfa
 		return
 	}
 	defer resp.Body.Close()
-	bodyContentBytes, _ := ioutil.ReadAll(resp.Body)
+	bodyContentBytes, err := ioutil.ReadAll(resp.Body)
+	if err != nil {
+		loggers.LoginAuthLogger.Println("Error: ", err)
+		results["error"] = "Erro ao ler o conteudo da response do seviço userinfo"
+		return
+	}
 
 	loggers.LoginResolverLogger.Printf("Update status: %v", string(bodyContentBytes))
-
 	results["sucesso"] = "Campo atualizado!"
 	return
 }
