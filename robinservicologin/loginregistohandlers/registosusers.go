@@ -24,7 +24,7 @@ func AtualizarUser(user string, userInfo map[string]interface{}, token string) m
 	userAtualizar, err := GetUserParaValorStruct(user)
 	if err != nil {
 		loggers.LoginAuthLogger.Println("Erro: ", "Sem registo para <", user, ">")
-		returnVal["erro"] = err
+		returnVal["erro"] = ("Sem registo para <" + user + ">")
 		return returnVal
 	}
 
@@ -36,7 +36,13 @@ func AtualizarUser(user string, userInfo map[string]interface{}, token string) m
 		userAtualizar.Password = userInfo["pass"].(string)
 	}
 	if userInfo["perms"] != nil && userInfo["perms"] != userAtualizar.Permissoes {
-		userAtualizar.Permissoes = userInfo["perms"].(int)
+		/* Limita o numero que equival ás permissões na plataforma*/
+		if int(userInfo["perms"].(float64)) <= 1 && int(userInfo["perms"].(float64)) >= 3 {
+			loggers.LoginAuthLogger.Println("Error: ", "Permissões fora dos valores permitidos, entre 1 e 3")
+			returnVal["error"] = "Permissões fora dos valores permitidos, entre 1 e 3"
+			return returnVal
+		}
+		userAtualizar.Permissoes = int(userInfo["perms"].(float64))
 	}
 
 	userAtualizadoJSON, err := json.Marshal(&userAtualizar)

@@ -27,10 +27,10 @@ const (
 
 // User - Epecifica os dados que definem um utilizador
 type User struct {
+	JWT        string `json:"jwt,omitempty"`
 	Username   string `json:"user,omitempty"`
 	Password   string `json:"passwd,omitempty"`
 	Permissoes int    `json:"perms,omitempty"`
-	JWT        string `json:"jwt,omitempty"`
 }
 
 type UserFuncs interface {

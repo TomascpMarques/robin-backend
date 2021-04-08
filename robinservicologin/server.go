@@ -36,7 +36,7 @@ func main() {
 	actions.FuncsStorage["VerificarTokenAdmin"] = loginregistohandlers.VerificarTokenAdmin
 	actions.FuncsStorage["VerificarTokenUser"] = loginregistohandlers.VerificarTokenUser
 	actions.FuncsStorage["SessActualStatus"] = loginregistohandlers.SessActualStatus
-	actions.FuncsStorage["AtualizarUsers"] = loginregistohandlers.AtualizarUser
+	actions.FuncsStorage["AtualizarUser"] = loginregistohandlers.AtualizarUser
 	actions.FuncsStorage["ApagarUser"] = loginregistohandlers.ApagarUser
 	actions.FuncsStorage["Registar"] = loginregistohandlers.Registar
 	actions.FuncsStorage["Login"] = loginregistohandlers.Login
