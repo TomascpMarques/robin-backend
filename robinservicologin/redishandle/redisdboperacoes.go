@@ -89,17 +89,17 @@ Params
 	clienteRedis *redis.Client - cliente ligado a uma redisDB a utilisar
 	tiporegisto string - o tipo de registo associado ás keys procuradas
 */
-func BuscarKeysVerificarResultado(contexto context.Context, clienteRedis *redis.Client, tiporegisto string) []string {
+func BuscarKeysVerificarResultado(contexto context.Context, clienteRedis *redis.Client, key string) bool {
 	// Retorna só a lista com as keys do tipo de registo especificado
 	// se o valor passado for "" retorna todas as keys
-	keys := clienteRedis.Keys(contexto, tiporegisto+`*`).Val()
+	keys := clienteRedis.Keys(contexto, key).Val()
 	// Veridfica se têm algum registo na DB alvo
 	if len(keys) == 0 {
-		operacoesBDLogger.Printf("[!!] Aviso: Lista de keys para <%v> vaiza (nil) Valor enviado: %v0\n", tiporegisto, tiporegisto)
-		return append(make([]string, 1), tiporegisto+"0")
+		operacoesBDLogger.Printf("[?] Sem registos ou keys associados para: %v0\n", key)
+		return false
 	}
 
-	return keys
+	return true
 }
 
 /*

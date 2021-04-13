@@ -2,6 +2,7 @@ package loginregistohandlers
 
 import (
 	"bytes"
+	"context"
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
@@ -94,8 +95,8 @@ func ApagarUser(userID string, token string) (retorno map[string]interface{}) {
 }
 
 // SessActualStatus Atualiza a mensagem de status
-func SessActualStatus(usrNome string, status string) (results map[string]interface{}) {
-	results = make(map[string]interface{})
+func SessActualStatus(usrNome string, status string) (retorno map[string]interface{}) {
+	retorno = make(map[string]interface{})
 
 	// Mongodb query para atualizar o status do user
 	updateQuery := "{\"$set\":{\"status\": \"" + status + "\"}}"
@@ -106,18 +107,38 @@ func SessActualStatus(usrNome string, status string) (results map[string]interfa
 	resp, err := http.Post("http://0.0.0.0:8001", "text/plain", bytes.NewBufferString(action))
 	if err != nil {
 		loggers.LoginAuthLogger.Println("Error: ", err)
-		results["error"] = err
+		retorno["error"] = err
 		return
 	}
 	defer resp.Body.Close()
 	bodyContentBytes, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
 		loggers.LoginAuthLogger.Println("Error: ", err)
-		results["error"] = "Erro ao ler o conteudo da response do seviço userinfo"
+		retorno["error"] = "Erro ao ler o conteudo da response do seviço userinfo"
 		return
 	}
 
 	loggers.LoginResolverLogger.Printf("Update status: %v", string(bodyContentBytes))
-	results["sucesso"] = "Campo atualizado!"
+	retorno["sucesso"] = "Campo atualizado!"
+	return
+}
+
+func VerificarUserExiste(userName string, token string) (retorno map[string]interface{}) {
+	retorno = make(map[string]interface{})
+
+	if VerificarTokenUser(token) != "OK" {
+		loggers.LoginAuthLogger.Println("Token inválida ou expirada.")
+		retorno["err"] = "Token inválida ou expirada"
+		return
+	}
+
+	if !redishandle.BuscarKeysVerificarResultado(context.Background(), &RedisClientDB, userName) {
+		loggers.LoginOperacoesBDLogger.Println("Sem registo para a key fornecida, pode ser usada")
+		retorno["existe"] = false
+		return
+	}
+
+	loggers.LoginOperacoesBDLogger.Println("Já existes um registo para a key fornecida")
+	retorno["existe"] = true
 	return
 }
