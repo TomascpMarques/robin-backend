@@ -12,3 +12,7 @@ Este serviço implementa as funções de auticação do serviço de login, sem n
 
 ## Serviço de autenticação
 Este Serviço só têm como depedência um outro, a base de dados redis, para guardar users. O serviço disponibiliza a criação, autenticação e verificação de tokens de utilizadores.
+
+## Serviço de informação de utilizador
+Este seviço fornece informação mais detalhada sobre o utilizador, tal como o nome próprio, email, especialidades, contribuições, etc.
+Conecta com um serviço mongodb, como base de dados, e pode atualizar, eliminar e inserir conteúdo na bd.
