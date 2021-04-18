@@ -3,6 +3,7 @@ package endpointfuncs
 import (
 	"context"
 	"fmt"
+	"reflect"
 	"time"
 
 	"github.com/tomascpmarques/PAP/backend/robinservicouserinfo/loggers"
@@ -20,15 +21,15 @@ var mongoParams = mongodbhandle.MongoConexaoParams{
 var MongoClient = mongodbhandle.CriarConexaoMongoDB(mongoParams)
 
 // PingServico responde que o serviço está online
-func PingServico(name string) (result map[string]interface{}) {
-	result = make(map[string]interface{})
-	result["status"] = fmt.Sprintf("Hello %s, I'm alive and OK", name)
+func PingServico(name string) (retorno map[string]interface{}) {
+	retorno = make(map[string]interface{})
+	retorno["status"] = fmt.Sprintf("Hello %s, I'm alive and OK", name)
 	return
 }
 
 // GetInfoUtilizador Busca toda a informação do utilizador especificado pelo id usrNome
-func GetInfoUtilizador(usrNome string) (result map[string]interface{}) {
-	result = make(map[string]interface{})
+func GetInfoUtilizador(usrNome string) (retorno map[string]interface{}) {
+	retorno = make(map[string]interface{})
 
 	// Defenição do filter a usar nas pesquisas da bd
 	filter := bson.M{"user": usrNome}
@@ -44,20 +45,27 @@ func GetInfoUtilizador(usrNome string) (result map[string]interface{}) {
 	defer cancel()
 	if err != nil {
 		loggers.OperacoesBDLogger.Println("Erro ao procurar pelo utilizador: ", usrNome)
-		result["erro"] = "Erro ao procurar pelo utilizador: " + usrNome
+		retorno["erro"] = "Erro ao procurar pelo utilizador: " + usrNome
 		return
 	}
 
-	result["user"] = registoUser
+	retorno["user"] = registoUser
 	return
 }
 
 // UpdateInfoUtilizador Atualiza todos os dados especificádos, nos parametros da func, de um utilizador.
-func UpdateInfoUtilizador(usrNome string, params map[string]interface{}) (result map[string]interface{}) {
-	result = make(map[string]interface{})
+func UpdateInfoUtilizador(usrNome string, params map[string]interface{}, token string) (retorno map[string]interface{}) {
+	retorno = make(map[string]interface{})
+
+	// Se a token não for de um admin, ou de o user em sí, não se regista um user novo
+	if VerificarTokenAdmin(token) != "OK" /*|| VerificarTokenUserSpecif(token, usrNome) != "OK"*/ {
+		loggers.ServerErrorLogger.Println("A token não têm permissões")
+		retorno["error"] = "A token não têm permissões"
+		return
+	}
 
 	// Defenição do filter a usar nas pesquisas da bd
-	filter := bson.M{"nome": usrNome}
+	filter := bson.M{"user": usrNome}
 	colecao := MongoClient.Database("users_data").Collection("account_info")
 	context, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 
@@ -66,16 +74,52 @@ func UpdateInfoUtilizador(usrNome string, params map[string]interface{}) (result
 	defer cancel()
 	if err != nil {
 		loggers.OperacoesBDLogger.Println("Erro ao atualizar a info do utilizador, erro: ", err)
-		result["erro"] = "Erro ao atualizar a info do utilizador: " + usrNome
+		retorno["erro"] = "Erro ao atualizar a info do utilizador: " + usrNome
 		return
 	}
 	// Se o numero de registos atualizados for diferente da quantidade pedida dá erro
 	if registosUpdt.ModifiedCount < 1 {
+		if registosUpdt.ModifiedCount == 0 {
+			loggers.OperacoesBDLogger.Println("Sem atualizações, campos iguais")
+			retorno["num_campos_updt"] = "Sem atualizações, campos iguais."
+			return
+		}
 		loggers.OperacoesBDLogger.Println("Erro ao atualizar a info do utilizador, erro: ", err)
-		result["erro"] = "Erro ao atualizar a info do utilizador pedido, verifica os parametros sff."
+		retorno["erro"] = "Erro ao atualizar a info do utilizador pedido, verifica os parametros sff (sem repetições de valores)."
 		return
 	}
 
-	result["num_campos_updt"] = registosUpdt.ModifiedCount
+	retorno["num_campos_updt"] = registosUpdt.ModifiedCount
 	return
+}
+
+// CriarRegistoUser cria um registo mongo db, com parametros nulos ou não, excepto o username (sempre !null)
+func CriarRegistoUser(userInfo map[string]interface{}, token string) (retorno map[string]interface{}) {
+	retorno = make(map[string]interface{})
+
+	// Se a token não for de um admin, ou de o user em sí, não se regista um user novo
+	if VerificarTokenAdmin(token) != "OK" {
+		loggers.ServerErrorLogger.Println("A token não têm permissões")
+		retorno["error"] = "A token não têm permissões"
+		return
+	}
+
+	info := resolvedschema.UtilizadorParaStruct(&userInfo)
+	if reflect.ValueOf(info).IsZero() {
+		loggers.ServerErrorLogger.Println("Erro ao converter os dados para a struct correta")
+		retorno["error"] = "Erro com o tipo de dados e sua conversão"
+		return
+	}
+
+	colecao := MongoClient.Database("users_data").Collection("account_info")
+
+	insserted, err := mongodbhandle.InsserirUmRegisto(info, colecao, 10)
+	if err != nil {
+		loggers.ServerErrorLogger.Println("Error: ", err)
+		retorno["Error"] = err
+		return nil
+	}
+
+	retorno["insserido"] = insserted
+	return retorno
 }

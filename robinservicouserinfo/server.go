@@ -26,6 +26,7 @@ func main() {
 	flag.Parse()
 
 	actions.FuncsStorage["Ping"] = endpointfuncs.PingServico
+	actions.FuncsStorage["CriarRegistoUser"] = endpointfuncs.CriarRegistoUser
 	actions.FuncsStorage["GetInfoUtilizador"] = endpointfuncs.GetInfoUtilizador
 	actions.FuncsStorage["UpdateInfoUtilizador"] = endpointfuncs.UpdateInfoUtilizador
 
