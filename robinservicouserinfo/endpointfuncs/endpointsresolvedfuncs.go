@@ -10,6 +10,7 @@ import (
 	"github.com/tomascpmarques/PAP/backend/robinservicouserinfo/mongodbhandle"
 	"github.com/tomascpmarques/PAP/backend/robinservicouserinfo/resolvedschema"
 	"go.mongodb.org/mongo-driver/bson"
+	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
 )
 
@@ -65,8 +66,8 @@ func UpdateInfoUtilizador(usrNome string, params map[string]interface{}, token s
 	}
 
 	// Defenição do filter a usar nas pesquisas da bd
-	filter := bson.M{"user": usrNome}
 	colecao := MongoClient.Database("users_data").Collection("account_info")
+	filter := bson.M{"user": usrNome}
 	context, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 
 	// atualização do registo e retorno da operação
@@ -104,14 +105,22 @@ func CriarRegistoUser(userInfo map[string]interface{}, token string) (retorno ma
 		return
 	}
 
+	colecao := MongoClient.Database("users_data").Collection("account_info")
+
+	exists := colecao.FindOne(context.Background(), bson.M{"user": userInfo["user"]})
+	if exists != nil && exists.Err() != mongo.ErrNoDocuments {
+		loggers.ServerErrorLogger.Println("Já existe informação para esse user")
+		retorno["error"] = "Já existe informação para esse user"
+		return
+
+	}
+
 	info := resolvedschema.UtilizadorParaStruct(&userInfo)
 	if reflect.ValueOf(info).IsZero() {
 		loggers.ServerErrorLogger.Println("Erro ao converter os dados para a struct correta")
 		retorno["error"] = "Erro com o tipo de dados e sua conversão"
 		return
 	}
-
-	colecao := MongoClient.Database("users_data").Collection("account_info")
 
 	insserted, err := mongodbhandle.InsserirUmRegisto(info, colecao, 10)
 	if err != nil {

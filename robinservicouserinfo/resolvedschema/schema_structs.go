@@ -6,7 +6,7 @@ type Utilizador struct {
 	User           string                `json:"user"`
 	Status         string                `json:"status"`
 	Email          string                `json:"email"`
-	StatusMss      string                `json:"status_mss"`
+	StatusMss      string                `json:"statusmss"`
 	Contribuicoes  []map[string][]string `json:"contribuicoes"`
 	Especialidades []string              `json:"especialidades"`
 }

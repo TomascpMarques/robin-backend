@@ -95,7 +95,7 @@ func BuscarKeysVerificarResultado(contexto context.Context, clienteRedis *redis.
 	keys := clienteRedis.Keys(contexto, key).Val()
 	// Veridfica se têm algum registo na DB alvo
 	if len(keys) == 0 {
-		operacoesBDLogger.Printf("[?] Sem registos ou keys associados para: %v0\n", key)
+		operacoesBDLogger.Printf("[?] Sem registos ou keys associados para: %v\n", key)
 		return false
 	}
 
