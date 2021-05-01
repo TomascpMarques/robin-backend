@@ -34,18 +34,19 @@ func main() {
 	actions.FuncsStorage["AtualizarRegistoID"] = endpointfuncs.AtualizararRegistoDeItem
 	actions.FuncsStorage["PingServico"] = endpointfuncs.PingServico
 
-	// cor := cors.New(cors.Options{
-	// 	AllowedOrigins:   []string{"http://localhost:8000/"},
-	// 	AllowCredentials: false,
-	// })
-
 	router := mux.NewRouter()
 	router.HandleFunc("/", actions.Handler)
 
-	handler := cors.Default().Handler(router)
+	corsOptions := cors.New(cors.Options{
+		AllowedOrigins:   []string{"http://localhost:8000/"},
+		AllowCredentials: false,
+	})
+
+	//handler := cors.Default().Handler(router)
+	corsHandlers := corsOptions.Handler(router)
 
 	server := &http.Server{
-		Handler:      handler,
+		Handler:      corsHandlers,
 		Addr:         "0.0.0.0:" + os.Getenv("ENV_ROBINEQUIPAMENTO_PORT"),
 		IdleTimeout:  time.Second * 5,
 		WriteTimeout: time.Second * 3,

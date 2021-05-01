@@ -45,15 +45,16 @@ func main() {
 	router := mux.NewRouter()
 	router.HandleFunc("/", actions.Handler)
 
-	// cor := cors.New(cors.Options{
-	// 	AllowedOrigins:   []string{"http://localhost:8081/auth"},
-	// 	AllowCredentials: true,
-	// })
+	corsOptions := cors.New(cors.Options{
+		AllowedOrigins:   []string{"http://localhost:8081/"},
+		AllowCredentials: true,
+	})
 
-	handler := cors.Default().Handler(router)
+	//handler := cors.Default().Handler(router)
+	corsHandlers := corsOptions.Handler(router)
 
 	srv := &http.Server{
-		Handler:      handler,
+		Handler:      corsHandlers,
 		Addr:         "0.0.0.0:" + HTTPport,
 		WriteTimeout: 2 * time.Second,
 		ReadTimeout:  2 * time.Second,

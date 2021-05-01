@@ -33,10 +33,16 @@ func main() {
 	router := mux.NewRouter()
 	router.HandleFunc("/", actions.Handler)
 
-	handler := cors.Default().Handler(router)
+	corsOptions := cors.New(cors.Options{
+		AllowedOrigins:   []string{"http://localhost:8081/"},
+		AllowCredentials: true,
+	})
+
+	//handler := cors.Default().Handler(router)
+	corsHandlers := corsOptions.Handler(router)
 
 	server := &http.Server{
-		Handler:      handler,
+		Handler:      corsHandlers,
 		Addr:         "0.0.0.0:" + os.Getenv("ENV_ROBINUSERINFO_PORT"),
 		IdleTimeout:  time.Second * 5,
 		WriteTimeout: time.Second * 3,
