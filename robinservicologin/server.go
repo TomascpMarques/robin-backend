@@ -46,7 +46,7 @@ func main() {
 	router.HandleFunc("/", actions.Handler)
 
 	corsOptions := cors.New(cors.Options{
-		AllowedOrigins:   []string{"http://localhost:8081/"},
+		AllowedOrigins:   []string{"http://localhost:8080"},
 		AllowCredentials: true,
 	})
 
@@ -70,7 +70,7 @@ func main() {
 	// Graceful-Shutdown implementation
 	c := make(chan os.Signal, 1)
 	// We'll accept graceful shutdowns when quit via SIGINT (Ctrl+C) or SIGKILL,
-	// SIGQUIT or SIGTERM (Ctrl+/) will not be caught.
+	// SIGQUIT will not be caught.
 	signal.Notify(c, os.Interrupt, syscall.SIGTERM)
 
 	// Block until we receive our signal.

@@ -38,7 +38,7 @@ func main() {
 	router.HandleFunc("/", actions.Handler)
 
 	corsOptions := cors.New(cors.Options{
-		AllowedOrigins:   []string{"http://localhost:8000/"},
+		AllowedOrigins:   []string{"http://localhost:8080"},
 		AllowCredentials: false,
 	})
 
