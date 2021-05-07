@@ -19,3 +19,10 @@ func PingServico(name string) (retorno map[string]interface{}) {
 	retorno["status"] = fmt.Sprintf("Hello %s, I'm alive and OK", name)
 	return
 }
+
+// CriarRepositorio Cria um repo para guardar a informação relativa a um tema e/ou tarefa
+func CriarRepositorio() (retorno map[string]interface{}) {
+	retorno = make(map[string]interface{})
+
+	return
+}
