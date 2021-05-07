@@ -3,7 +3,7 @@ package endpointfuncs
 import (
 	"fmt"
 
-	"github.com/tomascpmarques/PAP/backend/robinservicouserinfo/mongodbhandle"
+	"github.com/tomascpmarques/PAP/backend/robinservicodocumentacao/mongodbhandle"
 )
 
 var mongoParams = mongodbhandle.MongoConexaoParams{

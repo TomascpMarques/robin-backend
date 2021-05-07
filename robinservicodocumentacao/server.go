@@ -13,8 +13,8 @@ import (
 	"github.com/TomascpMarques/dynamic-querys-go/actions"
 	"github.com/gorilla/mux"
 	"github.com/rs/cors"
-	"github.com/tomascpmarques/PAP/backend/robinservicouserinfo/endpointfuncs"
-	"github.com/tomascpmarques/PAP/backend/robinservicouserinfo/loggers"
+	"github.com/tomascpmarques/PAP/backend/robinservicodocumentacao/endpointfuncs"
+	"github.com/tomascpmarques/PAP/backend/robinservicodocumentacao/loggers"
 )
 
 func main() {

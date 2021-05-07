@@ -4,7 +4,7 @@ import (
 	"context"
 	"time"
 
-	"github.com/tomascpmarques/PAP/backend/robinservicouserinfo/loggers"
+	"github.com/tomascpmarques/PAP/backend/robinservicodocumentacao/loggers"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
 )

@@ -1,13 +1,17 @@
 package mongodbhandle
 
-import "github.com/tomascpmarques/PAP/backend/robinservicouserinfo/resolvedschema"
+import "github.com/tomascpmarques/PAP/backend/robinservicodocumentacao/resolvedschema"
 
 // ParseTipoDeRegisto -
 func ParseTipoDeRegisto(alvo map[string]interface{}) interface{} {
 	switch alvo["tipo_de_registo"] {
 	// Para o tipo Item
-	case "Utilizador":
-		return resolvedschema.UtilizadorParaStruct(&alvo)
+	case "Repositorio":
+		return resolvedschema.RepositorioParaStruct(&alvo)
+	case "FicheiroMetaData":
+		return resolvedschema.FicheiroMetaDataParaStruct(&alvo)
+	case "FicheiroConteudo":
+		return resolvedschema.FicheiroConteudoParaStruct(&alvo)
 	}
 
 	return nil
