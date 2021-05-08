@@ -7,12 +7,12 @@ package resolvedschema
 // Recebem o ObjectID do novo registo, o ID em sí é o nome,
 // Que será obrigatóriamente diferente para cada repo.
 type Repositorio struct {
-	Nome            string                      `json:"nome,omitempty"`
-	Tema            string                      `json:"tema,omitempty"`
-	Autor           string                      `json:"autor,omitempty"`
-	Contribuidores  []string                    `json:"contribuidores,omitempty"`
-	FicheirosMeta   map[string]FicheiroMetaData `json:"ficheiros_meta,omitempty"`
-	FicheirosPastas map[string][]string         `json:"ficheiros_pastas,omitempty"`
+	Nome            string              `json:"nome,omitempty"`
+	Tema            string              `json:"tema,omitempty"`
+	Autor           string              `json:"autor,omitempty"`
+	Contribuidores  []string            `json:"contribuidores,omitempty"`
+	FicheirosMeta   map[string]string   `json:"ficheiros_meta,omitempty"`
+	FicheirosPastas map[string][]string `json:"ficheiros_pastas,omitempty"`
 }
 
 type FicheiroMetaData struct {

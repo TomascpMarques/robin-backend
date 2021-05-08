@@ -25,13 +25,15 @@ func main() {
 	flag.DurationVar(&wait, "graceful-timeout", time.Second*15, "gracefully wait for existing connections to finish in 15s")
 	flag.Parse()
 
+	actions.FuncsStorage["BuscarRepositorio"] = endpointfuncs.BuscarRepositorio
+	actions.FuncsStorage["CriarRepositorio"] = endpointfuncs.CriarRepositorio
 	actions.FuncsStorage["Ping"] = endpointfuncs.PingServico
 
 	router := mux.NewRouter()
 	router.HandleFunc("/", actions.Handler)
 
 	corsOptions := cors.New(cors.Options{
-		AllowedOrigins:   []string{"http://localhost:8080"},
+		AllowedOrigins:   []string{"http://localhost:8118"},
 		AllowCredentials: true,
 	})
 
@@ -67,6 +69,7 @@ func main() {
 	// Doesn't block if no connections, but will otherwise wait
 	// until the timeout deadline.
 	server.Shutdown(ctx)
+	endpointfuncs.MongoClient.Disconnect(context.TODO())
 
 	actions.DQGLogger.Println("Servidor a desligar")
 	os.Exit(0)
