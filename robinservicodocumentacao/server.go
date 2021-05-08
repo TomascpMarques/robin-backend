@@ -14,6 +14,7 @@ import (
 	"github.com/gorilla/mux"
 	"github.com/rs/cors"
 	"github.com/tomascpmarques/PAP/backend/robinservicodocumentacao/endpointfuncs"
+	"github.com/tomascpmarques/PAP/backend/robinservicodocumentacao/endpointfuncs/ficheiros"
 	"github.com/tomascpmarques/PAP/backend/robinservicodocumentacao/endpointfuncs/repos"
 	"github.com/tomascpmarques/PAP/backend/robinservicodocumentacao/loggers"
 )
@@ -25,6 +26,8 @@ func main() {
 	var wait time.Duration
 	flag.DurationVar(&wait, "graceful-timeout", time.Second*15, "gracefully wait for existing connections to finish in 15s")
 	flag.Parse()
+
+	actions.FuncsStorage["CriarFicheiro"] = ficheiros.CriarFicheiro
 
 	actions.FuncsStorage["UpdateRepositorio"] = repos.UpdateRepositorio
 	actions.FuncsStorage["BuscarRepositorio"] = repos.BuscarRepositorio
