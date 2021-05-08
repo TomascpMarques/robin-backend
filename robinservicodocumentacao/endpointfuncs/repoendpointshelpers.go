@@ -2,6 +2,8 @@ package endpointfuncs
 
 import (
 	"context"
+	"errors"
+	"reflect"
 	"time"
 
 	"github.com/tomascpmarques/PAP/backend/robinservicodocumentacao/loggers"
@@ -65,4 +67,20 @@ func UpdateRepositorioPorNome(repoName string, mundancas map[string]interface{})
 	}
 
 	return matchCount
+}
+
+func VerificarInfoBaseRepo(info map[string]interface{}) (err error) {
+	err = nil
+	keysObrg := []string{
+		"nome",
+		"autor",
+		"tema",
+	}
+	for _, v := range keysObrg {
+		if valor, existe := info[v]; !(reflect.ValueOf(valor).IsValid()) || !existe {
+			err = errors.New("não cumpre os parametros")
+			break
+		}
+	}
+	return
 }

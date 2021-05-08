@@ -29,6 +29,7 @@ func main() {
 	actions.FuncsStorage["BuscarRepositorio"] = endpointfuncs.BuscarRepositorio
 	actions.FuncsStorage["CriarRepositorio"] = endpointfuncs.CriarRepositorio
 	actions.FuncsStorage["DropRepositorio"] = endpointfuncs.DropRepositorio
+
 	actions.FuncsStorage["Ping"] = endpointfuncs.PingServico
 
 	router := mux.NewRouter()

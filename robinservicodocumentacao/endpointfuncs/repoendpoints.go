@@ -11,14 +11,26 @@ import (
 func CriarRepositorio(repoInfo map[string]interface{}, token string) (retorno map[string]interface{}) {
 	retorno = make(map[string]interface{})
 
-	// if VerificarTokenUser(token) != "OK" {
-	// 	loggers.OperacoesBDLogger.Println("Erro: A token fornecida é inválida ou expirou")
-	// 	retorno["erro"] = "A token fornecida é inválida ou expirou"
-	// 	return retorno
-	// }
+	if VerificarTokenUser(token) != "OK" {
+		loggers.OperacoesBDLogger.Println("Erro: A token fornecida é inválida ou expirou")
+		retorno["erro"] = "A token fornecida é inválida ou expirou"
+		return retorno
+	}
 
 	// Get the mongo colection
 	mongoCollection := MongoClient.Database("documentacao").Collection("repos")
+
+	if existe := GetRepoPorCampo("nome", repoInfo["nome"]); !(reflect.ValueOf(existe).IsZero()) {
+		loggers.DbFuncsLogger.Println("Não foi possivél criar o repositório pedido: ", repoInfo["nome"], ".Já existe um com esse nome")
+		retorno["erro"] = ("Não foi possivél criar o repositório pedido, devido ao nome ser igual a um existente")
+		return
+	}
+
+	if err := VerificarInfoBaseRepo(repoInfo); err != nil {
+		loggers.DbFuncsLogger.Println("Os dados estão incompletos para criar um repo")
+		retorno["erro"] = "Os dados estão incompletos para criar um repo"
+		return
+	}
 
 	// Insser um registo na coleção e base de dados especificada
 	registo, err := mongodbhandle.InsserirUmRegisto(repoInfo, mongoCollection, 10)
@@ -37,11 +49,11 @@ func CriarRepositorio(repoInfo map[string]interface{}, token string) (retorno ma
 func BuscarRepositorio(repoCampo string, campoValor interface{}, token string) (retorno map[string]interface{}) {
 	retorno = make(map[string]interface{})
 
-	// if VerificarTokenUser(token) != "OK" {
-	// 	loggers.OperacoesBDLogger.Println("Erro: A token fornecida é inválida ou expirou")
-	// 	retorno["erro"] = "A token fornecida é inválida ou expirou"
-	// 	return retorno
-	// }
+	if VerificarTokenUser(token) != "OK" {
+		loggers.OperacoesBDLogger.Println("Erro: A token fornecida é inválida ou expirou")
+		retorno["erro"] = "A token fornecida é inválida ou expirou"
+		return retorno
+	}
 
 	// Busca o repositório por um campo especifico, e o valor esperado nesse campo
 	repositorio := GetRepoPorCampo(repoCampo, campoValor)
