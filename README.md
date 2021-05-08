@@ -1,5 +1,6 @@
 # Backend Projeto Robin
 > PAP Tomás Marques
+![Robin Logo](https://github.com/TomascpMarques/robin-backend/blob/master/robin-logo.png)
 
 ## Intro - Arquitétura
 O programa em sí, é constituído por outros microserviços que tentam ao máximo fazer o seu trabalho sem depender dos outros, são lançados como clusters ex: o serviço robinequipamento precis de uma base-de-dados, mas não precisa de ter conexão com o sistema de autenticação, para validar pedidos e ações. Logo os serviços são lançados através de um docker-compose file, que cira a própria rede virtual interna, e os serviços conectam aos outros que forem necessários para o funcionamento.
