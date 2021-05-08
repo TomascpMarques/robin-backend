@@ -27,7 +27,7 @@ func main() {
 
 	actions.FuncsStorage["BuscarRegistoCustom"] = endpointfuncs.QueryRegistosCustom
 	actions.FuncsStorage["ApagarRegistoDeItem"] = endpointfuncs.ApagarRegistoPorID
-	actions.FuncsStorage["AtualizarRegistoID"] = endpointfuncs.AtualizararRegistoDeItem
+	actions.FuncsStorage["AtualizarRegistoID"] = endpointfuncs.AtualizarRegistoDeItem
 	actions.FuncsStorage["AdicionarRegisto"] = endpointfuncs.AdicionarRegisto
 	actions.FuncsStorage["BuscarRegistoID"] = endpointfuncs.QueryRegistoObjID
 	actions.FuncsStorage["BuscarInfoItems"] = endpointfuncs.BuscarInfoItems

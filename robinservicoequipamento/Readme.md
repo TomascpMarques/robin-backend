@@ -9,7 +9,7 @@ Disponibiliza funções para poder adicionar, remover, atualizar, extrair inform
 
 * ApagarRegistoDeItem  - Apaga um registo pelo seu ObjectID, na bd e coleção fornecida
 
-* AtualizararRegistoDeItem 
+* AtualizarRegistoDeItem 
 
 * BuscarRegistoPorObjID - Busca um registo na base de dados pelo ID especificado
 

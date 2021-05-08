@@ -4,8 +4,10 @@ import (
 	"context"
 	"time"
 
+	"github.com/tomascpmarques/PAP/backend/robinservicodocumentacao/loggers"
 	"github.com/tomascpmarques/PAP/backend/robinservicodocumentacao/resolvedschema"
 	"go.mongodb.org/mongo-driver/bson"
+	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
 )
 
@@ -44,4 +46,23 @@ func DropRepoPorNome(repoNome string) (erro error) {
 	defer cancel()
 
 	return
+}
+
+func UpdateRepositorioPorNome(repoName string, mundancas map[string]interface{}) *mongo.UpdateResult {
+	// Set-up do filtro
+	filter := bson.M{"nome": repoName}
+
+	// Get collection
+	coll := MongoClient.Database("documentacao").Collection("repos")
+	cntx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+
+	// Atualiza o item através do map especificado nos params
+	matchCount, err := coll.UpdateOne(cntx, filter, mundancas, options.MergeUpdateOptions())
+	defer cancel()
+	if err != nil {
+		loggers.DbFuncsLogger.Println("Erro ao atualizar o registo")
+		return nil
+	}
+
+	return matchCount
 }

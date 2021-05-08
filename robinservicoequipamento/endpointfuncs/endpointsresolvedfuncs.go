@@ -343,9 +343,9 @@ func ApagarRegistoPorID(dbCollPar map[string]interface{}, idItem string, token s
 	return result
 }
 
-// AtualizararRegistoDeItem Na bd e coleção escolhida, o registo de id idItem
+// AtualizarRegistoDeItem Na bd e coleção escolhida, o registo de id idItem
 // vai ser atualizado para os valores especificados em item
-func AtualizararRegistoDeItem(dbCollPar map[string]interface{}, idItem string, item map[string]interface{}, token string) map[string]interface{} {
+func AtualizarRegistoDeItem(dbCollPar map[string]interface{}, idItem string, item map[string]interface{}, token string) map[string]interface{} {
 	result := make(map[string]interface{})
 
 	if VerificarTokenUser(token) != "OK" {
