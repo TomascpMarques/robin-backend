@@ -30,3 +30,18 @@ func GetRepoPorCampo(campo string, valor interface{}) (repo resolvedschema.Repos
 	// Devolve repo
 	return
 }
+
+func DropRepoPorNome(repoNome string) (erro error) {
+	// Define o filtro a usar na procura de informação na BD
+	filter := bson.M{"nome": repoNome}
+	// Documento e repo onde procurar o repo
+	collection := MongoClient.Database("documentacao").Collection("repos")
+	cntx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+
+	// Depois de apagar o registo, a var err,
+	// Vai ter o sucesso ou falhanço da operação como o seu valor
+	_, erro = collection.DeleteOne(cntx, filter)
+	defer cancel()
+
+	return
+}

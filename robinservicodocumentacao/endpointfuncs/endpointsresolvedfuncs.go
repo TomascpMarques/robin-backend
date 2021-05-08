@@ -27,7 +27,7 @@ func CriarRepositorio(repoInfo map[string]interface{}, token string) (retorno ma
 	retorno = make(map[string]interface{})
 
 	// if VerificarTokenUser(token) != "OK" {
-	// 	fmt.Println("Erro: A token fornecida é inválida ou expirou")
+	// 	loggers.OperacoesBDLogger.Println("Erro: A token fornecida é inválida ou expirou")
 	// 	retorno["erro"] = "A token fornecida é inválida ou expirou"
 	// 	return retorno
 	// }
@@ -53,7 +53,7 @@ func BuscarRepositorio(repoCampo string, campoValor interface{}, token string) (
 	retorno = make(map[string]interface{})
 
 	// if VerificarTokenUser(token) != "OK" {
-	// 	fmt.Println("Erro: A token fornecida é inválida ou expirou")
+	// 	loggers.OperacoesBDLogger.Println("Erro: A token fornecida é inválida ou expirou")
 	// 	retorno["erro"] = "A token fornecida é inválida ou expirou"
 	// 	return retorno
 	// }
@@ -73,4 +73,36 @@ func BuscarRepositorio(repoCampo string, campoValor interface{}, token string) (
 	return
 }
 
-//func DropRepositorio() (retorno map[string]interface{}) {}
+func DropRepositorio(repoNome string, token string) (retorno map[string]interface{}) {
+	retorno = make(map[string]interface{})
+
+	if VerificarTokenUser(token) != "OK" {
+		loggers.ServerErrorLogger.Println("Erro: A token fornecida é inválida ou expirou")
+		retorno["erro"] = "A token fornecida é inválida ou expirou"
+		return retorno
+	}
+
+	repositorio := GetRepoPorCampo("nome", repoNome)
+	// Se o resultado da busca for nil, devolve umas menssagens de erro
+	if reflect.ValueOf(repositorio).IsZero() {
+		loggers.OperacoesBDLogger.Println("Não foi possivél encontrar o repositório pedido")
+		retorno["erro"] = ("Não foi possivél encontrar o repositório pedido")
+		return
+	}
+
+	if VerificarTokenUserSpecif(token, repositorio.Autor) != "OK" {
+		loggers.ServerErrorLogger.Println("Erro: Este utilizador não têm permissões para esta operação")
+		retorno["erro"] = "Este utilizador não têm permissões para esta operação"
+		return retorno
+	}
+
+	if err := DropRepoPorNome(repoNome); err != nil {
+		loggers.ServerErrorLogger.Println("Erro: Este utilizador não têm permissões para esta operação")
+		retorno["erro"] = "Este utilizador não têm permissões para esta operação"
+		return retorno
+	}
+
+	loggers.DbFuncsLogger.Println("Repositório apagado com sucesso")
+	retorno["ok"] = true
+	return
+}

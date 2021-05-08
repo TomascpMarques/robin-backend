@@ -42,7 +42,7 @@ func VerificarTokenUser(userToken string) string {
 }
 
 // VerificarTokenUserSpecif verifica se a token passada é válida, logo vê se já expirou
-// se o modo de assinatura é o correto, e se o emissor é o servidor de autenticação, e se o user specified é igual ao da token
+// se o modo de assinatura é o correto, e se o emissor é o servidor de autenticação, e se o user especificado é igual ao da token
 func VerificarTokenUserSpecif(userToken string, user string) string {
 	token, err := jwt.Parse(userToken, func(token *jwt.Token) (interface{}, error) {
 		// valida o metodo de assinatura da key

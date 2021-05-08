@@ -58,7 +58,7 @@ func GetInfoUtilizador(usrNome string) (retorno map[string]interface{}) {
 func UpdateInfoUtilizador(usrNome string, params map[string]interface{}, token string) (retorno map[string]interface{}) {
 	retorno = make(map[string]interface{})
 
-	// Se a token não for de um admin, ou de o user em sí, não se regista um user novo
+	// Se a token não for de um admin, ou do user em sí, não se atualiza o user
 	if VerificarTokenAdmin(token) != "OK" /*|| VerificarTokenUserSpecif(token, usrNome) != "OK"*/ {
 		loggers.ServerErrorLogger.Println("A token não têm permissões")
 		retorno["error"] = "A token não têm permissões"
@@ -98,7 +98,7 @@ func UpdateInfoUtilizador(usrNome string, params map[string]interface{}, token s
 func CriarRegistoUser(userInfo map[string]interface{}, token string) (retorno map[string]interface{}) {
 	retorno = make(map[string]interface{})
 
-	// Se a token não for de um admin, ou de o user em sí, não se regista um user novo
+	// Se a token não for de um admin, não se regista um user novo
 	if VerificarTokenAdmin(token) != "OK" {
 		loggers.ServerErrorLogger.Println("A token não têm permissões")
 		retorno["error"] = "A token não têm permissões"
