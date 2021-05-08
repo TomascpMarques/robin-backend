@@ -1,4 +1,4 @@
-package endpointfuncs
+package repos
 
 import (
 	"context"
@@ -6,6 +6,7 @@ import (
 	"reflect"
 	"time"
 
+	"github.com/tomascpmarques/PAP/backend/robinservicodocumentacao/endpointfuncs"
 	"github.com/tomascpmarques/PAP/backend/robinservicodocumentacao/loggers"
 	"github.com/tomascpmarques/PAP/backend/robinservicodocumentacao/resolvedschema"
 	"go.mongodb.org/mongo-driver/bson"
@@ -19,7 +20,7 @@ func GetRepoPorCampo(campo string, valor interface{}) (repo resolvedschema.Repos
 	// Define o filtro a usar na procura de informação na BD
 	filter := bson.M{campo: valor}
 	// Documento e repo onde procurar o repo
-	collection := MongoClient.Database("documentacao").Collection("repos")
+	collection := endpointfuncs.MongoClient.Database("documentacao").Collection("repos")
 	cntx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 
 	// Procura na BD do registo pedido
@@ -39,7 +40,7 @@ func DropRepoPorNome(repoNome string) (erro error) {
 	// Define o filtro a usar na procura de informação na BD
 	filter := bson.M{"nome": repoNome}
 	// Documento e repo onde procurar o repo
-	collection := MongoClient.Database("documentacao").Collection("repos")
+	collection := endpointfuncs.MongoClient.Database("documentacao").Collection("repos")
 	cntx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 
 	// Depois de apagar o registo, a var err,
@@ -55,7 +56,7 @@ func UpdateRepositorioPorNome(repoName string, mundancas map[string]interface{})
 	filter := bson.M{"nome": repoName}
 
 	// Get collection
-	coll := MongoClient.Database("documentacao").Collection("repos")
+	coll := endpointfuncs.MongoClient.Database("documentacao").Collection("repos")
 	cntx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 
 	// Atualiza o item através do map especificado nos params

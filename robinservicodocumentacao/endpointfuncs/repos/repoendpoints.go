@@ -1,8 +1,9 @@
-package endpointfuncs
+package repos
 
 import (
 	"reflect"
 
+	"github.com/tomascpmarques/PAP/backend/robinservicodocumentacao/endpointfuncs"
 	"github.com/tomascpmarques/PAP/backend/robinservicodocumentacao/loggers"
 	"github.com/tomascpmarques/PAP/backend/robinservicodocumentacao/mongodbhandle"
 )
@@ -11,14 +12,14 @@ import (
 func CriarRepositorio(repoInfo map[string]interface{}, token string) (retorno map[string]interface{}) {
 	retorno = make(map[string]interface{})
 
-	if VerificarTokenUser(token) != "OK" {
+	if endpointfuncs.VerificarTokenUser(token) != "OK" {
 		loggers.OperacoesBDLogger.Println("Erro: A token fornecida é inválida ou expirou")
 		retorno["erro"] = "A token fornecida é inválida ou expirou"
 		return retorno
 	}
 
 	// Get the mongo colection
-	mongoCollection := MongoClient.Database("documentacao").Collection("repos")
+	mongoCollection := endpointfuncs.MongoClient.Database("documentacao").Collection("repos")
 
 	if existe := GetRepoPorCampo("nome", repoInfo["nome"]); !(reflect.ValueOf(existe).IsZero()) {
 		loggers.DbFuncsLogger.Println("Não foi possivél criar o repositório pedido: ", repoInfo["nome"], ".Já existe um com esse nome")
@@ -49,7 +50,7 @@ func CriarRepositorio(repoInfo map[string]interface{}, token string) (retorno ma
 func BuscarRepositorio(repoCampo string, campoValor interface{}, token string) (retorno map[string]interface{}) {
 	retorno = make(map[string]interface{})
 
-	if VerificarTokenUser(token) != "OK" {
+	if endpointfuncs.VerificarTokenUser(token) != "OK" {
 		loggers.OperacoesBDLogger.Println("Erro: A token fornecida é inválida ou expirou")
 		retorno["erro"] = "A token fornecida é inválida ou expirou"
 		return retorno
@@ -74,7 +75,7 @@ func BuscarRepositorio(repoCampo string, campoValor interface{}, token string) (
 func DropRepositorio(repoNome string, token string) (retorno map[string]interface{}) {
 	retorno = make(map[string]interface{})
 
-	if VerificarTokenUser(token) != "OK" {
+	if endpointfuncs.VerificarTokenUser(token) != "OK" {
 		loggers.ServerErrorLogger.Println("Erro: A token fornecida é inválida ou expirou")
 		retorno["erro"] = "A token fornecida é inválida ou expirou"
 		return retorno
@@ -90,7 +91,7 @@ func DropRepositorio(repoNome string, token string) (retorno map[string]interfac
 	}
 
 	// Verificação de igualdade entre request user, e repo autor
-	if VerificarTokenUserSpecif(token, repositorio.Autor) != "OK" {
+	if endpointfuncs.VerificarTokenUserSpecif(token, repositorio.Autor) != "OK" {
 		loggers.ServerErrorLogger.Println("Erro: Este utilizador não têm permissões para esta operação")
 		retorno["erro"] = "Este utilizador não têm permissões para esta operação"
 		return retorno
@@ -111,7 +112,7 @@ func DropRepositorio(repoNome string, token string) (retorno map[string]interfac
 func UpdateRepositorio(repoNome string, updateQuery map[string]interface{}, token string) (retorno map[string]interface{}) {
 	retorno = make(map[string]interface{})
 
-	if VerificarTokenUser(token) != "OK" {
+	if endpointfuncs.VerificarTokenUser(token) != "OK" {
 		loggers.ServerErrorLogger.Println("Erro: A token fornecida é inválida ou expirou")
 		retorno["erro"] = "A token fornecida é inválida ou expirou"
 		return
@@ -127,7 +128,7 @@ func UpdateRepositorio(repoNome string, updateQuery map[string]interface{}, toke
 	}
 
 	// Verificação de igualdade entre request user, e repo autor
-	if VerificarTokenUserSpecif(token, repositorio.Autor) != "OK" {
+	if endpointfuncs.VerificarTokenUserSpecif(token, repositorio.Autor) != "OK" {
 		loggers.ServerErrorLogger.Println("Erro: Este utilizador não têm permissões para esta operação")
 		retorno["erro"] = "Este utilizador não têm permissões para esta operação"
 		return
