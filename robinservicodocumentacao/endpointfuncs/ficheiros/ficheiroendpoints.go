@@ -2,6 +2,7 @@ package ficheiros
 
 import (
 	"context"
+	"fmt"
 	"reflect"
 	"time"
 
@@ -10,8 +11,8 @@ import (
 	"go.mongodb.org/mongo-driver/mongo/options"
 )
 
-// CriarFicheiro Cria a meta data de um ficheiro, para prepara o upload de conteúdo
-func CriarFicheiro(ficheiroMetaData map[string]interface{}, token string) (retorno map[string]interface{}) {
+//  CriarFicheiroMetaData Cria a meta data de um ficheiro, para prepara o upload de conteúdo
+func CriarFicheiroMetaData(ficheiroMetaData map[string]interface{}, token string) (retorno map[string]interface{}) {
 	retorno = make(map[string]interface{})
 
 	// if endpointfuncs.VerificarTokenUser(token) != "OK" {
@@ -48,5 +49,27 @@ func CriarFicheiro(ficheiroMetaData map[string]interface{}, token string) (retor
 
 	loggers.OperacoesBDLogger.Println("Meta Data insserida com sucesso")
 	retorno["sucesso"] = true
+	return
+}
+
+func BuscarMetaData(campos map[string]interface{}, token string) (retorno map[string]interface{}) {
+	retorno = make(map[string]interface{})
+
+	// if endpointfuncs.VerificarTokenUser(token) != "OK" {
+	// 	loggers.OperacoesBDLogger.Println("Erro: A token fornecida é inválida ou expirou")
+	// 	retorno["erro"] = "A token fornecida é inválida ou expirou"
+	// 	return
+	// }
+
+	metaData := GetMetaDataFicheiro(campos)
+	if !(reflect.ValueOf(metaData).IsValid()) {
+		loggers.OperacoesBDLogger.Println("Erro: Sem meta data para esse ficheiro")
+		retorno["erro"] = "Sem meta data para esse ficheiro"
+		return
+	}
+
+	fmt.Println(metaData)
+	loggers.OperacoesBDLogger.Println("Meta Data encontrada com sucesso")
+	retorno["meta_data"] = metaData
 	return
 }

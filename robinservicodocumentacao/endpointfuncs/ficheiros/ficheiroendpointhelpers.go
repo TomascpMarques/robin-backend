@@ -59,9 +59,9 @@ func MetaDataBaseValida(metaData map[string]interface{}) error {
 
 // GetMetaDataPorCampo Busca meta data de um ficheiro e devolve o mesmo na struct resolvedschema.FicheiroMetaData
 // Busca a meta data através de um campo e valor do mesmo, especificado na sua chamada
-func GetMetaDataPorCampo(campo string, valor interface{}) (meta resolvedschema.FicheiroMetaData) {
+func GetMetaDataFicheiro(campos map[string]interface{}) (meta resolvedschema.FicheiroMetaData) {
 	// Define o filtro a usar na procura de informação na BD
-	filter := bson.M{campo: valor}
+	filter := bson.M{"nome": campos["nome"], "repo": campos["repo"], "path": campos["path"]}
 	// Documento e Coleção onde procurar a meta data
 	collection := endpointfuncs.MongoClient.Database("documentacao").Collection("files-meta-data")
 	cntx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
@@ -69,6 +69,7 @@ func GetMetaDataPorCampo(campo string, valor interface{}) (meta resolvedschema.F
 	// Procura na BD do registo pedido
 	err := collection.FindOne(cntx, filter, options.FindOne()).Decode(&meta)
 	defer cancel()
+	fmt.Println("meta: ", meta, "\nerr: ", err)
 	if err != nil {
 		// Devolve um repo vzaio se não se encontrar o pedido
 		meta = resolvedschema.FicheiroMetaData{}
@@ -80,9 +81,11 @@ func GetMetaDataPorCampo(campo string, valor interface{}) (meta resolvedschema.F
 }
 
 func CriarMetaHash(metaData map[string]interface{}) (string, error) {
+	// encodifica a meta data para []byte (em formato JSON)
 	x, err := json.Marshal(metaData)
 	if err != nil {
 		return "", err
 	}
+	// Adiciona a hash o valor convertido para []byte
 	return fmt.Sprintf("%x", sha1.Sum(x)), nil
 }

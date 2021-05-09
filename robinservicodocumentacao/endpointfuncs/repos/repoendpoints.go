@@ -50,11 +50,11 @@ func CriarRepositorio(repoInfo map[string]interface{}, token string) (retorno ma
 func BuscarRepositorio(repoCampo string, campoValor interface{}, token string) (retorno map[string]interface{}) {
 	retorno = make(map[string]interface{})
 
-	if endpointfuncs.VerificarTokenUser(token) != "OK" {
-		loggers.OperacoesBDLogger.Println("Erro: A token fornecida é inválida ou expirou")
-		retorno["erro"] = "A token fornecida é inválida ou expirou"
-		return retorno
-	}
+	// if endpointfuncs.VerificarTokenUser(token) != "OK" {
+	// 	loggers.OperacoesBDLogger.Println("Erro: A token fornecida é inválida ou expirou")
+	// 	retorno["erro"] = "A token fornecida é inválida ou expirou"
+	// 	return retorno
+	// }
 
 	// Busca o repositório por um campo especifico, e o valor esperado nesse campo
 	repositorio := GetRepoPorCampo(repoCampo, campoValor)

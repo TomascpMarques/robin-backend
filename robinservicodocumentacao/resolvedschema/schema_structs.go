@@ -18,7 +18,7 @@ type Repositorio struct {
 type FicheiroMetaData struct {
 	Nome     string   `json:"nome,omitempty"`
 	Autor    string   `json:"autor,omitempty"`
-	Criacao  string   `json:"criacao,omitempty"`
+	Criacao  int64    `json:"criacao,omitempty"`
 	RepoNome string   `json:"repo_nome,omitempty"`
 	Hash     string   `json:"hash,omitempty"`
 	Path     []string `json:"path,omitempty"` // ["<repo_name>","folder1","folder2",...]

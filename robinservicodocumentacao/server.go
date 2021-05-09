@@ -27,7 +27,8 @@ func main() {
 	flag.DurationVar(&wait, "graceful-timeout", time.Second*15, "gracefully wait for existing connections to finish in 15s")
 	flag.Parse()
 
-	actions.FuncsStorage["CriarFicheiro"] = ficheiros.CriarFicheiro
+	actions.FuncsStorage["CriarFicheiroMetaData"] = ficheiros.CriarFicheiroMetaData
+	actions.FuncsStorage["BuscarMetaData"] = ficheiros.BuscarMetaData
 
 	actions.FuncsStorage["UpdateRepositorio"] = repos.UpdateRepositorio
 	actions.FuncsStorage["BuscarRepositorio"] = repos.BuscarRepositorio
