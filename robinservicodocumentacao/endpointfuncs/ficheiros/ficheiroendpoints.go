@@ -2,7 +2,6 @@ package ficheiros
 
 import (
 	"context"
-	"fmt"
 	"reflect"
 	"time"
 
@@ -61,15 +60,47 @@ func BuscarMetaData(campos map[string]interface{}, token string) (retorno map[st
 	// 	return
 	// }
 
+	// Busca a meta data que corresponde aos campos dados
+	// De um só registo
 	metaData := GetMetaDataFicheiro(campos)
-	if !(reflect.ValueOf(metaData).IsValid()) {
+	if reflect.ValueOf(metaData).IsZero() {
 		loggers.OperacoesBDLogger.Println("Erro: Sem meta data para esse ficheiro")
 		retorno["erro"] = "Sem meta data para esse ficheiro"
 		return
 	}
 
-	fmt.Println(metaData)
 	loggers.OperacoesBDLogger.Println("Meta Data encontrada com sucesso")
 	retorno["meta_data"] = metaData
+	return
+}
+
+// ApagarFicheiroMetaData Apaga a meta data referente a um ficheiro
+func ApagarFicheiroMetaData(campos map[string]interface{}, token string) (retorno map[string]interface{}) {
+	retorno = make(map[string]interface{})
+
+	// Verificação de igualdade entre request user, e file autor
+	if endpointfuncs.VerificarTokenUserSpecif(token, campos["autor"].(string)) != "OK" || endpointfuncs.VerificarTokenAdmin(token) != "OK" {
+		loggers.ServerErrorLogger.Println("Erro: Este utilizador não têm permissões para esta operação")
+		retorno["erro"] = "Este utilizador não têm permissões para esta operação"
+		return
+	}
+
+	// Cria a hash dos campos fornecidos para procurar a meta data respetiva
+	metaHash, err := CriarMetaHash(campos)
+	if err != nil {
+		loggers.OperacoesBDLogger.Println("Erro ao criar hash para meta data: ", err)
+		retorno["erro"] = "Erro ao criar hash para meta data fornecida"
+		return
+	}
+
+	// Apaga o ficheiro que contêm o campo "hash" igual ao fornecido
+	err = ApagarMetaDataFicheiro(metaHash)
+	if err != nil {
+		loggers.OperacoesBDLogger.Println("Erro: Não foi possivél apagar este ficheiro: ", err)
+		retorno["erro"] = "Não foi possivél apagar este ficheiro"
+		return
+	}
+
+	retorno["sucesso"] = true
 	return
 }

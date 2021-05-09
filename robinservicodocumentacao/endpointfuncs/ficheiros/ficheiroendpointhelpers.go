@@ -60,14 +60,12 @@ func MetaDataBaseValida(metaData map[string]interface{}) error {
 // GetMetaDataPorCampo Busca meta data de um ficheiro e devolve o mesmo na struct resolvedschema.FicheiroMetaData
 // Busca a meta data através de um campo e valor do mesmo, especificado na sua chamada
 func GetMetaDataFicheiro(campos map[string]interface{}) (meta resolvedschema.FicheiroMetaData) {
-	// Define o filtro a usar na procura de informação na BD
-	filter := bson.M{"nome": campos["nome"], "repo": campos["repo"], "path": campos["path"]}
 	// Documento e Coleção onde procurar a meta data
 	collection := endpointfuncs.MongoClient.Database("documentacao").Collection("files-meta-data")
 	cntx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 
 	// Procura na BD do registo pedido
-	err := collection.FindOne(cntx, filter, options.FindOne()).Decode(&meta)
+	err := collection.FindOne(cntx, campos, options.FindOne()).Decode(&meta)
 	defer cancel()
 	fmt.Println("meta: ", meta, "\nerr: ", err)
 	if err != nil {
@@ -78,6 +76,23 @@ func GetMetaDataFicheiro(campos map[string]interface{}) (meta resolvedschema.Fic
 
 	// Devolve meta data
 	return
+}
+
+// ApagarMetaDataFicheiro Apaga o ficheiro em que a hash é a mesma que a passada nos parametros
+func ApagarMetaDataFicheiro(hash string) error {
+	// Documento e Coleção onde procurar a meta data
+	collection := endpointfuncs.MongoClient.Database("documentacao").Collection("files-meta-data")
+	cntx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+
+	// Procura na BD do registo pedido
+	err := collection.FindOneAndDelete(cntx, bson.M{"hash": hash}, options.FindOneAndDelete())
+	defer cancel()
+	if err.Err() != nil {
+		// Devolve um repo vzaio se não se encontrar o pedido
+		return err.Err()
+	}
+
+	return nil
 }
 
 func CriarMetaHash(metaData map[string]interface{}) (string, error) {

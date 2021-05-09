@@ -78,7 +78,7 @@ func DropRepositorio(repoNome string, token string) (retorno map[string]interfac
 	if endpointfuncs.VerificarTokenUser(token) != "OK" {
 		loggers.ServerErrorLogger.Println("Erro: A token fornecida é inválida ou expirou")
 		retorno["erro"] = "A token fornecida é inválida ou expirou"
-		return retorno
+		return
 	}
 
 	// Busca o repositório para se poder comparar o autor com o user que fez o pedido
@@ -94,14 +94,14 @@ func DropRepositorio(repoNome string, token string) (retorno map[string]interfac
 	if endpointfuncs.VerificarTokenUserSpecif(token, repositorio.Autor) != "OK" {
 		loggers.ServerErrorLogger.Println("Erro: Este utilizador não têm permissões para esta operação")
 		retorno["erro"] = "Este utilizador não têm permissões para esta operação"
-		return retorno
+		return
 	}
 
 	// Drop do repo pedido
 	if err := DropRepoPorNome(repoNome); err != nil {
 		loggers.ServerErrorLogger.Println("Erro: Este utilizador não têm permissões para esta operação")
 		retorno["erro"] = "Este utilizador não têm permissões para esta operação"
-		return retorno
+		return
 	}
 
 	loggers.DbFuncsLogger.Println("Repositório apagado com sucesso")

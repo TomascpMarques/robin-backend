@@ -121,14 +121,15 @@ func CriarRegistoUser(userInfo map[string]interface{}, token string) (retorno ma
 		retorno["error"] = "Erro com o tipo de dados e sua conversão"
 		return
 	}
+	info.Contribuicoes = make([]map[string][]string, 0)
 
-	insserted, err := mongodbhandle.InsserirUmRegisto(info, colecao, 10)
+	inserted, err := mongodbhandle.InsserirUmRegisto(info, colecao, 10)
 	if err != nil {
 		loggers.ServerErrorLogger.Println("Error: ", err)
 		retorno["Error"] = err
 		return nil
 	}
 
-	retorno["insserido"] = insserted
+	retorno["insserido"] = inserted
 	return retorno
 }
