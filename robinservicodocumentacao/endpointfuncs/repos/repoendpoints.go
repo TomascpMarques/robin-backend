@@ -6,6 +6,7 @@ import (
 	"github.com/tomascpmarques/PAP/backend/robinservicodocumentacao/endpointfuncs"
 	"github.com/tomascpmarques/PAP/backend/robinservicodocumentacao/loggers"
 	"github.com/tomascpmarques/PAP/backend/robinservicodocumentacao/mongodbhandle"
+	"github.com/tomascpmarques/PAP/backend/robinservicodocumentacao/resolvedschema"
 	"go.mongodb.org/mongo-driver/bson"
 )
 
@@ -13,16 +14,16 @@ import (
 func CriarRepositorio(repoInfo map[string]interface{}, token string) (retorno map[string]interface{}) {
 	retorno = make(map[string]interface{})
 
-	if endpointfuncs.VerificarTokenUser(token) != "OK" {
-		loggers.OperacoesBDLogger.Println("Erro: A token fornecida é inválida ou expirou")
-		retorno["erro"] = "A token fornecida é inválida ou expirou"
-		return retorno
-	}
+	// if endpointfuncs.VerificarTokenUser(token) != "OK" {
+	// 	loggers.OperacoesBDLogger.Println("Erro: A token fornecida é inválida ou expirou")
+	// 	retorno["erro"] = "A token fornecida é inválida ou expirou"
+	// 	return retorno
+	// }
 
 	// Get the mongo colection
 	mongoCollection := endpointfuncs.MongoClient.Database("documentacao").Collection("repos")
 
-	if existe := GetRepoPorCampo("nome", repoInfo["nome"]); !(reflect.ValueOf(existe).IsZero()) {
+	if repoExiste := GetRepoPorCampo("nome", repoInfo["nome"]); !(reflect.ValueOf(repoExiste).IsZero()) {
 		loggers.DbFuncsLogger.Println("Não foi possivél criar o repositório pedido: ", repoInfo["nome"], ".Já existe um com esse nome")
 		retorno["erro"] = ("Não foi possivél criar o repositório pedido, devido ao nome ser igual a um existente")
 		return
@@ -33,9 +34,13 @@ func CriarRepositorio(repoInfo map[string]interface{}, token string) (retorno ma
 		retorno["erro"] = "Os dados estão incompletos para criar um repo"
 		return
 	}
+	// Transformação da informação de repo para uma struct do tipo Repo
+	repo := resolvedschema.RepositorioParaStruct(&repoInfo)
+	// Inicializa os arrays de contribuições e de ficheiros a zero, evita null erros no decoding
+	InitRepoFichrContrib(&repo)
 
 	// Insser um registo na coleção e base de dados especificada
-	registo, err := mongodbhandle.InsserirUmRegisto(repoInfo, mongoCollection, 10)
+	registo, err := mongodbhandle.InsserirUmRegisto(repo, mongoCollection, 10)
 	if err != nil {
 		loggers.DbFuncsLogger.Println("Não foi possivél criar o repositório pedido: ", repoInfo["nome"])
 		retorno["erro"] = ("Não foi possivél criar o repositório pedido: ." + repoInfo["nome"].(string))

@@ -95,6 +95,26 @@ func ApagarMetaDataFicheiro(hash string) error {
 	return nil
 }
 
+// RepoInserirMetaFileInfo Atualiza o array de ficheiros que pertence ao repo especificado
+func RepoInserirMetaFileInfo(repoNome string, meta *resolvedschema.FicheiroMetaData) error {
+	if meta.Path[1] != repoNome {
+		return errors.New("caminho do ficheiro não coincide com o do repositorio")
+	}
+	ficheiroNomePath := map[string]interface{}{meta.Nome: meta.Path}
+
+	colecao := endpointfuncs.MongoClient.Database("documentacao").Collection("repos")
+	cntx, cancel := context.WithTimeout(context.Background(), time.Second*10)
+
+	err := colecao.FindOneAndUpdate(cntx, bson.M{"nome": repoNome}, bson.M{"$push": bson.M{"ficheiros": ficheiroNomePath}})
+	defer cancel()
+	if err.Err() != nil {
+		// Devolve um repo vzaio se não se encontrar o pedido
+		return err.Err()
+	}
+
+	return nil
+}
+
 func CriarMetaHash(metaData map[string]interface{}) (string, error) {
 	// encodifica a meta data para []byte (em formato JSON)
 	x, err := json.Marshal(metaData)

@@ -7,6 +7,7 @@ import (
 
 	"github.com/tomascpmarques/PAP/backend/robinservicodocumentacao/endpointfuncs"
 	"github.com/tomascpmarques/PAP/backend/robinservicodocumentacao/loggers"
+	"github.com/tomascpmarques/PAP/backend/robinservicodocumentacao/resolvedschema"
 	"go.mongodb.org/mongo-driver/mongo/options"
 )
 
@@ -14,11 +15,11 @@ import (
 func CriarFicheiroMetaData(ficheiroMetaData map[string]interface{}, token string) (retorno map[string]interface{}) {
 	retorno = make(map[string]interface{})
 
-	if endpointfuncs.VerificarTokenUser(token) != "OK" {
-		loggers.OperacoesBDLogger.Println("Erro: A token fornecida é inválida ou expirou")
-		retorno["erro"] = "A token fornecida é inválida ou expirou"
-		return
-	}
+	// if endpointfuncs.VerificarTokenUser(token) != "OK" {
+	// 	loggers.OperacoesBDLogger.Println("Erro: A token fornecida é inválida ou expirou")
+	// 	retorno["erro"] = "A token fornecida é inválida ou expirou"
+	// 	return
+	// }
 
 	metaHash, err := CriarMetaHash(ficheiroMetaData)
 	if err != nil {
@@ -33,18 +34,23 @@ func CriarFicheiroMetaData(ficheiroMetaData map[string]interface{}, token string
 		return
 	}
 	ficheiroMetaData["criacao"] = time.Now().Unix()
+	ficheiro := resolvedschema.FicheiroMetaDataParaStruct(&ficheiroMetaData)
 
 	// Get the mongo colection
 	mongoCollection := endpointfuncs.MongoClient.Database("documentacao").Collection("files-meta-data")
 	cntx, cancel := context.WithTimeout(context.Background(), time.Second*10)
 
-	insserido, err := mongoCollection.InsertOne(cntx, ficheiroMetaData, options.InsertOne())
+	// Inser a meta data do file na bd respetiva para esses dados i.e: files-meta-data
+	insserido, err := mongoCollection.InsertOne(cntx, ficheiro, options.InsertOne())
 	defer cancel()
 	if err != nil || !reflect.ValueOf(insserido.InsertedID).IsValid() {
 		loggers.OperacoesBDLogger.Println("Erro ao insserir o registo na BD: ", err)
 		retorno["erro"] = "Erro ao insserir o registo na BD"
 		return
 	}
+
+	// Insere o nome e o path do novo ficheiro, no repo onde a meta data do fiche. especifica
+	RepoInserirMetaFileInfo(ficheiro.RepoNome, &ficheiro)
 
 	loggers.OperacoesBDLogger.Println("Meta Data insserida com sucesso")
 	retorno["sucesso"] = true

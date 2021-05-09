@@ -70,6 +70,11 @@ func UpdateRepositorioPorNome(repoName string, mundancas map[string]interface{})
 	return matchCount
 }
 
+func InitRepoFichrContrib(repo *resolvedschema.Repositorio) {
+	repo.Contribuidores = make([]string, 0)
+	repo.Ficheiros = make([]map[string][]string, 0)
+}
+
 func VerificarInfoBaseRepo(info map[string]interface{}) (err error) {
 	err = nil
 	keysObrg := []string{
