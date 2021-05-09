@@ -10,6 +10,7 @@ import (
 	"time"
 
 	"github.com/tomascpmarques/PAP/backend/robinservicodocumentacao/endpointfuncs"
+	"github.com/tomascpmarques/PAP/backend/robinservicodocumentacao/endpointfuncs/repos"
 	"github.com/tomascpmarques/PAP/backend/robinservicodocumentacao/resolvedschema"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo/options"
@@ -47,11 +48,16 @@ func MetaDataBaseValida(metaData map[string]interface{}) error {
 	collection := endpointfuncs.MongoClient.Database("documentacao").Collection("files-meta-data")
 	cntx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 
-	// Procura pot um registo com a mesma hash (registo igual)
+	// Procura por um registo com a mesma hash (registo igual)
 	err := collection.FindOne(cntx, filter, options.FindOne()).Err()
 	defer cancel()
 	if err == nil {
 		return errors.New("não foi possivél criar o ficheiro pedido, esse ficheiro já existe")
+	}
+
+	// Procura por um ficheiro com o mesmo path, o path é praticamente o identificador absoluto do ficheiro
+	if path := GetMetaDataFicheiro(map[string]interface{}{"path": meta.Path}).Path; !reflect.ValueOf(path).IsZero() {
+		return errors.New("não foi possivél criar o ficheiro pedido, esse path já existe")
 	}
 
 	return nil
@@ -67,7 +73,6 @@ func GetMetaDataFicheiro(campos map[string]interface{}) (meta resolvedschema.Fic
 	// Procura na BD do registo pedido
 	err := collection.FindOne(cntx, campos, options.FindOne()).Decode(&meta)
 	defer cancel()
-	fmt.Println("meta: ", meta, "\nerr: ", err)
 	if err != nil {
 		// Devolve um repo vzaio se não se encontrar o pedido
 		meta = resolvedschema.FicheiroMetaData{}
@@ -110,6 +115,29 @@ func RepoInserirMetaFileInfo(repoNome string, meta *resolvedschema.FicheiroMetaD
 	if err.Err() != nil {
 		// Devolve um repo vzaio se não se encontrar o pedido
 		return err.Err()
+	}
+
+	repoAutor := repos.GetRepoPorCampo("nome", repoNome).Autor
+	if err := VerificaNovoContribuidor(meta.Autor, repoAutor, repoNome); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+// VerificaNovoContribuidor Se o ficheiro a insserir no repo for de autoria de um user,
+//							que não é o autor do repo, adiciona esse user aos contribuidores
+func VerificaNovoContribuidor(ficheiroAutor string, repoAutor string, repoNome string) error {
+	if ficheiroAutor != repoAutor {
+		colecao := endpointfuncs.MongoClient.Database("documentacao").Collection("repos")
+		cntx, cancel := context.WithTimeout(context.Background(), time.Second*10)
+
+		err := colecao.FindOneAndUpdate(cntx, bson.M{"nome": repoNome}, bson.M{"$push": bson.M{"contribuidores": ficheiroAutor}})
+		defer cancel()
+		if err.Err() != nil {
+			// Devolve um repo vzaio se não se encontrar o pedido
+			return err.Err()
+		}
 	}
 
 	return nil

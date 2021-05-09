@@ -50,7 +50,12 @@ func CriarFicheiroMetaData(ficheiroMetaData map[string]interface{}, token string
 	}
 
 	// Insere o nome e o path do novo ficheiro, no repo onde a meta data do fiche. especifica
-	RepoInserirMetaFileInfo(ficheiro.RepoNome, &ficheiro)
+	err = RepoInserirMetaFileInfo(ficheiro.RepoNome, &ficheiro)
+	if err != nil {
+		loggers.OperacoesBDLogger.Println("Erro: ", err)
+		retorno["erro"] = err
+		return
+	}
 
 	loggers.OperacoesBDLogger.Println("Meta Data insserida com sucesso")
 	retorno["sucesso"] = true
