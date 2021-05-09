@@ -21,7 +21,7 @@ func MetaDataBaseValida(metaData map[string]interface{}) error {
 	camposBase := []string{
 		"nome",
 		"autor",
-		"repo_nome",
+		"reponome",
 		"path",
 	}
 	// Verifica se contêm os campos básicos
@@ -143,6 +143,7 @@ func VerificaNovoContribuidor(ficheiroAutor string, repoAutor string, repoNome s
 	return nil
 }
 
+// CriarMetaHash Cria uma hash da meta data do ficheiro
 func CriarMetaHash(metaData map[string]interface{}) (string, error) {
 	// encodifica a meta data para []byte (em formato JSON)
 	x, err := json.Marshal(metaData)
@@ -151,4 +152,8 @@ func CriarMetaHash(metaData map[string]interface{}) (string, error) {
 	}
 	// Adiciona a hash o valor convertido para []byte
 	return fmt.Sprintf("%x", sha1.Sum(x)), nil
+}
+
+func VerificarRepoExiste(repoNome string) bool {
+	return !reflect.ValueOf(repos.GetRepoPorCampo("nome", repoNome)).IsZero()
 }

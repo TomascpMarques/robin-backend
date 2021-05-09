@@ -21,6 +21,12 @@ func CriarFicheiroMetaData(ficheiroMetaData map[string]interface{}, token string
 	// 	return
 	// }
 
+	if !VerificarRepoExiste(ficheiroMetaData["reponome"].(string)) {
+		loggers.OperacoesBDLogger.Println("O repo fornecido não existe, não se pode criar o ficheiro")
+		retorno["erro"] = "O repo fornecido não existe, não se pode criar o ficheiro"
+		return
+	}
+
 	metaHash, err := CriarMetaHash(ficheiroMetaData)
 	if err != nil {
 		loggers.OperacoesBDLogger.Println("Erro ao criar hash para meta data: ", err)

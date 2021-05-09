@@ -19,7 +19,7 @@ type FicheiroMetaData struct {
 	Nome     string   `json:"nome,omitempty"`
 	Autor    string   `json:"autor,omitempty"`
 	Criacao  int64    `json:"criacao,omitempty"`
-	RepoNome string   `json:"repo_nome,omitempty"`
+	RepoNome string   `json:"reponome,omitempty"`
 	Hash     string   `json:"hash,omitempty"` // A hash é gerada do formato json da struct, a partir dos campos: Nome, Autor, Path e RepoNome
 	Path     []string `json:"path,omitempty"` // ["<repo_name>","folder1","folder2",...,"<file_name.extension>"]
 }

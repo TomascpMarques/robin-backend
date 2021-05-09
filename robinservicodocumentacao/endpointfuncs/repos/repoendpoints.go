@@ -110,6 +110,12 @@ func DropRepositorio(repoNome string, token string) (retorno map[string]interfac
 		return
 	}
 
+	if err := RepoDropFicheirosMeta(repoNome); err != nil {
+		loggers.ServerErrorLogger.Println("Erro: Ou o repo não tinha ficheiros ou ouve complicações para apagar esses ficheiros")
+		retorno["erro"] = "Ou o repo não tinha ficheiros ou ouve complicações para apagar esses ficheiros"
+		return
+	}
+
 	loggers.DbFuncsLogger.Println("Repositório apagado com sucesso")
 	retorno["ok"] = true
 	return

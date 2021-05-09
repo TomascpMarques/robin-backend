@@ -51,6 +51,18 @@ func DropRepoPorNome(repoNome string) (erro error) {
 	return
 }
 
+func RepoDropFicheirosMeta(repoNome string) error {
+	collection := endpointfuncs.MongoClient.Database("documentacao").Collection("files-meta-data")
+	cntx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+
+	_, err := collection.DeleteMany(cntx, bson.M{"reponome": repoNome})
+	defer cancel()
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
 func UpdateRepositorioPorNome(repoName string, mundancas map[string]interface{}) *mongo.UpdateResult {
 	// Set-up do filtro
 	filter := bson.M{"nome": repoName}
@@ -84,7 +96,7 @@ func VerificarInfoBaseRepo(info map[string]interface{}) (err error) {
 	}
 	for _, v := range keysObrg {
 		if valor, existe := info[v]; !(reflect.ValueOf(valor).IsValid()) || !existe {
-			err = errors.New("não cumpre os parametros")
+			err = errors.New("os dados fornecidos não cumpre os parametros minímos")
 			break
 		}
 	}
