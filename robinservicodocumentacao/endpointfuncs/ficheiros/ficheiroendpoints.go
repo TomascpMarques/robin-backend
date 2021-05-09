@@ -104,3 +104,6 @@ func ApagarFicheiroMetaData(campos map[string]interface{}, token string) (retorn
 	retorno["sucesso"] = true
 	return
 }
+
+// AtualizarFicheiroMetaData Busca um ficheiro pela sua hash e atualiza a meta-data através das atuali. fornecidas
+// TODO
