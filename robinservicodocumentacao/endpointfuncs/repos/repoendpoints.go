@@ -6,6 +6,7 @@ import (
 	"github.com/tomascpmarques/PAP/backend/robinservicodocumentacao/endpointfuncs"
 	"github.com/tomascpmarques/PAP/backend/robinservicodocumentacao/loggers"
 	"github.com/tomascpmarques/PAP/backend/robinservicodocumentacao/mongodbhandle"
+	"go.mongodb.org/mongo-driver/bson"
 )
 
 // CriarRepositorio Cria um repo para guardar a informação relativa a um tema e/ou tarefa
@@ -50,11 +51,11 @@ func CriarRepositorio(repoInfo map[string]interface{}, token string) (retorno ma
 func BuscarRepositorio(repoCampo string, campoValor interface{}, token string) (retorno map[string]interface{}) {
 	retorno = make(map[string]interface{})
 
-	// if endpointfuncs.VerificarTokenUser(token) != "OK" {
-	// 	loggers.OperacoesBDLogger.Println("Erro: A token fornecida é inválida ou expirou")
-	// 	retorno["erro"] = "A token fornecida é inválida ou expirou"
-	// 	return retorno
-	// }
+	if endpointfuncs.VerificarTokenUser(token) != "OK" {
+		loggers.OperacoesBDLogger.Println("Erro: A token fornecida é inválida ou expirou")
+		retorno["erro"] = "A token fornecida é inválida ou expirou"
+		return retorno
+	}
 
 	// Busca o repositório por um campo especifico, e o valor esperado nesse campo
 	repositorio := GetRepoPorCampo(repoCampo, campoValor)
@@ -134,7 +135,7 @@ func UpdateRepositorio(repoNome string, updateQuery map[string]interface{}, toke
 		return
 	}
 
-	atualizacoes := UpdateRepositorioPorNome(repoNome, updateQuery) // i.e: {"$set":{"autor": "efefef"}},
+	atualizacoes := UpdateRepositorioPorNome(repoNome, bson.M{"$set": updateQuery}) // i.e: {"$set":{"autor": "efefef"}},
 	if atualizacoes == nil {
 		loggers.ServerErrorLogger.Println("Erro ao atualizar os valores pedidos")
 		retorno["erro"] = "Erro ao atualizar os valores pedidos"

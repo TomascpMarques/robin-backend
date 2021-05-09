@@ -14,11 +14,11 @@ import (
 func CriarFicheiroMetaData(ficheiroMetaData map[string]interface{}, token string) (retorno map[string]interface{}) {
 	retorno = make(map[string]interface{})
 
-	// if endpointfuncs.VerificarTokenUser(token) != "OK" {
-	// 	loggers.OperacoesBDLogger.Println("Erro: A token fornecida é inválida ou expirou")
-	// 	retorno["erro"] = "A token fornecida é inválida ou expirou"
-	// 	return
-	// }
+	if endpointfuncs.VerificarTokenUser(token) != "OK" {
+		loggers.OperacoesBDLogger.Println("Erro: A token fornecida é inválida ou expirou")
+		retorno["erro"] = "A token fornecida é inválida ou expirou"
+		return
+	}
 
 	metaHash, err := CriarMetaHash(ficheiroMetaData)
 	if err != nil {
@@ -54,11 +54,11 @@ func CriarFicheiroMetaData(ficheiroMetaData map[string]interface{}, token string
 func BuscarMetaData(campos map[string]interface{}, token string) (retorno map[string]interface{}) {
 	retorno = make(map[string]interface{})
 
-	// if endpointfuncs.VerificarTokenUser(token) != "OK" {
-	// 	loggers.OperacoesBDLogger.Println("Erro: A token fornecida é inválida ou expirou")
-	// 	retorno["erro"] = "A token fornecida é inválida ou expirou"
-	// 	return
-	// }
+	if endpointfuncs.VerificarTokenUser(token) != "OK" {
+		loggers.OperacoesBDLogger.Println("Erro: A token fornecida é inválida ou expirou")
+		retorno["erro"] = "A token fornecida é inválida ou expirou"
+		return
+	}
 
 	// Busca a meta data que corresponde aos campos dados
 	// De um só registo
