@@ -23,7 +23,7 @@ func CriarRepositorio(repoInfo map[string]interface{}, token string) (retorno ma
 	// Get the mongo colection
 	mongoCollection := endpointfuncs.MongoClient.Database("documentacao").Collection("repos")
 
-	if repoExiste := GetRepoPorCampo("nome", repoInfo["nome"]); !(reflect.ValueOf(repoExiste).IsZero()) {
+	if repoExiste := GetRepoPorCampo("nome", repoInfo["nome"].(string)); !(reflect.ValueOf(repoExiste).IsZero()) {
 		loggers.DbFuncsLogger.Println("Não foi possivél criar o repositório pedido: ", repoInfo["nome"], ".Já existe um com esse nome")
 		retorno["erro"] = ("Não foi possivél criar o repositório pedido, devido ao nome ser igual a um existente")
 		return
@@ -53,8 +53,9 @@ func CriarRepositorio(repoInfo map[string]interface{}, token string) (retorno ma
 }
 
 // BuscarRepositorio Busca um repositório existente, e devolve a sua estrutura/conteúdos
-func BuscarRepositorio(repoCampo string, campoValor interface{}, token string) (retorno map[string]interface{}) {
+func BuscarRepositorio(campos map[string]interface{}, token string) (retorno map[string]interface{}) {
 	retorno = make(map[string]interface{})
+	//fmt.Println("AND NOW THE TIME: ", time.Now().Local().Format("2006/01/02 15:04:05"))
 
 	// if endpointfuncs.VerificarTokenUser(token) != "OK" {
 	// 	loggers.OperacoesBDLogger.Println("Erro: A token fornecida é inválida ou expirou")
@@ -63,32 +64,32 @@ func BuscarRepositorio(repoCampo string, campoValor interface{}, token string) (
 	// }
 
 	// Busca o repositório por um campo especifico, e o valor esperado nesse campo
-	repositorio := GetRepoPorCampo(repoCampo, campoValor)
+	repositorio := GetRepoPorCampo("nome", campos["nome"].(string))
 
 	// Se o resultado da busca for nil, devolve umas menssagens de erro
 	if reflect.ValueOf(repositorio).IsZero() {
-		loggers.OperacoesBDLogger.Println("Não foi possivél encontrar o repositório pedido pelo campo: ", repoCampo)
-		retorno["erro"] = ("Não foi possivél encontrar o repositório pedido pelo campo: <" + repoCampo + ">")
+		loggers.OperacoesBDLogger.Println("Não foi possivél encontrar o repositório pedido pelo campo: ", campos)
+		retorno["erro"] = ("Não foi possivél encontrar o repositório pedido pelos campos pedidos")
 		return
 	}
 
-	loggers.OperacoesBDLogger.Println("Rrepositório procurado pelo campo: ", repoCampo, ", enviado.")
+	loggers.OperacoesBDLogger.Println("Rrepositório procurado pelo campo: ", campos, ", enviado.")
 	retorno["repo"] = repositorio
 	return
 }
 
-// DropRepositorio Busca o repo especificado por nome e apaga o mesmo, se esse pedido for feito pelo autor do repo
-func DropRepositorio(repoNome string, token string) (retorno map[string]interface{}) {
+// DropRepositorio Busca o repo especificado pelos campos passados (o nome é obrigatorio), e apaga o mesmo, se esse pedido for feito pelo autor do repo
+func DropRepositorio(campos map[string]interface{}, token string) (retorno map[string]interface{}) {
 	retorno = make(map[string]interface{})
 
-	if endpointfuncs.VerificarTokenUser(token) != "OK" {
-		loggers.ServerErrorLogger.Println("Erro: A token fornecida é inválida ou expirou")
-		retorno["erro"] = "A token fornecida é inválida ou expirou"
-		return
-	}
+	// if endpointfuncs.VerificarTokenUser(token) != "OK" {
+	// 	loggers.ServerErrorLogger.Println("Erro: A token fornecida é inválida ou expirou")
+	// 	retorno["erro"] = "A token fornecida é inválida ou expirou"
+	// 	return
+	// }
 
 	// Busca o repositório para se poder comparar o autor com o user que fez o pedido
-	repositorio := GetRepoPorCampo("nome", repoNome)
+	repositorio := GetRepoPorCampo("nome", campos["nome"].(string))
 	// Se o resultado da busca for nil, devolve umas menssagens de erro
 	if reflect.ValueOf(repositorio).IsZero() {
 		loggers.OperacoesBDLogger.Println("Não foi possivél encontrar o repositório pedido")
@@ -97,20 +98,20 @@ func DropRepositorio(repoNome string, token string) (retorno map[string]interfac
 	}
 
 	// Verificação de igualdade entre request user, e repo autor
-	if endpointfuncs.VerificarTokenUserSpecif(token, repositorio.Autor) != "OK" {
-		loggers.ServerErrorLogger.Println("Erro: Este utilizador não têm permissões para esta operação")
-		retorno["erro"] = "Este utilizador não têm permissões para esta operação"
-		return
-	}
+	// if endpointfuncs.VerificarTokenUserSpecif(token, repositorio.Autor) != "OK" {
+	// 	loggers.ServerErrorLogger.Println("Erro: Este utilizador não têm permissões para esta operação")
+	// 	retorno["erro"] = "Este utilizador não têm permissões para esta operação"
+	// 	return
+	// }
 
 	// Drop do repo pedido
-	if err := DropRepoPorNome(repoNome); err != nil {
+	if err := DropRepoPorNome(campos["nome"].(string)); err != nil {
 		loggers.ServerErrorLogger.Println("Erro: Este utilizador não têm permissões para esta operação")
 		retorno["erro"] = "Este utilizador não têm permissões para esta operação"
 		return
 	}
 
-	if err := RepoDropFicheirosMeta(repoNome); err != nil {
+	if err := RepoDropFicheirosMeta(campos["nome"].(string)); err != nil {
 		loggers.ServerErrorLogger.Println("Erro: Ou o repo não tinha ficheiros ou ouve complicações para apagar esses ficheiros")
 		retorno["erro"] = "Ou o repo não tinha ficheiros ou ouve complicações para apagar esses ficheiros"
 		return
@@ -121,17 +122,17 @@ func DropRepositorio(repoNome string, token string) (retorno map[string]interfac
 	return
 }
 
-func UpdateRepositorio(repoNome string, updateQuery map[string]interface{}, token string) (retorno map[string]interface{}) {
+func UpdateRepositorio(campos map[string]interface{}, updateQuery map[string]interface{}, token string) (retorno map[string]interface{}) {
 	retorno = make(map[string]interface{})
 
-	if endpointfuncs.VerificarTokenUser(token) != "OK" {
-		loggers.ServerErrorLogger.Println("Erro: A token fornecida é inválida ou expirou")
-		retorno["erro"] = "A token fornecida é inválida ou expirou"
-		return
-	}
+	// if endpointfuncs.VerificarTokenUser(token) != "OK" {
+	// 	loggers.ServerErrorLogger.Println("Erro: A token fornecida é inválida ou expirou")
+	// 	retorno["erro"] = "A token fornecida é inválida ou expirou"
+	// 	return
+	// }
 
 	// Busca o repositório para se poder comparar o autor com o user que fez o pedido
-	repositorio := GetRepoPorCampo("nome", repoNome)
+	repositorio := GetRepoPorCampo("nome", campos["nome"].(string))
 	// Se o resultado da busca for nil, devolve umas menssagens de erro
 	if reflect.ValueOf(repositorio).IsZero() {
 		loggers.OperacoesBDLogger.Println("Não foi possivél encontrar o repositório pedido")
@@ -140,13 +141,13 @@ func UpdateRepositorio(repoNome string, updateQuery map[string]interface{}, toke
 	}
 
 	// Verificação de igualdade entre request user, e repo autor
-	if endpointfuncs.VerificarTokenUserSpecif(token, repositorio.Autor) != "OK" {
-		loggers.ServerErrorLogger.Println("Erro: Este utilizador não têm permissões para esta operação")
-		retorno["erro"] = "Este utilizador não têm permissões para esta operação"
-		return
-	}
+	// if endpointfuncs.VerificarTokenUserSpecif(token, repositorio.Autor) != "OK" {
+	// 	loggers.ServerErrorLogger.Println("Erro: Este utilizador não têm permissões para esta operação")
+	// 	retorno["erro"] = "Este utilizador não têm permissões para esta operação"
+	// 	return
+	// }
 
-	atualizacoes := UpdateRepositorioPorNome(repoNome, bson.M{"$set": updateQuery}) // i.e: {"$set":{"autor": "efefef"}},
+	atualizacoes := UpdateRepositorioPorNome(campos["nome"].(string), bson.M{"$set": updateQuery}) // i.e: {"$set":{"autor": "efefef"}},
 	if atualizacoes == nil {
 		loggers.ServerErrorLogger.Println("Erro ao atualizar os valores pedidos")
 		retorno["erro"] = "Erro ao atualizar os valores pedidos"

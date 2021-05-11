@@ -17,14 +17,12 @@ import (
 // GetRepoPorCampo Busca um repo e devolveo na struct resolvedschema.Repositorio
 // Busca o repositório através de um campo e valor do mesmo, especificado na sua chamada
 func GetRepoPorCampo(campo string, valor interface{}) (repo resolvedschema.Repositorio) {
-	// Define o filtro a usar na procura de informação na BD
-	filter := bson.M{campo: valor}
 	// Documento e repo onde procurar o repo
 	collection := endpointfuncs.MongoClient.Database("documentacao").Collection("repos")
 	cntx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 
 	// Procura na BD do registo pedido
-	err := collection.FindOne(cntx, filter, options.FindOne()).Decode(&repo)
+	err := collection.FindOne(cntx, map[string]interface{}{string(campo): valor}, options.FindOne()).Decode(&repo)
 	defer cancel()
 	if err != nil {
 		// Devolve um repo vzaio se não se encontrar o pedido
@@ -84,16 +82,18 @@ func UpdateRepositorioPorNome(repoName string, mundancas map[string]interface{})
 
 func InitRepoFichrContrib(repo *resolvedschema.Repositorio) {
 	repo.Contribuidores = make([]string, 0)
-	repo.Ficheiros = make([]map[string][]string, 0)
+	repo.Ficheiros = make([]resolvedschema.RepositorioMetaFileInfo, 0)
 }
 
 func VerificarInfoBaseRepo(info map[string]interface{}) (err error) {
 	err = nil
+	// Keys obrigatorias que o a info deve conter
 	keysObrg := []string{
 		"nome",
 		"autor",
 		"tema",
 	}
+	// Itera sobre as keys
 	for _, v := range keysObrg {
 		if valor, existe := info[v]; !(reflect.ValueOf(valor).IsValid()) || !existe {
 			err = errors.New("os dados fornecidos não cumpre os parametros minímos")

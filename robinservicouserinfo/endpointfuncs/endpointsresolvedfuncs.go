@@ -71,7 +71,7 @@ func UpdateInfoUtilizador(usrNome string, params map[string]interface{}, token s
 	context, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 
 	// atualização do registo e retorno da operação
-	registosUpdt, err := colecao.UpdateOne(context, filter, params, options.MergeUpdateOptions())
+	registosUpdt, err := colecao.UpdateOne(context, filter, bson.M{"$set": params}, options.MergeUpdateOptions())
 	defer cancel()
 	if err != nil {
 		loggers.OperacoesBDLogger.Println("Erro ao atualizar a info do utilizador, erro: ", err)

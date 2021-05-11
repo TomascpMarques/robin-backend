@@ -100,12 +100,18 @@ func ApagarMetaDataFicheiro(hash string) error {
 	return nil
 }
 
+func ApagarFicheiroMetaRepo() error {
+
+	return nil
+}
+
 // RepoInserirMetaFileInfo Atualiza o array de ficheiros que pertence ao repo especificado
 func RepoInserirMetaFileInfo(repoNome string, meta *resolvedschema.FicheiroMetaData) error {
 	if meta.Path[1] != repoNome {
 		return errors.New("caminho do ficheiro não coincide com o do repositorio")
 	}
-	ficheiroNomePath := map[string]interface{}{meta.Nome: meta.Path}
+	// Combinação de nome do ficheiro e do seu path
+	ficheiroNomePath := map[string]interface{}{"nome": meta.Nome, "path": meta.Path, "hash": meta.Hash}
 
 	colecao := endpointfuncs.MongoClient.Database("documentacao").Collection("repos")
 	cntx, cancel := context.WithTimeout(context.Background(), time.Second*10)
@@ -117,6 +123,8 @@ func RepoInserirMetaFileInfo(repoNome string, meta *resolvedschema.FicheiroMetaD
 		return err.Err()
 	}
 
+	// Verifica se o autor deste ficheiro é diferente do autor do repo,
+	// Se sim, adiciona este utilizador À lista dos contribuidores
 	repoAutor := repos.GetRepoPorCampo("nome", repoNome).Autor
 	if err := VerificaNovoContribuidor(meta.Autor, repoAutor, repoNome); err != nil {
 		return err
@@ -154,6 +162,7 @@ func CriarMetaHash(metaData map[string]interface{}) (string, error) {
 	return fmt.Sprintf("%x", sha1.Sum(x)), nil
 }
 
+// VerificarRepoExiste Verifica se o repositório com este nome existe
 func VerificarRepoExiste(repoNome string) bool {
 	return !reflect.ValueOf(repos.GetRepoPorCampo("nome", repoNome)).IsZero()
 }

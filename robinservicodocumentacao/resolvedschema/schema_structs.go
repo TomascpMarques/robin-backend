@@ -7,11 +7,18 @@ package resolvedschema
 // Recebem o ObjectID do novo registo, o ID em sí é o nome,
 // Que será obrigatóriamente diferente para cada repo.
 type Repositorio struct {
-	Nome           string                `json:"nome,omitempty"`
-	Tema           string                `json:"tema,omitempty"`
-	Autor          string                `json:"autor,omitempty"`
-	Contribuidores []string              `json:"contribuidores"`
-	Ficheiros      []map[string][]string `json:"ficheiros,omitempty"` // i.e [{"file_name": "path/to/file.ext"},...]
+	Nome           string                    `json:"nome,omitempty"`
+	Tema           string                    `json:"tema,omitempty"`
+	Autor          string                    `json:"autor,omitempty"`
+	Contribuidores []string                  `json:"contribuidores"`
+	Ficheiros      []RepositorioMetaFileInfo `json:"ficheiros,omitempty"` // i.e [{"file_name": "path/to/file.ext"},...]
+}
+
+// As mini-meta informação dos ficheiros guardados no repo
+type RepositorioMetaFileInfo struct {
+	Nome string   `json:"nome,omitempty"`
+	Hash string   `json:"hash,omitempty"`
+	Path []string `json:"path,omitempty"`
 }
 
 // FicheiroMetaData - Contêm informações relativas ao ficheiro, não o conteudo em sí

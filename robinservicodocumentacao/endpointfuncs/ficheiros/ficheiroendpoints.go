@@ -71,11 +71,11 @@ func CriarFicheiroMetaData(ficheiroMetaData map[string]interface{}, token string
 func BuscarMetaData(campos map[string]interface{}, token string) (retorno map[string]interface{}) {
 	retorno = make(map[string]interface{})
 
-	if endpointfuncs.VerificarTokenUser(token) != "OK" {
-		loggers.OperacoesBDLogger.Println("Erro: A token fornecida é inválida ou expirou")
-		retorno["erro"] = "A token fornecida é inválida ou expirou"
-		return
-	}
+	// if endpointfuncs.VerificarTokenUser(token) != "OK" {
+	// 	loggers.OperacoesBDLogger.Println("Erro: A token fornecida é inválida ou expirou")
+	// 	retorno["erro"] = "A token fornecida é inválida ou expirou"
+	// 	return
+	// }
 
 	// Busca a meta data que corresponde aos campos dados
 	// De um só registo
@@ -96,11 +96,11 @@ func ApagarFicheiroMetaData(campos map[string]interface{}, token string) (retorn
 	retorno = make(map[string]interface{})
 
 	// Verificação de igualdade entre request user, e file autor
-	if endpointfuncs.VerificarTokenUserSpecif(token, campos["autor"].(string)) != "OK" || endpointfuncs.VerificarTokenAdmin(token) != "OK" {
-		loggers.ServerErrorLogger.Println("Erro: Este utilizador não têm permissões para esta operação")
-		retorno["erro"] = "Este utilizador não têm permissões para esta operação"
-		return
-	}
+	// if endpointfuncs.VerificarTokenUserSpecif(token, campos["autor"].(string)) != "OK" || endpointfuncs.VerificarTokenAdmin(token) != "OK" {
+	// 	loggers.ServerErrorLogger.Println("Erro: Este utilizador não têm permissões para esta operação, ou token expirada")
+	// 	retorno["erro"] = "Este utilizador não têm permissões para esta operação, ou token expirada"
+	// 	return
+	// }
 
 	// Cria a hash dos campos fornecidos para procurar a meta data respetiva
 	metaHash, err := CriarMetaHash(campos)
@@ -123,4 +123,4 @@ func ApagarFicheiroMetaData(campos map[string]interface{}, token string) (retorn
 }
 
 // AtualizarFicheiroMetaData Busca um ficheiro pela sua hash e atualiza a meta-data através das atuali. fornecidas
-// TODO
+// TODO Hennnnnn mais ou menos
