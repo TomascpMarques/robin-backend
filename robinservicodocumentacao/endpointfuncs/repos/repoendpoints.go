@@ -37,7 +37,7 @@ func CriarRepositorio(repoInfo map[string]interface{}, token string) (retorno ma
 	// Transformação da informação de repo para uma struct do tipo Repo
 	repo := resolvedschema.RepositorioParaStruct(&repoInfo)
 	// Inicializa os arrays de contribuições e de ficheiros a zero, evita null erros no decoding
-	InitRepoFichrContrib(&repo)
+	InitRepoFichrContribCriacao(&repo)
 
 	// Insser um registo na coleção e base de dados especificada
 	registo, err := mongodbhandle.InsserirUmRegisto(repo, mongoCollection, 10)

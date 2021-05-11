@@ -53,6 +53,7 @@ func RepoDropFicheirosMeta(repoNome string) error {
 	collection := endpointfuncs.MongoClient.Database("documentacao").Collection("files-meta-data")
 	cntx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 
+	// Apaga toda a meta info dos ficheiros existentes, que sejam do repo especificado
 	_, err := collection.DeleteMany(cntx, bson.M{"reponome": repoNome})
 	defer cancel()
 	if err != nil {
@@ -80,9 +81,15 @@ func UpdateRepositorioPorNome(repoName string, mundancas map[string]interface{})
 	return matchCount
 }
 
-func InitRepoFichrContrib(repo *resolvedschema.Repositorio) {
+func InitRepoFichrContribCriacao(repo *resolvedschema.Repositorio) {
+	// A inicialização destas estruturas de dadds,
+	// evita bugs com o display de informação,
+	// na front-end e evita possivéis erros de mudança dos mesmos.
 	repo.Contribuidores = make([]string, 0)
 	repo.Ficheiros = make([]resolvedschema.RepositorioMetaFileInfo, 0)
+
+	// Data e hora da criação do repo, no server-side
+	repo.Criacao = time.Now().Local().Format("2006/01/02 15:04:05")
 }
 
 func VerificarInfoBaseRepo(info map[string]interface{}) (err error) {
