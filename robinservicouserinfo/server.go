@@ -25,6 +25,7 @@ func main() {
 	flag.DurationVar(&wait, "graceful-timeout", time.Second*15, "gracefully wait for existing connections to finish in 15s")
 	flag.Parse()
 
+	actions.FuncsStorage["ModificarContribuicoes"] = endpointfuncs.ModificarContribuicoes
 	actions.FuncsStorage["UpdateInfoUtilizador"] = endpointfuncs.UpdateInfoUtilizador
 	actions.FuncsStorage["GetInfoUtilizador"] = endpointfuncs.GetInfoUtilizador
 	actions.FuncsStorage["CriarRegistoUser"] = endpointfuncs.CriarRegistoUser

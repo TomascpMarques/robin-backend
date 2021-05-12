@@ -121,15 +121,34 @@ func CriarRegistoUser(userInfo map[string]interface{}, token string) (retorno ma
 		retorno["error"] = "Erro com o tipo de dados e sua conversão"
 		return
 	}
-	info.Contribuicoes = make([]map[string][]string, 0)
 
 	inserted, err := mongodbhandle.InsserirUmRegisto(info, colecao, 10)
 	if err != nil {
 		loggers.ServerErrorLogger.Println("Error: ", err)
 		retorno["Error"] = err
-		return nil
+		return
 	}
 
 	retorno["insserido"] = inserted
 	return retorno
+}
+
+// ModificarContribuicoes Modifica o valor do array que contêm as contribuições, pode adicionar ou retirar desse mesmo array
+func ModificarContribuicoes(operacaoConfig string, repoUpdate map[string]interface{}, token string) (retorno map[string]interface{}) {
+	retorno = make(map[string]interface{})
+
+	operacoesColl := SetupColecao("users_data", "account_info")
+	operacoesColl.Filter = bson.M{"user": repoUpdate["user"], "contribuicoes.reponome": repoUpdate["repo"].(string)}
+
+	switch operacaoConfig {
+	case "add":
+		operacoesColl.AdicionarContribuicao(repoUpdate["repo"].(string), repoUpdate["file"].(string))
+	case "rmv":
+	default:
+		loggers.ServerErrorLogger.Println("Error: Tipo de operação não reconhecido, <'add' ou 'rmv'>")
+		retorno["Error"] = "Tipo de operação não reconhecido, <'adicionar' ou 'remover'>"
+		return
+	}
+
+	return
 }
