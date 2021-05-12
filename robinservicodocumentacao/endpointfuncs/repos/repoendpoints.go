@@ -47,6 +47,12 @@ func CriarRepositorio(repoInfo map[string]interface{}, token string) (retorno ma
 		return
 	}
 
+	if AdicionarContrbRepoUsrInfo(&repo, token) != nil {
+		loggers.DbFuncsLogger.Println("Não foi possivél inserir o repo na user-info")
+		retorno["erro"] = ("Não foi possivél inserir o repo na user-info")
+		return
+	}
+
 	loggers.OperacoesBDLogger.Println("Repo criado com sucesso! <", repoInfo["nome"], ">")
 	retorno["resultado"] = registo
 	return

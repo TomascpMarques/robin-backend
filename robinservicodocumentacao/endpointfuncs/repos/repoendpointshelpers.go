@@ -1,8 +1,12 @@
 package repos
 
 import (
+	"bytes"
 	"context"
 	"errors"
+	"fmt"
+	"io/ioutil"
+	"net/http"
 	"reflect"
 	"time"
 
@@ -108,4 +112,26 @@ func VerificarInfoBaseRepo(info map[string]interface{}) (err error) {
 		}
 	}
 	return
+}
+
+// Adiciona o repo no serviço user-info, após criação neste serviço
+func AdicionarContrbRepoUsrInfo(repo *resolvedschema.Repositorio, token string) error {
+	// Mongodb query para atualizar o status do user
+	adicionarQuery := fmt.Sprintf("\"%s\",\n\"%s\",\n\"%s\",", repo.Autor, repo.Nome, token)
+	// DynamicGoQuery body para conssumir o endpoint do serviço userinfo
+	action := fmt.Sprintf("action:\nfuncs:\n\"AdicionarContrbRepo\":\n%s", adicionarQuery)
+
+	// Utilização do endpoint UpdateInfoUtilizador, exposto em http://0.0.0.0:8001
+	resp, err := http.Post("http://0.0.0.0:8001", "text/plain", bytes.NewBufferString(action))
+	if err != nil {
+		return err
+	}
+	defer resp.Body.Close()
+	bodyContentBytes, err := ioutil.ReadAll(resp.Body)
+	if err != nil {
+		return err
+	}
+
+	loggers.ResolverLogger.Printf("AdicionarContrbRepo status: %v", string(bodyContentBytes))
+	return nil
 }

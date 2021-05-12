@@ -99,7 +99,7 @@ func SessActualStatus(usrNome string, status string) (retorno map[string]interfa
 	retorno = make(map[string]interface{})
 
 	// Mongodb query para atualizar o status do user
-	updateQuery := "{\"$set\":{\"status\": \"" + status + "\"}}"
+	updateQuery := "{\"status\": \"" + status + "\"}"
 	// DynamicGoQuery body para conssumir o endpoint do serviço userinfo
 	action := fmt.Sprintf("action:\n\"%s\":\n\"%s\",\n%s,", "UpdateInfoUtilizador", usrNome, updateQuery)
 
