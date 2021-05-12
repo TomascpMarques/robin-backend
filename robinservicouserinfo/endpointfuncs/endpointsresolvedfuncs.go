@@ -115,6 +115,7 @@ func CriarRegistoUser(userInfo map[string]interface{}, token string) (retorno ma
 
 	operacoesColl := SetupColecao("users_data", "account_info")
 
+	// Verifica se a info do user que queremos inserir já existe
 	exists := operacoesColl.Colecao.FindOne(context.Background(), bson.M{"user": userInfo["user"]})
 	if exists != nil && exists.Err() != mongo.ErrNoDocuments {
 		loggers.ServerErrorLogger.Println("Já existe informação para esse user")
@@ -123,6 +124,7 @@ func CriarRegistoUser(userInfo map[string]interface{}, token string) (retorno ma
 
 	}
 
+	// Conver-te a info de user, para uma struct
 	info := resolvedschema.UtilizadorParaStruct(&userInfo)
 	if reflect.ValueOf(info).IsZero() {
 		loggers.ServerErrorLogger.Println("Erro ao converter os dados para a struct correta")
@@ -130,7 +132,8 @@ func CriarRegistoUser(userInfo map[string]interface{}, token string) (retorno ma
 		return
 	}
 
-	inserted, err := mongodbhandle.InsserirUmRegisto(info, operacoesColl.Colecao, 10)
+	// Insere o registo da info do user na BD
+	inserted, err := mongodbhandle.InserirUmRegisto(info, operacoesColl.Colecao, 10)
 	if err != nil {
 		loggers.ServerErrorLogger.Println("Error: ", err)
 		retorno["Error"] = err
@@ -146,15 +149,17 @@ func ModificarContribuicoes(operacaoConfig string, repoUpdate map[string]interfa
 	retorno = make(map[string]interface{})
 
 	// Se a token não for de um utilizador, não executa a função
-	if VerificarTokenUser(token) != "OK" /*|| VerificarTokenUserSpecif(token, usrNome) != "OK"*/ {
-		loggers.ServerErrorLogger.Println("A token não têm permissões")
-		retorno["error"] = "A token não têm permissões"
-		return
-	}
+	// if VerificarTokenUser(token) != "OK" /*|| VerificarTokenUserSpecif(token, usrNome) != "OK"*/ {
+	// 	loggers.ServerErrorLogger.Println("A token não têm permissões")
+	// 	retorno["error"] = "A token não têm permissões"
+	// 	return
+	// }
 
+	// Defenições a serem usadas para executar as operações na BD
 	operacoesColl := SetupColecao("users_data", "account_info")
 	operacoesColl.Filter = bson.M{"user": repoUpdate["user"], "contribuicoes.reponome": repoUpdate["repo"].(string)}
 
+	// Avalia o tipo de operação pedido, add para adicionar contribuição, rmv para remover contribuição
 	switch operacaoConfig {
 	case "add":
 		operacoesColl.AdicionarContribuicao(repoUpdate["repo"].(string), repoUpdate["file"].(string))
@@ -171,26 +176,29 @@ func ModificarContribuicoes(operacaoConfig string, repoUpdate map[string]interfa
 	return
 }
 
+// AdicionarContrbRepo Adiciona o repo de contribuições à informação do user
 func AdicionarContrbRepo(usrNome string, repoNome string, token string) (retorno map[string]interface{}) {
 	retorno = make(map[string]interface{})
 
 	// Se a token não for de um utilizador, não executa a função
-	if VerificarTokenUser(token) != "OK" /*|| VerificarTokenUserSpecif(token, usrNome) != "OK"*/ {
-		loggers.ServerErrorLogger.Println("A token não têm permissões")
-		retorno["error"] = "A token não têm permissões"
-		return
-	}
+	// if VerificarTokenUser(token) != "OK" /*|| VerificarTokenUserSpecif(token, usrNome) != "OK"*/ {
+	// 	loggers.ServerErrorLogger.Println("A token não têm permissões")
+	// 	retorno["error"] = "A token não têm permissões"
+	// 	return
+	// }
 
+	// Defenições a serem usadas para executar as operações na BD
 	operacoesColl := SetupColecao("users_data", "account_info")
 	operacoesColl.Filter = bson.M{"user": usrNome}
 
-	if err := operacoesColl.CriarRepoContribuicoes(repoNome).Error(); err != "" {
+	// Avalia se a operação de criar o repo teve sucesso
+	if err := operacoesColl.CriarRepoContribuicoes(repoNome); err != nil {
 		loggers.ServerErrorLogger.Println("Erro ao criar repo nas contribuições do user")
 		retorno["erro"] = "Erro ao criar repo nas contribuições do user"
 		return
 	}
 
 	loggers.ServerErrorLogger.Println("Repo criado nas contribuições do user")
-	retorno["erro"] = "Repo criado nas contribuições do user"
+	retorno["sucesso"] = "Repo criado nas contribuições do user"
 	return
 }
