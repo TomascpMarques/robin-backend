@@ -123,6 +123,8 @@ func DropRepositorio(campos map[string]interface{}, token string) (retorno map[s
 		return
 	}
 
+	
+
 	loggers.DbFuncsLogger.Println("Repositório apagado com sucesso")
 	retorno["ok"] = true
 	return
