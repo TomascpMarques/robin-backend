@@ -63,6 +63,8 @@ func CriarFicheiroMetaData(ficheiroMetaData map[string]interface{}, token string
 		return
 	}
 
+	
+
 	loggers.OperacoesBDLogger.Println("Meta Data insserida com sucesso")
 	retorno["sucesso"] = true
 	return

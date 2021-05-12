@@ -25,10 +25,16 @@ func main() {
 	flag.DurationVar(&wait, "graceful-timeout", time.Second*15, "gracefully wait for existing connections to finish in 15s")
 	flag.Parse()
 
+	// Modificações das contribuições do user
 	actions.FuncsStorage["ModificarContribuicoes"] = endpointfuncs.ModificarContribuicoes
+	actions.FuncsStorage["AdicionarContrbRepo"] = endpointfuncs.AdicionarContrbRepo
+
+	// Management geral da user-info
 	actions.FuncsStorage["UpdateInfoUtilizador"] = endpointfuncs.UpdateInfoUtilizador
 	actions.FuncsStorage["GetInfoUtilizador"] = endpointfuncs.GetInfoUtilizador
 	actions.FuncsStorage["CriarRegistoUser"] = endpointfuncs.CriarRegistoUser
+
+	// Utilidade
 	actions.FuncsStorage["Ping"] = endpointfuncs.PingServico
 
 	router := mux.NewRouter()

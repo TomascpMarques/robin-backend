@@ -29,13 +29,22 @@ func PingServico(name string) (retorno map[string]interface{}) {
 }
 
 // GetInfoUtilizador Busca toda a informação do utilizador especificado pelo id usrNome
-func GetInfoUtilizador(usrNome string) (retorno map[string]interface{}) {
+func GetInfoUtilizador(usrNome string, token string) (retorno map[string]interface{}) {
 	retorno = make(map[string]interface{})
+
+	// Se a token não for de um admin, ou do user em sí, não se atualiza o user
+	if VerificarTokenUser(token) != "OK" /*|| VerificarTokenUserSpecif(token, usrNome) != "OK"*/ {
+		loggers.ServerErrorLogger.Println("A token não têm permissões")
+		retorno["error"] = "A token não têm permissões"
+		return
+	}
 
 	// Defenição do filter a usar nas pesquisas da bd
 	filter := bson.M{"user": usrNome}
 	// Conexão à bd e coleção a usar
 	colecao := MongoClient.Database("users_data").Collection("account_info")
+
+	//operacoesColl := SetupColecao("users_data", "account_info")
 
 	// defenições de utilitários
 	var registoUser resolvedschema.Utilizador
@@ -66,13 +75,12 @@ func UpdateInfoUtilizador(usrNome string, params map[string]interface{}, token s
 	}
 
 	// Defenição do filter a usar nas pesquisas da bd
-	colecao := MongoClient.Database("users_data").Collection("account_info")
 	filter := bson.M{"user": usrNome}
-	context, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	operacoesColl := SetupColecao("users_data", "account_info")
 
 	// atualização do registo e retorno da operação
-	registosUpdt, err := colecao.UpdateOne(context, filter, bson.M{"$set": params}, options.MergeUpdateOptions())
-	defer cancel()
+	registosUpdt, err := operacoesColl.Colecao.UpdateOne(operacoesColl.Cntxt, filter, bson.M{"$set": params}, options.MergeUpdateOptions())
+	defer operacoesColl.CancelFunc()
 	if err != nil {
 		loggers.OperacoesBDLogger.Println("Erro ao atualizar a info do utilizador, erro: ", err)
 		retorno["erro"] = "Erro ao atualizar a info do utilizador: " + usrNome
@@ -105,9 +113,9 @@ func CriarRegistoUser(userInfo map[string]interface{}, token string) (retorno ma
 		return
 	}
 
-	colecao := MongoClient.Database("users_data").Collection("account_info")
+	operacoesColl := SetupColecao("users_data", "account_info")
 
-	exists := colecao.FindOne(context.Background(), bson.M{"user": userInfo["user"]})
+	exists := operacoesColl.Colecao.FindOne(context.Background(), bson.M{"user": userInfo["user"]})
 	if exists != nil && exists.Err() != mongo.ErrNoDocuments {
 		loggers.ServerErrorLogger.Println("Já existe informação para esse user")
 		retorno["error"] = "Já existe informação para esse user"
@@ -122,7 +130,7 @@ func CriarRegistoUser(userInfo map[string]interface{}, token string) (retorno ma
 		return
 	}
 
-	inserted, err := mongodbhandle.InsserirUmRegisto(info, colecao, 10)
+	inserted, err := mongodbhandle.InsserirUmRegisto(info, operacoesColl.Colecao, 10)
 	if err != nil {
 		loggers.ServerErrorLogger.Println("Error: ", err)
 		retorno["Error"] = err
@@ -137,6 +145,13 @@ func CriarRegistoUser(userInfo map[string]interface{}, token string) (retorno ma
 func ModificarContribuicoes(operacaoConfig string, repoUpdate map[string]interface{}, token string) (retorno map[string]interface{}) {
 	retorno = make(map[string]interface{})
 
+	// Se a token não for de um utilizador, não executa a função
+	if VerificarTokenUser(token) != "OK" /*|| VerificarTokenUserSpecif(token, usrNome) != "OK"*/ {
+		loggers.ServerErrorLogger.Println("A token não têm permissões")
+		retorno["error"] = "A token não têm permissões"
+		return
+	}
+
 	operacoesColl := SetupColecao("users_data", "account_info")
 	operacoesColl.Filter = bson.M{"user": repoUpdate["user"], "contribuicoes.reponome": repoUpdate["repo"].(string)}
 
@@ -144,11 +159,38 @@ func ModificarContribuicoes(operacaoConfig string, repoUpdate map[string]interfa
 	case "add":
 		operacoesColl.AdicionarContribuicao(repoUpdate["repo"].(string), repoUpdate["file"].(string))
 	case "rmv":
+		operacoesColl.RemoverContribuicao(repoUpdate["repo"].(string), repoUpdate["file"].(string))
 	default:
 		loggers.ServerErrorLogger.Println("Error: Tipo de operação não reconhecido, <'add' ou 'rmv'>")
 		retorno["Error"] = "Tipo de operação não reconhecido, <'adicionar' ou 'remover'>"
 		return
 	}
 
+	loggers.ServerErrorLogger.Println("Contribuição removida com sucesso")
+	retorno["sucesso"] = true
+	return
+}
+
+func AdicionarContrbRepo(usrNome string, repoNome string, token string) (retorno map[string]interface{}) {
+	retorno = make(map[string]interface{})
+
+	// Se a token não for de um utilizador, não executa a função
+	if VerificarTokenUser(token) != "OK" /*|| VerificarTokenUserSpecif(token, usrNome) != "OK"*/ {
+		loggers.ServerErrorLogger.Println("A token não têm permissões")
+		retorno["error"] = "A token não têm permissões"
+		return
+	}
+
+	operacoesColl := SetupColecao("users_data", "account_info")
+	operacoesColl.Filter = bson.M{"user": usrNome}
+
+	if err := operacoesColl.CriarRepoContribuicoes(repoNome).Error(); err != "" {
+		loggers.ServerErrorLogger.Println("Erro ao criar repo nas contribuições do user")
+		retorno["erro"] = "Erro ao criar repo nas contribuições do user"
+		return
+	}
+
+	loggers.ServerErrorLogger.Println("Repo criado nas contribuições do user")
+	retorno["erro"] = "Repo criado nas contribuições do user"
 	return
 }
