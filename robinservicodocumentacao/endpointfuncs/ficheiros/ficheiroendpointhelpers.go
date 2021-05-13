@@ -104,7 +104,22 @@ func ApagarMetaDataFicheiro(hash string) error {
 	return nil
 }
 
-func ApagarFicheiroMetaRepo() error {
+func ApagarFicheiroMetaRepo(hash string, user string) error {
+	// Documento e Coleção onde procurar a meta data
+	collection := endpointfuncs.MongoClient.Database("documentacao").Collection("repos")
+	cntx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+
+	operacaoDrop := bson.M{"$pull": bson.M{"ficheiros": bson.M{"hash": hash}}}
+	resultado, err := collection.UpdateOne(cntx, bson.M{"autor": user, "ficheiros.hash": hash}, operacaoDrop)
+	defer cancel()
+
+	fmt.Println(resultado)
+	if err != nil {
+		return err
+	}
+	if resultado.ModifiedCount < 1 {
+		return errors.New("nenhum ficheiro foi apagado")
+	}
 
 	return nil
 }
@@ -178,8 +193,6 @@ func ModificarContrbFileInRepoUsrInfo(opDef string, usrNome string, repoAutor st
 	adicionarQuery := fmt.Sprintf("\"%s\",\n%s,\n\"%s\",", opDef, fileAddSpecific, token)
 	// DynamicGoQuery body para conssumir o endpoint do serviço userinfo
 	action := fmt.Sprintf("action:\nfuncs:\n\"ModificarContribuicoes\":\n%s", adicionarQuery)
-
-	fmt.Println(action)
 
 	// Utilização do endpoint UpdateInfoUtilizador, exposto em http://0.0.0.0:8001
 	resp, err := http.Post("http://0.0.0.0:8001", "text/plain", bytes.NewBufferString(action))

@@ -126,7 +126,15 @@ func ApagarFicheiroMetaData(campos map[string]interface{}, token string) (retorn
 		return
 	}
 
-	err = ModificarContrbFileInRepoUsrInfo("add", campos["autor"].(string), campos["reponome"].(string), campos["nome"].(string), token)
+	// Apaga o ficheiro que contêm o campo "hash" igual ao fornecido, no repositório indicado
+	err = ApagarFicheiroMetaRepo(metaHash, campos["autor"].(string))
+	if err != nil {
+		loggers.OperacoesBDLogger.Println("Não foi possivél apagar um ficheiro devido ao erro: ", err)
+		retorno["erro"] = "Não foi possivél apagar este ficheiro"
+		return
+	}
+
+	err = ModificarContrbFileInRepoUsrInfo("rmv", campos["autor"].(string), campos["reponome"].(string), campos["nome"].(string), token)
 	if err != nil {
 		loggers.OperacoesBDLogger.Println("Erro: ", err)
 		retorno["erro"] = err

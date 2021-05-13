@@ -3,7 +3,6 @@ package repos
 import (
 	"bytes"
 	"context"
-	"encoding/json"
 	"errors"
 	"fmt"
 	"io/ioutil"
@@ -133,12 +132,6 @@ func AdicionarContrbRepoUsrInfo(repo *resolvedschema.Repositorio, token string) 
 		return err
 	}
 
-	var apiResposta map[string]interface{}
-	err = json.Unmarshal(bodyContentBytes, &apiResposta)
-	if err != nil {
-		return err
-	}
-
 	loggers.ResolverLogger.Printf("AdicionarContrbRepo status: %v", string(bodyContentBytes))
 	return nil
 }
@@ -157,12 +150,6 @@ func RemoverContrbRepoFileUsrInfo(repo *resolvedschema.Repositorio, token string
 	}
 	defer resp.Body.Close()
 	bodyContentBytes, err := ioutil.ReadAll(resp.Body)
-	if err != nil {
-		return err
-	}
-
-	var apiResposta map[string]interface{}
-	err = json.Unmarshal(bodyContentBytes, &apiResposta)
 	if err != nil {
 		return err
 	}
