@@ -2,6 +2,7 @@ package ficheiros
 
 import (
 	"context"
+	"fmt"
 	"reflect"
 	"time"
 
@@ -63,7 +64,7 @@ func CriarFicheiroMetaData(ficheiroMetaData map[string]interface{}, token string
 		return
 	}
 
-	if err := AdicionarContrbFileInRepoUsrInfo(ficheiro.Autor, ficheiroMetaData["reponome"].(string), ficheiro.Nome, token); err != nil {
+	if err := ModificarContrbFileInRepoUsrInfo("add", ficheiro.Autor, ficheiroMetaData["reponome"].(string), ficheiro.Nome, token); err != nil {
 		loggers.OperacoesBDLogger.Println("Erro: ", err)
 		retorno["erro"] = err
 		return
@@ -115,12 +116,20 @@ func ApagarFicheiroMetaData(campos map[string]interface{}, token string) (retorn
 		retorno["erro"] = "Erro ao criar hash para meta data fornecida"
 		return
 	}
+	fmt.Println(metaHash)
 
 	// Apaga o ficheiro que contêm o campo "hash" igual ao fornecido
 	err = ApagarMetaDataFicheiro(metaHash)
 	if err != nil {
 		loggers.OperacoesBDLogger.Println("Erro: Não foi possivél apagar este ficheiro: ", err)
 		retorno["erro"] = "Não foi possivél apagar este ficheiro"
+		return
+	}
+
+	err = ModificarContrbFileInRepoUsrInfo("add", campos["autor"].(string), campos["reponome"].(string), campos["nome"].(string), token)
+	if err != nil {
+		loggers.OperacoesBDLogger.Println("Erro: ", err)
+		retorno["erro"] = err
 		return
 	}
 

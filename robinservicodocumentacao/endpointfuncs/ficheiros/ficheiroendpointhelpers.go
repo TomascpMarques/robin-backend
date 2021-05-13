@@ -172,12 +172,14 @@ func VerificarRepoExiste(repoNome string) bool {
 	return !reflect.ValueOf(repos.GetRepoPorCampo("nome", repoNome)).IsZero()
 }
 
-func AdicionarContrbFileInRepoUsrInfo(usrNome string, repoAutor string, nomeFicheiro string, token string) error {
+func ModificarContrbFileInRepoUsrInfo(opDef string, usrNome string, repoAutor string, nomeFicheiro string, token string) error {
 	fileAddSpecific := fmt.Sprintf(`{"user": "%s","repo": "%s", "file": "%s"}`, usrNome, repoAutor, nomeFicheiro)
 	// Mongodb query para atualizar o status do user
-	adicionarQuery := fmt.Sprintf("\"%s\",\n%s,\n\"%s\",", "add", fileAddSpecific, token)
+	adicionarQuery := fmt.Sprintf("\"%s\",\n%s,\n\"%s\",", opDef, fileAddSpecific, token)
 	// DynamicGoQuery body para conssumir o endpoint do serviço userinfo
 	action := fmt.Sprintf("action:\nfuncs:\n\"ModificarContribuicoes\":\n%s", adicionarQuery)
+
+	fmt.Println(action)
 
 	// Utilização do endpoint UpdateInfoUtilizador, exposto em http://0.0.0.0:8001
 	resp, err := http.Post("http://0.0.0.0:8001", "text/plain", bytes.NewBufferString(action))
@@ -194,10 +196,6 @@ func AdicionarContrbFileInRepoUsrInfo(usrNome string, repoAutor string, nomeFich
 	err = json.Unmarshal(bodyContentBytes, &apiResposta)
 	if err != nil {
 		return err
-	}
-
-	if _, existe := apiResposta["sucesso"]; !existe {
-		return errors.New("a operação não foi concluida com sucesso")
 	}
 
 	loggers.ResolverLogger.Printf("ModificarContribuicoes status: %v\n", string(bodyContentBytes))
