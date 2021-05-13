@@ -39,7 +39,7 @@ func CriarFicheiroMetaData(ficheiroMetaData map[string]interface{}, token string
 		retorno["erro"] = err.Error()
 		return
 	}
-	ficheiroMetaData["criacao"] = time.Now().Unix()
+	ficheiroMetaData["criacao"] = time.Now().Local().Format("2006/01/02 15:04:05")
 	ficheiro := resolvedschema.FicheiroMetaDataParaStruct(&ficheiroMetaData)
 
 	// Get the mongo colection
@@ -55,7 +55,7 @@ func CriarFicheiroMetaData(ficheiroMetaData map[string]interface{}, token string
 		return
 	}
 
-	// Insere o nome e o path do novo ficheiro, no repo onde a meta data do fiche. especifica
+	// Insere o nome e o path do novo ficheiro, no repo onde a meta data do fiche. especificado
 	err = RepoInserirMetaFileInfo(ficheiro.RepoNome, &ficheiro)
 	if err != nil {
 		loggers.OperacoesBDLogger.Println("Erro: ", err)
@@ -63,7 +63,11 @@ func CriarFicheiroMetaData(ficheiroMetaData map[string]interface{}, token string
 		return
 	}
 
-	
+	if err := AdicionarContrbFileInRepoUsrInfo(ficheiro.Autor, ficheiroMetaData["reponome"].(string), ficheiro.Nome, token); err != nil {
+		loggers.OperacoesBDLogger.Println("Erro: ", err)
+		retorno["erro"] = err
+		return
+	}
 
 	loggers.OperacoesBDLogger.Println("Meta Data insserida com sucesso")
 	retorno["sucesso"] = true

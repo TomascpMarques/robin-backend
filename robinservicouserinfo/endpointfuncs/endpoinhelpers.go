@@ -48,8 +48,8 @@ func (defs *MongoDBOperation) AdicionarContribuicao(repo string, ficheiro string
 	return nil
 }
 
-// RemoverContribuicao Remove contribuições (nomes dos ficheiros), da info do user
-func (defs *MongoDBOperation) RemoverContribuicao(repo string, ficheiro string) error {
+// RemoverContribuicaoFile Remove contribuições (nomes dos ficheiros), da info do user
+func (defs *MongoDBOperation) RemoverContribuicaoFile(repo string, ficheiro string) error {
 	// Contribuição a inserir
 	contribuicao := bson.M{"$pull": bson.M{"contribuicoes.$.ficheiros": ficheiro}}
 
@@ -63,6 +63,25 @@ func (defs *MongoDBOperation) RemoverContribuicao(repo string, ficheiro string) 
 	}
 	if resultado.ModifiedCount < 1 {
 		return errors.New("nenhum ficheiro foi modificado")
+	}
+	return nil
+}
+
+// RemoverContribuicaoRepo Remove contribuições (nomes dos ficheiros), da info do user
+func (defs *MongoDBOperation) RemoverContribuicaoRepo(repo string) error {
+	// Contribuição a inserir
+	operacaoDrop := bson.M{"$pull": bson.M{"contribuicoes": bson.M{"reponome": repo}}}
+
+	// Inserção da contribuição na info do user
+	resultado, err := defs.Colecao.UpdateOne(defs.Cntxt, defs.Filter, operacaoDrop)
+	defs.CancelFunc()
+
+	// Error handeling
+	if err != nil {
+		return err
+	}
+	if resultado.ModifiedCount < 1 {
+		return errors.New("nenhum repo foi largado")
 	}
 	return nil
 }

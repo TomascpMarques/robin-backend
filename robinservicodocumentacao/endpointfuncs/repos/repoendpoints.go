@@ -123,7 +123,11 @@ func DropRepositorio(campos map[string]interface{}, token string) (retorno map[s
 		return
 	}
 
-	
+	if err := RemoverContrbRepoUsrInfo(&repositorio, token); err != nil {
+		loggers.ServerErrorLogger.Println("Erro: ", err)
+		retorno["erro"] = "Erro ao tentar apagar a informação de repositorios por completo"
+		return
+	}
 
 	loggers.DbFuncsLogger.Println("Repositório apagado com sucesso")
 	retorno["ok"] = true

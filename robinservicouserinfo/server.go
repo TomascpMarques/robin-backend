@@ -27,6 +27,7 @@ func main() {
 
 	// Modificações das contribuições do user
 	actions.FuncsStorage["ModificarContribuicoes"] = endpointfuncs.ModificarContribuicoes
+	actions.FuncsStorage["RemoverRepoContributo"] = endpointfuncs.RemoverRepoContributo
 	actions.FuncsStorage["AdicionarContrbRepo"] = endpointfuncs.AdicionarContrbRepo
 
 	// Management geral da user-info

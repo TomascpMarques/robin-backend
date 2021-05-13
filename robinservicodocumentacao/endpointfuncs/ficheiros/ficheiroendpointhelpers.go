@@ -1,16 +1,20 @@
 package ficheiros
 
 import (
+	"bytes"
 	"context"
 	"crypto/sha1"
 	"encoding/json"
 	"errors"
 	"fmt"
+	"io/ioutil"
+	"net/http"
 	"reflect"
 	"time"
 
 	"github.com/tomascpmarques/PAP/backend/robinservicodocumentacao/endpointfuncs"
 	"github.com/tomascpmarques/PAP/backend/robinservicodocumentacao/endpointfuncs/repos"
+	"github.com/tomascpmarques/PAP/backend/robinservicodocumentacao/loggers"
 	"github.com/tomascpmarques/PAP/backend/robinservicodocumentacao/resolvedschema"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo/options"
@@ -107,6 +111,7 @@ func ApagarFicheiroMetaRepo() error {
 
 // RepoInserirMetaFileInfo Atualiza o array de ficheiros que pertence ao repo especificado
 func RepoInserirMetaFileInfo(repoNome string, meta *resolvedschema.FicheiroMetaData) error {
+	fmt.Println(meta)
 	if meta.Path[1] != repoNome {
 		return errors.New("caminho do ficheiro não coincide com o do repositorio")
 	}
@@ -165,4 +170,36 @@ func CriarMetaHash(metaData map[string]interface{}) (string, error) {
 // VerificarRepoExiste Verifica se o repositório com este nome existe
 func VerificarRepoExiste(repoNome string) bool {
 	return !reflect.ValueOf(repos.GetRepoPorCampo("nome", repoNome)).IsZero()
+}
+
+func AdicionarContrbFileInRepoUsrInfo(usrNome string, repoAutor string, nomeFicheiro string, token string) error {
+	fileAddSpecific := fmt.Sprintf(`{"user": "%s","repo": "%s", "file": "%s"}`, usrNome, repoAutor, nomeFicheiro)
+	// Mongodb query para atualizar o status do user
+	adicionarQuery := fmt.Sprintf("\"%s\",\n%s,\n\"%s\",", "add", fileAddSpecific, token)
+	// DynamicGoQuery body para conssumir o endpoint do serviço userinfo
+	action := fmt.Sprintf("action:\nfuncs:\n\"ModificarContribuicoes\":\n%s", adicionarQuery)
+
+	// Utilização do endpoint UpdateInfoUtilizador, exposto em http://0.0.0.0:8001
+	resp, err := http.Post("http://0.0.0.0:8001", "text/plain", bytes.NewBufferString(action))
+	if err != nil {
+		return err
+	}
+	defer resp.Body.Close()
+	bodyContentBytes, err := ioutil.ReadAll(resp.Body)
+	if err != nil {
+		return err
+	}
+
+	var apiResposta map[string]interface{}
+	err = json.Unmarshal(bodyContentBytes, &apiResposta)
+	if err != nil {
+		return err
+	}
+
+	if _, existe := apiResposta["sucesso"]; !existe {
+		return errors.New("a operação não foi concluida com sucesso")
+	}
+
+	loggers.ResolverLogger.Printf("ModificarContribuicoes status: %v\n", string(bodyContentBytes))
+	return nil
 }

@@ -3,6 +3,7 @@ package repos
 import (
 	"bytes"
 	"context"
+	"encoding/json"
 	"errors"
 	"fmt"
 	"io/ioutil"
@@ -132,14 +133,24 @@ func AdicionarContrbRepoUsrInfo(repo *resolvedschema.Repositorio, token string) 
 		return err
 	}
 
+	var apiResposta map[string]interface{}
+	err = json.Unmarshal(bodyContentBytes, &apiResposta)
+	if err != nil {
+		return err
+	}
+
+	if _, existe := apiResposta["sucesso"]; !existe {
+		return errors.New("a operação não foi concluida com sucesso")
+	}
+
 	loggers.ResolverLogger.Printf("AdicionarContrbRepo status: %v", string(bodyContentBytes))
 	return nil
 }
 
-func RemoveContrbRepoUsrInfo(repo *resolvedschema.Repositorio, token string) error {
+func RemoverContrbFileUsrInfo(repo *resolvedschema.Repositorio, token string) error {
 	// Mongodb query para atualizar o status do user
-	rmvQueryoptions := fmt.Sprintf(`{"user": %s,"repo": %s, "file": %s}`, repo.Autor, repo.Nome, "temp")
-	adicionarQuery := fmt.Sprintf("\"%s\",%s,\"%s\",\n", "rmv", rmvQueryoptions, "temp")
+	rmvQueryoptions := fmt.Sprintf(`{"user": "%s","repo": "%s", "file": "%s"}`, repo.Autor, repo.Nome, token)
+	adicionarQuery := fmt.Sprintf("\"%s\",%s,\"%s\",\n", "rmv", rmvQueryoptions, token)
 	// DynamicGoQuery body para conssumir o endpoint do serviço userinfo
 	action := fmt.Sprintf("action:\nfuncs:\n\"ModificarContribuicoes\":\n%s", adicionarQuery)
 
@@ -152,6 +163,48 @@ func RemoveContrbRepoUsrInfo(repo *resolvedschema.Repositorio, token string) err
 	bodyContentBytes, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
 		return err
+	}
+
+	var apiResposta map[string]interface{}
+	err = json.Unmarshal(bodyContentBytes, &apiResposta)
+	if err != nil {
+		return err
+	}
+
+	if _, existe := apiResposta["sucesso"]; !existe {
+		return errors.New("a operação não foi concluida com sucesso")
+	}
+
+	loggers.ResolverLogger.Printf("ModificarContribuicoes status: %v", string(bodyContentBytes))
+	return nil
+}
+
+func RemoverContrbRepoUsrInfo(repo *resolvedschema.Repositorio, token string) error {
+	// Mongodb query para atualizar o status do user
+	rmvQueryoptions := fmt.Sprintf(`{"user": %s,"repo": %s, "file": %s}`, repo.Autor, repo.Nome, token)
+	adicionarQuery := fmt.Sprintf("\"%s\",%s,\"%s\",\n", "rmv", rmvQueryoptions, token)
+	// DynamicGoQuery body para conssumir o endpoint do serviço userinfo
+	action := fmt.Sprintf("action:\nfuncs:\n\"ModificarContribuicoes\":\n%s", adicionarQuery)
+
+	// Utilização do endpoint UpdateInfoUtilizador, exposto em http://0.0.0.0:8001
+	resp, err := http.Post("http://0.0.0.0:8001", "text/plain", bytes.NewBufferString(action))
+	if err != nil {
+		return err
+	}
+	defer resp.Body.Close()
+	bodyContentBytes, err := ioutil.ReadAll(resp.Body)
+	if err != nil {
+		return err
+	}
+
+	var apiResposta map[string]interface{}
+	err = json.Unmarshal(bodyContentBytes, &apiResposta)
+	if err != nil {
+		return err
+	}
+
+	if _, existe := apiResposta["sucesso"]; !existe {
+		return errors.New("a operação não foi concluida com sucesso")
 	}
 
 	loggers.ResolverLogger.Printf("AdicionarContrbRepo status: %v", string(bodyContentBytes))

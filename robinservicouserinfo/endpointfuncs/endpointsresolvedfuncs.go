@@ -140,7 +140,7 @@ func CriarRegistoUser(userInfo map[string]interface{}, token string) (retorno ma
 		return
 	}
 
-	retorno["insserido"] = inserted
+	retorno["inserido"] = inserted
 	return retorno
 }
 
@@ -162,16 +162,26 @@ func ModificarContribuicoes(operacaoConfig string, repoUpdate map[string]interfa
 	// Avalia o tipo de operação pedido, add para adicionar contribuição, rmv para remover contribuição
 	switch operacaoConfig {
 	case "add":
-		operacoesColl.AdicionarContribuicao(repoUpdate["repo"].(string), repoUpdate["file"].(string))
+		err := operacoesColl.AdicionarContribuicao(repoUpdate["repo"].(string), repoUpdate["file"].(string))
+		if err != nil {
+			loggers.ServerErrorLogger.Println("Error: ", err)
+			retorno["Error"] = err
+			return
+		}
 	case "rmv":
-		operacoesColl.RemoverContribuicao(repoUpdate["repo"].(string), repoUpdate["file"].(string))
+		err := operacoesColl.RemoverContribuicaoFile(repoUpdate["repo"].(string), repoUpdate["file"].(string))
+		if err != nil {
+			loggers.ServerErrorLogger.Println("Error: ", err)
+			retorno["Error"] = err
+			return
+		}
 	default:
 		loggers.ServerErrorLogger.Println("Error: Tipo de operação não reconhecido, <'add' ou 'rmv'>")
 		retorno["Error"] = "Tipo de operação não reconhecido, <'adicionar' ou 'remover'>"
 		return
 	}
 
-	loggers.ServerErrorLogger.Println("Contribuição removida com sucesso")
+	loggers.ResolverLogger.Println("Operação acabou com sucesso")
 	retorno["sucesso"] = true
 	return
 }
@@ -198,7 +208,34 @@ func AdicionarContrbRepo(usrNome string, repoNome string, token string) (retorno
 		return
 	}
 
-	loggers.ServerErrorLogger.Println("Repo criado nas contribuições do user")
-	retorno["sucesso"] = "Repo criado nas contribuições do user"
+	loggers.OperacoesBDLogger.Println("Repo criado nas contribuições do user")
+	retorno["sucesso"] = true
+	return
+}
+
+// RemoverRepoContributo Remove o repo de contribuições
+func RemoverRepoContributo(repoinfo map[string]interface{}, token string) (retorno map[string]interface{}) {
+	retorno = make(map[string]interface{})
+
+	// Se a token não for de um utilizador, não executa a função
+	// if VerificarTokenUser(token) != "OK" /*|| VerificarTokenUserSpecif(token, usrNome) != "OK"*/ {
+	// 	loggers.ServerErrorLogger.Println("A token não têm permissões")
+	// 	retorno["error"] = "A token não têm permissões"
+	// 	return
+	// }
+
+	// Defenições a serem usadas para executar as operações na BD
+	operacoesColl := SetupColecao("users_data", "account_info")
+	operacoesColl.Filter = bson.M{"user": repoinfo["user"], "contribuicoes.reponome": repoinfo["repo"].(string)}
+
+	if err := operacoesColl.RemoverContribuicaoRepo(repoinfo["repo"].(string)); err != nil {
+		loggers.MongoDBLogger.Println(err)
+		loggers.ServerErrorLogger.Println("Erro ao largar o repo nas contribuições do user pedido")
+		retorno["erro"] = "Erro ao largar o repo nas contribuições do user pedido"
+		return
+	}
+
+	loggers.ServerErrorLogger.Println("Repo largado das contribuições do utilizador com sucesso")
+	retorno["sucesso"] = true
 	return
 }
