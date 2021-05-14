@@ -109,11 +109,13 @@ func ApagarFicheiroMetaRepo(hash string, user string) error {
 	collection := endpointfuncs.MongoClient.Database("documentacao").Collection("repos")
 	cntx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 
+	// Query para apagar o ficheiro que conicide com a hash: hash
 	operacaoDrop := bson.M{"$pull": bson.M{"ficheiros": bson.M{"hash": hash}}}
+	// Operação para atualizar o repo, o filtro da pesquisa pelo registo, é o segundo param
 	resultado, err := collection.UpdateOne(cntx, bson.M{"autor": user, "ficheiros.hash": hash}, operacaoDrop)
 	defer cancel()
 
-	fmt.Println(resultado)
+	// Error handeling
 	if err != nil {
 		return err
 	}
@@ -126,7 +128,6 @@ func ApagarFicheiroMetaRepo(hash string, user string) error {
 
 // RepoInserirMetaFileInfo Atualiza o array de ficheiros que pertence ao repo especificado
 func RepoInserirMetaFileInfo(repoNome string, meta *resolvedschema.FicheiroMetaData) error {
-	fmt.Println(meta)
 	if meta.Path[1] != repoNome {
 		return errors.New("caminho do ficheiro não coincide com o do repositorio")
 	}
@@ -201,12 +202,6 @@ func ModificarContrbFileInRepoUsrInfo(opDef string, usrNome string, repoAutor st
 	}
 	defer resp.Body.Close()
 	bodyContentBytes, err := ioutil.ReadAll(resp.Body)
-	if err != nil {
-		return err
-	}
-
-	var apiResposta map[string]interface{}
-	err = json.Unmarshal(bodyContentBytes, &apiResposta)
 	if err != nil {
 		return err
 	}

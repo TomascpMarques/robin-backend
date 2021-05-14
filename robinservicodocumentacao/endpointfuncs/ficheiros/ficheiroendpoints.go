@@ -2,7 +2,6 @@ package ficheiros
 
 import (
 	"context"
-	"fmt"
 	"reflect"
 	"time"
 
@@ -64,6 +63,7 @@ func CriarFicheiroMetaData(ficheiroMetaData map[string]interface{}, token string
 		return
 	}
 
+	// Adiciona o ficheiro ás contribuições do user no serviço user-info
 	if err := ModificarContrbFileInRepoUsrInfo("add", ficheiro.Autor, ficheiroMetaData["reponome"].(string), ficheiro.Nome, token); err != nil {
 		loggers.OperacoesBDLogger.Println("Erro: ", err)
 		retorno["erro"] = err
@@ -116,7 +116,6 @@ func ApagarFicheiroMetaData(campos map[string]interface{}, token string) (retorn
 		retorno["erro"] = "Erro ao criar hash para meta data fornecida"
 		return
 	}
-	fmt.Println(metaHash)
 
 	// Apaga o ficheiro que contêm o campo "hash" igual ao fornecido
 	err = ApagarMetaDataFicheiro(metaHash)
@@ -134,6 +133,7 @@ func ApagarFicheiroMetaData(campos map[string]interface{}, token string) (retorn
 		return
 	}
 
+	// Remove o ficheiro das contribuições do user no sistema user-info
 	err = ModificarContrbFileInRepoUsrInfo("rmv", campos["autor"].(string), campos["reponome"].(string), campos["nome"].(string), token)
 	if err != nil {
 		loggers.OperacoesBDLogger.Println("Erro: ", err)

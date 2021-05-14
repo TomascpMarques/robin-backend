@@ -161,6 +161,7 @@ func ModificarContribuicoes(operacaoConfig string, repoUpdate map[string]interfa
 
 	// Avalia o tipo de operação pedido, add para adicionar contribuição, rmv para remover contribuição
 	switch operacaoConfig {
+	// Operação que adiciona um ficheiro ás contribuições do user
 	case "add":
 		err := operacoesColl.AdicionarContribuicao(repoUpdate["repo"].(string), repoUpdate["file"].(string))
 		if err != nil {
@@ -168,6 +169,7 @@ func ModificarContribuicoes(operacaoConfig string, repoUpdate map[string]interfa
 			retorno["Error"] = err
 			return
 		}
+		// Operação que remove um ficheiro ás contribuições do user
 	case "rmv":
 		err := operacoesColl.RemoverContribuicaoFile(repoUpdate["repo"].(string), repoUpdate["file"].(string))
 		if err != nil {
@@ -175,6 +177,7 @@ func ModificarContribuicoes(operacaoConfig string, repoUpdate map[string]interfa
 			retorno["Error"] = err
 			return
 		}
+		// Se a operação pedida não estiver implementada corre este código
 	default:
 		loggers.ServerErrorLogger.Println("Error: Tipo de operação não reconhecido, <'add' ou 'rmv'>")
 		retorno["Error"] = "Tipo de operação não reconhecido, <'adicionar' ou 'remover'>"
@@ -228,7 +231,8 @@ func RemoverRepoContributo(repoinfo map[string]interface{}, token string) (retor
 	operacoesColl := SetupColecao("users_data", "account_info")
 	operacoesColl.Filter = bson.M{"user": repoinfo["user"], "contribuicoes.reponome": repoinfo["repo"].(string)}
 
-	if err := operacoesColl.RemoverContribuicaoRepo(repoinfo["repo"].(string)); err != nil {
+	// Remove o repo das contribuições do utilizador
+	if err := operacoesColl.RemoverRepoContribuicao(repoinfo["repo"].(string)); err != nil {
 		loggers.MongoDBLogger.Println(err)
 		loggers.ServerErrorLogger.Println("Erro ao largar o repo nas contribuições do user pedido")
 		retorno["erro"] = "Erro ao largar o repo nas contribuições do user pedido"

@@ -38,6 +38,7 @@ func GetRepoPorCampo(campo string, valor interface{}) (repo resolvedschema.Repos
 	return
 }
 
+// DropRepoPorNome Larga um repositorio pelo seu nome
 func DropRepoPorNome(repoNome string) (erro error) {
 	// Define o filtro a usar na procura de informação na BD
 	filter := bson.M{"nome": repoNome}
@@ -53,6 +54,7 @@ func DropRepoPorNome(repoNome string) (erro error) {
 	return
 }
 
+// RepoDropFicheirosMeta Apaga todos os ficheiros dentro do repo com o nome especificado em repoNome
 func RepoDropFicheirosMeta(repoNome string) error {
 	collection := endpointfuncs.MongoClient.Database("documentacao").Collection("files-meta-data")
 	cntx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
@@ -66,6 +68,7 @@ func RepoDropFicheirosMeta(repoNome string) error {
 	return nil
 }
 
+// UpdateRepositorioPorNome Atualiza as informações do repositório especificado pelo nome passado nos params
 func UpdateRepositorioPorNome(repoName string, mundancas map[string]interface{}) *mongo.UpdateResult {
 	// Set-up do filtro
 	filter := bson.M{"nome": repoName}
@@ -85,6 +88,8 @@ func UpdateRepositorioPorNome(repoName string, mundancas map[string]interface{})
 	return matchCount
 }
 
+// InitRepoFichrContribCriacao Inicializa as estruturas de dados Ficheiros e Contribuições de um repo
+// Assim evita erros com atribuições etc.
 func InitRepoFichrContribCriacao(repo *resolvedschema.Repositorio) {
 	// A inicialização destas estruturas de dadds,
 	// evita bugs com o display de informação,
@@ -96,6 +101,7 @@ func InitRepoFichrContribCriacao(repo *resolvedschema.Repositorio) {
 	repo.Criacao = time.Now().Local().Format("2006/01/02 15:04:05")
 }
 
+// VerificarInfoBaseRepo Verifica se a info base para criar um repo está correta e existe no query
 func VerificarInfoBaseRepo(info map[string]interface{}) (err error) {
 	err = nil
 	// Keys obrigatorias que o a info deve conter
@@ -136,6 +142,7 @@ func AdicionarContrbRepoUsrInfo(repo *resolvedschema.Repositorio, token string) 
 	return nil
 }
 
+// RemoverContrbRepoFileUsrInfo Remove o ficheiro especificado do repo em que ele existe, no sistema da user-info
 func RemoverContrbRepoFileUsrInfo(repo *resolvedschema.Repositorio, token string) error {
 	// Mongodb query para atualizar o status do user
 	rmvQueryoptions := fmt.Sprintf(`{"user": %s,"repo": %s, "file": %s}`, repo.Autor, repo.Nome, token)
