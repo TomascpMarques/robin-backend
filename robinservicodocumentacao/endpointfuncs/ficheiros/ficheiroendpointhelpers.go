@@ -10,6 +10,7 @@ import (
 	"io/ioutil"
 	"net/http"
 	"reflect"
+	"strings"
 	"time"
 
 	"github.com/tomascpmarques/PAP/backend/robinservicodocumentacao/endpointfuncs"
@@ -20,30 +21,65 @@ import (
 	"go.mongodb.org/mongo-driver/mongo/options"
 )
 
-func MetaDataBaseValida(metaData map[string]interface{}) error {
-	// Campos que a metaData têm que validar
-	camposBase := []string{
-		"nome",
-		"autor",
-		"reponome",
-		"path",
-	}
+// VerifCamposBaseMeta Valida os campos existentes com os campos que são obrigatórios
+// A funcção valida os existentes, se eles conterem os obrigatórios
+func VerifCamposBaseMeta(metaData map[string]interface{}, camposObrg []string) error {
 	// Verifica se contêm os campos básicos
-	for _, campo := range camposBase {
+	for _, campo := range camposObrg {
 		if valor, existe := metaData[campo]; !(reflect.ValueOf(valor).IsValid()) || !existe {
 			return errors.New("a meta data fornecida não é sufeciente para a criação do ficheiro")
 		}
 	}
 
+	return nil
+}
+
+// VerifMetaNomeELower Verifica se o nome do ficheir está todo em lowercase
+func VerifMetaNomeELower(meta *resolvedschema.FicheiroMetaData) error {
+	if meta.Nome != strings.ToLower(meta.Nome) {
+		return errors.New("não foi possivél criar o ficheiro pedido, o nome do ficheiro deve ser todo em lower case")
+	}
+	return nil
+}
+
+func VerifPathMinLen(meta *resolvedschema.FicheiroMetaData) error {
 	// O path têm de conter mais de 2 elementos
-	meta := resolvedschema.FicheiroMetaDataParaStruct(&metaData)
 	if len(meta.Path) < 2 {
 		return errors.New("não foi possivél criar o ficheiro pedido, erros no seu path")
 	}
+	return nil
+}
 
+func VerifPathValido(meta *resolvedschema.FicheiroMetaData) error {
 	// Se o path não corresponder ao seguinte formato: "repo/<file_repo_name>/.../<file_name>"
 	if meta.Path[1] != meta.RepoNome || meta.Path[0] != "repo" || meta.Path[len(meta.Path)-1] != meta.Nome {
 		return errors.New("não foi possivél criar o ficheiro pedido, erros no armazenamento descrito na meta data")
+	}
+	return nil
+}
+
+func MetaDataBaseValida(metaData map[string]interface{}) error {
+	campos := []string{
+		"nome",
+		"autor",
+		"reponome",
+		"path",
+	}
+	if err := VerifCamposBaseMeta(metaData, campos); err != nil {
+		return err
+	}
+
+	// Conversão de map[string]interface{}, para a struct correta
+	meta := resolvedschema.FicheiroMetaDataParaStruct(&metaData)
+
+	if err := VerifMetaNomeELower(&meta); err != nil {
+		return err
+	}
+	if err := VerifPathMinLen(&meta); err != nil {
+		return err
+	}
+	if err := VerifPathValido(&meta); err != nil {
+		return err
 	}
 
 	// Define o filtro a usar na procura de informação na BD

@@ -98,3 +98,33 @@ func CriarFicheiro_repo(ficheiro *resolvedschema.FicheiroMetaData) error {
 
 	return nil
 }
+
+// ApagarFicheiro_repo Apaga o ficheiro especificado do repositorio em que ele reside, através do seu path
+func ApagarFicheiro_repo(ficheiro *resolvedschema.FicheiroMetaData) error {
+	workingDir, _ := os.Getwd()
+	if !VerificarDirBase(workingDir) {
+		// Mudar para a diretoria dos repos
+		// E verifica se hove algum erro no processo
+		if err := os.Chdir(HomePath); err != nil {
+			fmt.Println(err)
+			return err
+		}
+	}
+
+	// Walk path, cria as pastas necessárias, e muda de dir para essas mesmas
+	for _, dir := range ficheiro.Path[1 : len(ficheiro.Path)-1] {
+		if _, existe := ioutil.ReadDir("./" + dir); existe != nil {
+			return errors.New("não foi possivél seguir o path todo")
+		}
+		// Muda para a dir correspondente à que se encontra dentro de valor
+		os.Chdir(dir)
+	}
+
+	// Remove o ficheiro do repo especificado
+	if err := os.Remove(ficheiro.Nome); err != nil {
+		loggers.DocsStorage.Println(err)
+		return errors.New("não foi possivél apagar o ficheiro no storage")
+	}
+
+	return nil
+}

@@ -21,12 +21,21 @@ func CriarFicheiroMetaData(ficheiroMetaData map[string]interface{}, token string
 	// 	return
 	// }
 
+	// Verificar a validade da meta-info fornecida
+	if err := MetaDataBaseValida(ficheiroMetaData); err != nil {
+		loggers.OperacoesBDLogger.Println(err.Error())
+		retorno["erro"] = err.Error()
+		return
+	}
+
+	// Verificar se o repo a inserir a meta-info existe
 	if !VerificarRepoExiste(ficheiroMetaData["reponome"].(string)) {
 		loggers.OperacoesBDLogger.Println("O repo fornecido não existe, não se pode criar o ficheiro")
 		retorno["erro"] = "O repo fornecido não existe, não se pode criar o ficheiro"
 		return
 	}
 
+	// Criação da hash para a meta info do ficheiro
 	metaHash, err := CriarMetaHash(ficheiroMetaData)
 	if err != nil {
 		loggers.OperacoesBDLogger.Println("Erro ao criar hash para meta data: ", err)
@@ -34,11 +43,8 @@ func CriarFicheiroMetaData(ficheiroMetaData map[string]interface{}, token string
 		return
 	}
 	ficheiroMetaData["hash"] = metaHash
-	if err := MetaDataBaseValida(ficheiroMetaData); err != nil {
-		loggers.OperacoesBDLogger.Println(err.Error())
-		retorno["erro"] = err.Error()
-		return
-	}
+
+	// Atribuição da data de criação
 	ficheiroMetaData["criacao"] = time.Now().Local().Format("2006/01/02 15:04:05")
 	ficheiro := resolvedschema.FicheiroMetaDataParaStruct(&ficheiroMetaData)
 
