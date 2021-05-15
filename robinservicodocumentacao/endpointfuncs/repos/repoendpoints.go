@@ -4,6 +4,7 @@ import (
 	"reflect"
 
 	"github.com/tomascpmarques/PAP/backend/robinservicodocumentacao/endpointfuncs"
+	"github.com/tomascpmarques/PAP/backend/robinservicodocumentacao/endpointfuncs/reposfiles"
 	"github.com/tomascpmarques/PAP/backend/robinservicodocumentacao/loggers"
 	"github.com/tomascpmarques/PAP/backend/robinservicodocumentacao/mongodbhandle"
 	"github.com/tomascpmarques/PAP/backend/robinservicodocumentacao/resolvedschema"
@@ -57,11 +58,11 @@ func CriarRepositorio(repoInfo map[string]interface{}, token string) (retorno ma
 		return
 	}
 
-	// if err := reposfiles.CriarRepositorio_repo(&repo); err != nil {
-	// 	loggers.DbFuncsLogger.Println("Não foi possivél criar o repo em storage: ", err)
-	// 	retorno["erro"] = ("Não foi possivél criar o repo em storage")
-	// 	return
-	// }
+	if err := reposfiles.CriarRepositorio_repo(&repo); err != nil {
+		loggers.DbFuncsLogger.Println("Não foi possivél criar o repo em storage: ", err)
+		retorno["erro"] = ("Não foi possivél criar o repo em storage")
+		return
+	}
 
 	loggers.OperacoesBDLogger.Println("Repo criado com sucesso! <", repoInfo["nome"], ">")
 	retorno["resultado"] = registo
@@ -138,6 +139,12 @@ func DropRepositorio(campos map[string]interface{}, token string) (retorno map[s
 	if err := RemoverContrbRepoUsrInfo(&repositorio, token); err != nil {
 		loggers.ServerErrorLogger.Println("Erro: ", err)
 		retorno["erro"] = "Erro ao tentar apagar a informação de repositorios por completo"
+		return
+	}
+
+	if err := reposfiles.ApagarRepositorio_repo(&repositorio); err != nil {
+		loggers.ServerErrorLogger.Println("Erro: ", err)
+		retorno["erro"] = "Erro ao tentar apagar o repo de storage"
 		return
 	}
 

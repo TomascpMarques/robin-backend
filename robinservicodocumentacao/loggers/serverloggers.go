@@ -22,3 +22,5 @@ var ServerErrorLogger = log.New(os.Stdout, "Erro-Server-BD...|*| ", log.LstdFlag
 
 // MongoDBLogger - Logger para as operações com MongoDB
 var MongoDBLogger = log.New(os.Stdout, "MongoDB-Handler....{*}", log.LstdFlags)
+
+var DocsStorage = log.New(os.Stdout, "DocsStorage........{*}", log.LstdFlags)
