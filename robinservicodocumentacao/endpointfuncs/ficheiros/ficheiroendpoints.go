@@ -154,6 +154,23 @@ func ApagarFicheiroMetaData(campos map[string]interface{}, token string) (retorn
 		return
 	}
 
+	// Busca a meta data que corresponde aos campos dados
+	// De um só registo
+	ficheiroMetaData := GetMetaDataFicheiro(campos)
+	if reflect.ValueOf(ficheiroMetaData).IsZero() {
+		loggers.OperacoesBDLogger.Println("Erro: Sem meta data para esse ficheiro")
+		retorno["erro"] = "Sem meta data para esse ficheiro"
+		return
+	}
+
+	// Apaga o ficheiro de local storage
+	err = reposfiles.ApagarFicheiro_repo(&ficheiroMetaData)
+	if err != nil {
+		loggers.OperacoesBDLogger.Println("Erro: Sem meta data para esse ficheiro")
+		retorno["erro"] = "Sem meta data para esse ficheiro"
+		return
+	}
+
 	retorno["sucesso"] = true
 	return
 }
