@@ -12,7 +12,7 @@ import (
 )
 
 // Caminho da dir repo, a partir da pasta reposfiles
-var HomePath = "./repo"
+var HomePath, _ = os.Getwd()
 
 // CriarRepositorio_repo Cria a pasta para o repositorio dado nos parametros
 func CriarRepositorio_repo(repo *resolvedschema.Repositorio) error {
@@ -20,7 +20,7 @@ func CriarRepositorio_repo(repo *resolvedschema.Repositorio) error {
 	if !VerificarDirBase(workingDir) {
 		// Mudar para a diretoria dos repos
 		// E verifica se hove algum erro no processo
-		if err := os.Chdir(HomePath); err != nil {
+		if err := os.Chdir(HomePath + "/repo"); err != nil {
 			fmt.Println(err)
 			return err
 		}
@@ -48,7 +48,7 @@ func ApagarRepositorio_repo(repo *resolvedschema.Repositorio) error {
 	if !VerificarDirBase(workingDir) {
 		// Mudar para a diretoria dos repos
 		// E verifica se hove algum erro no processo
-		if err := os.Chdir(HomePath); err != nil {
+		if err := os.Chdir(HomePath + "/repo"); err != nil {
 			fmt.Println(err)
 			return err
 		}
@@ -69,7 +69,7 @@ func CriarFicheiro_repo(ficheiro *resolvedschema.FicheiroMetaData) error {
 	if !VerificarDirBase(workingDir) {
 		// Mudar para a diretoria dos repos
 		// E verifica se hove algum erro no processo
-		if err := os.Chdir(HomePath); err != nil {
+		if err := os.Chdir(HomePath + "/repo"); err != nil {
 			fmt.Println(err)
 			return err
 		}
@@ -105,7 +105,7 @@ func ApagarFicheiro_repo(ficheiro *resolvedschema.FicheiroMetaData) error {
 	if !VerificarDirBase(workingDir) {
 		// Mudar para a diretoria dos repos
 		// E verifica se hove algum erro no processo
-		if err := os.Chdir(HomePath); err != nil {
+		if err := os.Chdir(HomePath + "/repo"); err != nil {
 			fmt.Println(err)
 			return err
 		}
@@ -130,15 +130,17 @@ func ApagarFicheiro_repo(ficheiro *resolvedschema.FicheiroMetaData) error {
 }
 
 func AdicionarConteudoFicheiro_file(ficheiro *resolvedschema.FicheiroConteudo) error {
+	fmt.Println(os.Getwd())
 	workingDir, _ := os.Getwd()
 	if !VerificarDirBase(workingDir) {
 		// Mudar para a diretoria dos repos
 		// E verifica se hove algum erro no processo
-		if err := os.Chdir(HomePath); err != nil {
+		if err := os.Chdir(HomePath + "/repo"); err != nil {
 			fmt.Println(err)
 			return err
 		}
 	}
+	fmt.Println(os.Getwd())
 
 	// Walk path, cria as pastas necessárias, e muda de dir para essas mesmas
 	for _, dir := range ficheiro.Path[1 : len(ficheiro.Path)-1] {

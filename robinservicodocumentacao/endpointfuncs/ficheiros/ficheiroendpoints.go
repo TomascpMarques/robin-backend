@@ -76,6 +76,13 @@ func CriarFicheiroMetaData(ficheiroMetaData map[string]interface{}, token string
 		return
 	}
 
+	// Cria o ficheiro em local-storage após a criação da meta-data correspondente
+	if err := reposfiles.CriarFicheiro_repo(&ficheiro); err != nil {
+		loggers.OperacoesBDLogger.Println("Erro: ", err)
+		retorno["erro"] = err
+		return
+	}
+
 	loggers.OperacoesBDLogger.Println("Meta Data insserida com sucesso")
 	retorno["sucesso"] = true
 	return
@@ -171,20 +178,22 @@ func InserirConteudoFicheiro(contntMeta map[string]interface{}, token string) (r
 	// Verificação da check sum do ficheiro
 	err := ConteudoRecebidoCheckSum(&ficheiroStruct, ficheiroStruct.Hash)
 	if err != nil {
-		loggers.OperacoesBDLogger.Println("Erro: ", err)
-		retorno["erro"] = err
+		loggers.OperacoesBDLogger.Println("Erro: ", err.Error())
+		retorno["erro"] = err.Error()
 		return
 	}
 
 	// Inserção do conteudo de ficheiro recebido, no ficheiro pré-criado correspondente
 	if err := reposfiles.AdicionarConteudoFicheiro_file(&ficheiroStruct); err != nil {
-		loggers.OperacoesBDLogger.Println("Erro: ", err)
-		retorno["erro"] = err
+		loggers.OperacoesBDLogger.Println("Erro: ", err.Error())
+		retorno["erro"] = err.Error()
 		return
 	}
 
+	loggers.OperacoesBDLogger.Println("Conteudo adicionado com sucesso")
+	retorno["sucesso"] = true
 	return
 }
 
 // AtualizarFicheiroMetaData Busca um ficheiro pela sua hash e atualiza a meta-data através das atualizações fornecidas
-// TODO Hennnnnn mais ou menos
+// TODO Hennnnnn mais ou menos (fazes se tiveres tempo, :))
