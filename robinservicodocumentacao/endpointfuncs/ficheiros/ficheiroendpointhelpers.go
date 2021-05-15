@@ -18,8 +18,24 @@ import (
 	"github.com/tomascpmarques/PAP/backend/robinservicodocumentacao/loggers"
 	"github.com/tomascpmarques/PAP/backend/robinservicodocumentacao/resolvedschema"
 	"go.mongodb.org/mongo-driver/bson"
+	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
 )
+
+// MongoDBOperation Struct com o setup minímo para fazer uma oepração na BDs
+type MongoDBOperation struct {
+	Colecao    *mongo.Collection
+	Cntxt      context.Context
+	CancelFunc context.CancelFunc
+	Filter     interface{}
+}
+
+// Setup Evita mais lihas desnecessárias e repetitivas para poder-se usar a coleção necessaria
+func SetupColecao(dbName, collName string) (defs MongoDBOperation) {
+	defs.Colecao = endpointfuncs.MongoClient.Database(dbName).Collection(collName)
+	defs.Cntxt, defs.CancelFunc = context.WithTimeout(context.Background(), time.Second*10)
+	return
+}
 
 // VerifCamposBaseMeta Valida os campos existentes com os campos que são obrigatórios
 // A funcção valida os existentes, se eles conterem os obrigatórios
@@ -107,12 +123,12 @@ func MetaDataBaseValida(metaData map[string]interface{}) error {
 // Busca a meta data através de um campo e valor do mesmo, especificado na sua chamada
 func GetMetaDataFicheiro(campos map[string]interface{}) (meta resolvedschema.FicheiroMetaData) {
 	// Documento e Coleção onde procurar a meta data
-	collection := endpointfuncs.MongoClient.Database("documentacao").Collection("files-meta-data")
-	cntx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	operacoesDB := SetupColecao("documentacao", "files-meta-data")
+	operacoesDB.Filter = campos
 
 	// Procura na BD do registo pedido
-	err := collection.FindOne(cntx, campos, options.FindOne()).Decode(&meta)
-	defer cancel()
+	err := operacoesDB.Colecao.FindOne(operacoesDB.Cntxt, operacoesDB.Filter, options.FindOne()).Decode(&meta)
+	defer operacoesDB.CancelFunc()
 	if err != nil {
 		// Devolve um repo vzaio se não se encontrar o pedido
 		meta = resolvedschema.FicheiroMetaData{}
@@ -126,12 +142,12 @@ func GetMetaDataFicheiro(campos map[string]interface{}) (meta resolvedschema.Fic
 // ApagarMetaDataFicheiro Apaga o ficheiro em que a hash é a mesma que a passada nos parametros
 func ApagarMetaDataFicheiro(hash string) error {
 	// Documento e Coleção onde procurar a meta data
-	collection := endpointfuncs.MongoClient.Database("documentacao").Collection("files-meta-data")
-	cntx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	operacoesDB := SetupColecao("documentacao", "files-meta-data")
+	operacoesDB.Filter = bson.M{"hash": hash}
 
 	// Procura na BD do registo pedido
-	err := collection.FindOneAndDelete(cntx, bson.M{"hash": hash}, options.FindOneAndDelete())
-	defer cancel()
+	err := operacoesDB.Colecao.FindOneAndDelete(operacoesDB.Cntxt, operacoesDB.Filter, options.FindOneAndDelete())
+	defer operacoesDB.CancelFunc()
 	if err.Err() != nil {
 		// Devolve um repo vzaio se não se encontrar o pedido
 		return err.Err()
@@ -142,13 +158,13 @@ func ApagarMetaDataFicheiro(hash string) error {
 
 func ApagarFicheiroMetaRepo(hash string, user string) error {
 	// Documento e Coleção onde procurar a meta data
-	collection := endpointfuncs.MongoClient.Database("documentacao").Collection("repos")
+	operacoesDB := SetupColecao("documentacao", "repos")
 	cntx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 
 	// Query para apagar o ficheiro que conicide com a hash: hash
 	operacaoDrop := bson.M{"$pull": bson.M{"ficheiros": bson.M{"hash": hash}}}
 	// Operação para atualizar o repo, o filtro da pesquisa pelo registo, é o segundo param
-	resultado, err := collection.UpdateOne(cntx, bson.M{"autor": user, "ficheiros.hash": hash}, operacaoDrop)
+	resultado, err := operacoesDB.Colecao.UpdateOne(cntx, bson.M{"autor": user, "ficheiros.hash": hash}, operacaoDrop)
 	defer cancel()
 
 	// Error handeling
@@ -170,11 +186,11 @@ func RepoInserirMetaFileInfo(repoNome string, meta *resolvedschema.FicheiroMetaD
 	// Combinação de nome do ficheiro e do seu path
 	ficheiroNomePath := map[string]interface{}{"nome": meta.Nome, "path": meta.Path, "hash": meta.Hash}
 
-	colecao := endpointfuncs.MongoClient.Database("documentacao").Collection("repos")
-	cntx, cancel := context.WithTimeout(context.Background(), time.Second*10)
+	operacoesDB := SetupColecao("documentacao", "repos")
+	operacoesDB.Filter = bson.M{"nome": repoNome}
 
-	err := colecao.FindOneAndUpdate(cntx, bson.M{"nome": repoNome}, bson.M{"$push": bson.M{"ficheiros": ficheiroNomePath}})
-	defer cancel()
+	err := operacoesDB.Colecao.FindOneAndUpdate(operacoesDB.Cntxt, operacoesDB.Filter, bson.M{"$push": bson.M{"ficheiros": ficheiroNomePath}})
+	defer operacoesDB.CancelFunc()
 	if err.Err() != nil {
 		// Devolve um repo vzaio se não se encontrar o pedido
 		return err.Err()
@@ -194,17 +210,16 @@ func RepoInserirMetaFileInfo(repoNome string, meta *resolvedschema.FicheiroMetaD
 //							que não é o autor do repo, adiciona esse user aos contribuidores
 func VerificaNovoContribuidor(ficheiroAutor string, repoAutor string, repoNome string) error {
 	if ficheiroAutor != repoAutor {
-		colecao := endpointfuncs.MongoClient.Database("documentacao").Collection("repos")
-		cntx, cancel := context.WithTimeout(context.Background(), time.Second*10)
+		operacoesBD := SetupColecao("documentacao", "repos")
+		operacoesBD.Filter = bson.M{"nome": repoNome}
 
-		err := colecao.FindOneAndUpdate(cntx, bson.M{"nome": repoNome}, bson.M{"$push": bson.M{"contribuidores": ficheiroAutor}})
-		defer cancel()
+		err := operacoesBD.Colecao.FindOneAndUpdate(operacoesBD.Cntxt, operacoesBD.Filter, bson.M{"$push": bson.M{"contribuidores": ficheiroAutor}})
+		defer operacoesBD.CancelFunc()
 		if err.Err() != nil {
 			// Devolve um repo vzaio se não se encontrar o pedido
 			return err.Err()
 		}
 	}
-
 	return nil
 }
 
