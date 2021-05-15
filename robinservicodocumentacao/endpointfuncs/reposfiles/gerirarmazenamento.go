@@ -128,3 +128,32 @@ func ApagarFicheiro_repo(ficheiro *resolvedschema.FicheiroMetaData) error {
 
 	return nil
 }
+
+func AdicionarConteudoFicheiro_file(ficheiro *resolvedschema.FicheiroConteudo) error {
+	workingDir, _ := os.Getwd()
+	if !VerificarDirBase(workingDir) {
+		// Mudar para a diretoria dos repos
+		// E verifica se hove algum erro no processo
+		if err := os.Chdir(HomePath); err != nil {
+			fmt.Println(err)
+			return err
+		}
+	}
+
+	// Walk path, cria as pastas necessárias, e muda de dir para essas mesmas
+	for _, dir := range ficheiro.Path[1 : len(ficheiro.Path)-1] {
+		if _, existe := ioutil.ReadDir("./" + dir); existe != nil {
+			return errors.New("não foi possivél navegar para uma das pastas")
+		}
+		// Muda para a dir correspondente à que se encontra dentro de valor
+		os.Chdir(dir)
+	}
+
+	// Escreve o conteudo da var ficheiro no ficheiro
+	err := os.WriteFile(ficheiro.Nome, []byte(ficheiro.Conteudo), os.FileMode(7600))
+	if err != nil {
+		return err
+	}
+
+	return nil
+}

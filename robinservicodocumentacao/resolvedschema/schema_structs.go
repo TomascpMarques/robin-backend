@@ -34,6 +34,8 @@ type FicheiroMetaData struct {
 
 // O contéudo em sí do ficheiro
 type FicheiroConteudo struct {
-	Conteudo string `json:"conteudo,omitempty"` // O que reside dentro do ficheiro
-	Hash     string `json:"hash,omitempty"`     // Hash do conteudo do ficheiro
+	Nome     string   `json:"nome,omitempty"`
+	Conteudo string   `json:"conteudo,omitempty"` // O que reside dentro do ficheiro
+	Hash     string   `json:"hash,omitempty"`     // Hash do conteudo do ficheiro
+	Path     []string `json:"path,omitempty"`     // ["<repo_name>","folder1","folder2",...,"<file_name.extension>"]
 }

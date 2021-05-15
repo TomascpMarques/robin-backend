@@ -6,6 +6,7 @@ import (
 	"time"
 
 	"github.com/tomascpmarques/PAP/backend/robinservicodocumentacao/endpointfuncs"
+	"github.com/tomascpmarques/PAP/backend/robinservicodocumentacao/endpointfuncs/reposfiles"
 	"github.com/tomascpmarques/PAP/backend/robinservicodocumentacao/loggers"
 	"github.com/tomascpmarques/PAP/backend/robinservicodocumentacao/resolvedschema"
 	"go.mongodb.org/mongo-driver/mongo/options"
@@ -20,13 +21,6 @@ func CriarFicheiroMetaData(ficheiroMetaData map[string]interface{}, token string
 	// 	retorno["erro"] = "A token fornecida é inválida ou expirou"
 	// 	return
 	// }
-
-	// Verificar a validade da meta-info fornecida
-	if err := MetaDataBaseValida(ficheiroMetaData); err != nil {
-		loggers.OperacoesBDLogger.Println(err.Error())
-		retorno["erro"] = err.Error()
-		return
-	}
 
 	// Verificar se o repo a inserir a meta-info existe
 	if !VerificarRepoExiste(ficheiroMetaData["reponome"].(string)) {
@@ -43,6 +37,12 @@ func CriarFicheiroMetaData(ficheiroMetaData map[string]interface{}, token string
 		return
 	}
 	ficheiroMetaData["hash"] = metaHash
+	// Verificar a validade da meta-info fornecida
+	if err := MetaDataBaseValida(ficheiroMetaData); err != nil {
+		loggers.OperacoesBDLogger.Println(err.Error())
+		retorno["erro"] = err.Error()
+		return
+	}
 
 	// Atribuição da data de criação
 	ficheiroMetaData["criacao"] = time.Now().Local().Format("2006/01/02 15:04:05")
@@ -151,5 +151,40 @@ func ApagarFicheiroMetaData(campos map[string]interface{}, token string) (retorn
 	return
 }
 
-// AtualizarFicheiroMetaData Busca um ficheiro pela sua hash e atualiza a meta-data através das atuali. fornecidas
+func InserirConteudoFicheiro(contntMeta map[string]interface{}, token string) (retorno map[string]interface{}) {
+	retorno = make(map[string]interface{})
+
+	// Verificação de igualdade entre request user, e file autor
+	// if endpointfuncs.VerificarTokenUserSpecif(token, campos["autor"].(string)) != "OK" || endpointfuncs.VerificarTokenAdmin(token) != "OK" {
+	// 	loggers.ServerErrorLogger.Println("Erro: Este utilizador não têm permissões para esta operação, ou token expirada")
+	// 	retorno["erro"] = "Este utilizador não têm permissões para esta operação, ou token expirada"
+	// 	return
+	// }
+
+	ficheiroStruct := resolvedschema.FicheiroConteudoParaStruct(&contntMeta)
+	if ficheiroStruct.Nome != ficheiroStruct.Path[len(ficheiroStruct.Path)-1] {
+		loggers.OperacoesBDLogger.Println("Erro: o nome do ficheiro não corresponde ao nome no path")
+		retorno["erro"] = "O nome do ficheiro não corresponde ao nome no path"
+		return
+	}
+
+	// Verificação da check sum do ficheiro
+	err := ConteudoRecebidoCheckSum(&ficheiroStruct, ficheiroStruct.Hash)
+	if err != nil {
+		loggers.OperacoesBDLogger.Println("Erro: ", err)
+		retorno["erro"] = err
+		return
+	}
+
+	// Inserção do conteudo de ficheiro recebido, no ficheiro pré-criado correspondente
+	if err := reposfiles.AdicionarConteudoFicheiro_file(&ficheiroStruct); err != nil {
+		loggers.OperacoesBDLogger.Println("Erro: ", err)
+		retorno["erro"] = err
+		return
+	}
+
+	return
+}
+
+// AtualizarFicheiroMetaData Busca um ficheiro pela sua hash e atualiza a meta-data através das atualizações fornecidas
 // TODO Hennnnnn mais ou menos
