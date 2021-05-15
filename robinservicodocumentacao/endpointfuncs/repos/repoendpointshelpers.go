@@ -162,6 +162,26 @@ func RemoverContrbRepoFileUsrInfo(repo *resolvedschema.Repositorio, token string
 	}
 
 	loggers.ResolverLogger.Printf("AdicionarContrbRepo status: %v", string(bodyContentBytes))
+	return nil
+}
 
+func MudarContrbRepoNomeUsrInfo(repoNome string, novoNomeRepo string, usrNome string, token string) error {
+	// Mongodb query para atualizar o status do user
+	queryAtualiza := fmt.Sprintf("{\"contribuicoes.reponome\": \"%s\"}", novoNomeRepo)
+	// DynamicGoQuery body para conssumir o endpoint do serviço userinfo
+	action := fmt.Sprintf("action:\nfuncs:\n\"UpdateInfoUtilizador\":\n%s,\n%s,", queryAtualiza, token)
+
+	// Utilização do endpoint UpdateInfoUtilizador, exposto em http://0.0.0.0:8001
+	resp, err := http.Post("http://0.0.0.0:8001", "text/plain", bytes.NewBufferString(action))
+	if err != nil {
+		return err
+	}
+	defer resp.Body.Close()
+	bodyContentBytes, err := ioutil.ReadAll(resp.Body)
+	if err != nil {
+		return err
+	}
+
+	loggers.ResolverLogger.Printf("AdicionarContrbRepo status: %v", string(bodyContentBytes))
 	return nil
 }

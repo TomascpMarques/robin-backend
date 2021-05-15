@@ -68,7 +68,7 @@ func UpdateInfoUtilizador(usrNome string, params map[string]interface{}, token s
 	retorno = make(map[string]interface{})
 
 	// Se a token não for de um admin, ou do user em sí, não se atualiza o user
-	if VerificarTokenAdmin(token) != "OK" /*|| VerificarTokenUserSpecif(token, usrNome) != "OK"*/ {
+	if VerificarTokenAdmin(token) != "OK" || VerificarTokenUserSpecif(token, usrNome) != "OK" {
 		loggers.ServerErrorLogger.Println("A token não têm permissões")
 		retorno["error"] = "A token não têm permissões"
 		return
@@ -149,7 +149,7 @@ func ModificarContribuicoes(operacaoConfig string, repoUpdate map[string]interfa
 	retorno = make(map[string]interface{})
 
 	// Se a token não for de um utilizador, não executa a função
-	// if VerificarTokenUser(token) != "OK" /*|| VerificarTokenUserSpecif(token, usrNome) != "OK"*/ {
+	// if VerificarTokenAdmin(token) != "OK" /*|| VerificarTokenUserSpecif(token, usrNome) != "OK"*/ {
 	// 	loggers.ServerErrorLogger.Println("A token não têm permissões")
 	// 	retorno["error"] = "A token não têm permissões"
 	// 	return
@@ -194,7 +194,7 @@ func AdicionarContrbRepo(usrNome string, repoNome string, token string) (retorno
 	retorno = make(map[string]interface{})
 
 	// Se a token não for de um utilizador, não executa a função
-	// if VerificarTokenUser(token) != "OK" /*|| VerificarTokenUserSpecif(token, usrNome) != "OK"*/ {
+	// if VerificarTokenAdmin(token) != "OK" /*|| VerificarTokenUserSpecif(token, usrNome) != "OK"*/ {
 	// 	loggers.ServerErrorLogger.Println("A token não têm permissões")
 	// 	retorno["error"] = "A token não têm permissões"
 	// 	return
@@ -221,7 +221,7 @@ func RemoverRepoContributo(repoinfo map[string]interface{}, token string) (retor
 	retorno = make(map[string]interface{})
 
 	// Se a token não for de um utilizador, não executa a função
-	// if VerificarTokenUser(token) != "OK" /*|| VerificarTokenUserSpecif(token, usrNome) != "OK"*/ {
+	// if VerificarTokenAdmin(token) != "OK" /*|| VerificarTokenUserSpecif(token, usrNome) != "OK"*/ {
 	// 	loggers.ServerErrorLogger.Println("A token não têm permissões")
 	// 	retorno["error"] = "A token não têm permissões"
 	// 	return

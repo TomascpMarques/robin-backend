@@ -7,7 +7,6 @@ import (
 	"github.com/tomascpmarques/PAP/backend/robinservicodocumentacao/loggers"
 	"github.com/tomascpmarques/PAP/backend/robinservicodocumentacao/mongodbhandle"
 	"github.com/tomascpmarques/PAP/backend/robinservicodocumentacao/resolvedschema"
-	"go.mongodb.org/mongo-driver/bson"
 )
 
 // CriarRepositorio Cria um repo para guardar a informação relativa a um tema e/ou tarefa
@@ -137,42 +136,5 @@ func DropRepositorio(campos map[string]interface{}, token string) (retorno map[s
 
 	loggers.DbFuncsLogger.Println("Repositório apagado com sucesso")
 	retorno["ok"] = true
-	return
-}
-
-func UpdateRepositorio(campos map[string]interface{}, updateQuery map[string]interface{}, token string) (retorno map[string]interface{}) {
-	retorno = make(map[string]interface{})
-
-	// if endpointfuncs.VerificarTokenUser(token) != "OK" {
-	// 	loggers.ServerErrorLogger.Println("Erro: A token fornecida é inválida ou expirou")
-	// 	retorno["erro"] = "A token fornecida é inválida ou expirou"
-	// 	return
-	// }
-
-	// Busca o repositório para se poder comparar o autor com o user que fez o pedido
-	repositorio := GetRepoPorCampo("nome", campos["nome"].(string))
-	// Se o resultado da busca for nil, devolve umas menssagens de erro
-	if reflect.ValueOf(repositorio).IsZero() {
-		loggers.OperacoesBDLogger.Println("Não foi possivél encontrar o repositório pedido")
-		retorno["erro"] = ("Não foi possivél encontrar o repositório pedido")
-		return
-	}
-
-	// Verificação de igualdade entre request user, e repo autor
-	// if endpointfuncs.VerificarTokenUserSpecif(token, repositorio.Autor) != "OK" {
-	// 	loggers.ServerErrorLogger.Println("Erro: Este utilizador não têm permissões para esta operação")
-	// 	retorno["erro"] = "Este utilizador não têm permissões para esta operação"
-	// 	return
-	// }
-
-	// Atualiza a informação do repositório com as informações passadas nos paramêtros da func
-	atualizacoes := UpdateRepositorioPorNome(campos["nome"].(string), bson.M{"$set": updateQuery}) // i.e: {"$set":{"autor": "efefef"}},
-	if atualizacoes == nil {
-		loggers.ServerErrorLogger.Println("Erro ao atualizar os valores pedidos")
-		retorno["erro"] = "Erro ao atualizar os valores pedidos"
-		return
-	}
-
-	retorno["resultado"] = atualizacoes
 	return
 }
