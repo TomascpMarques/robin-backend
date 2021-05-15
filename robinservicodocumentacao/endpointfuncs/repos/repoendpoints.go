@@ -57,6 +57,12 @@ func CriarRepositorio(repoInfo map[string]interface{}, token string) (retorno ma
 		return
 	}
 
+	// if err := reposfiles.CriarRepositorio_repo(&repo); err != nil {
+	// 	loggers.DbFuncsLogger.Println("Não foi possivél criar o repo em storage: ", err)
+	// 	retorno["erro"] = ("Não foi possivél criar o repo em storage")
+	// 	return
+	// }
+
 	loggers.OperacoesBDLogger.Println("Repo criado com sucesso! <", repoInfo["nome"], ">")
 	retorno["resultado"] = registo
 	return
@@ -129,7 +135,7 @@ func DropRepositorio(campos map[string]interface{}, token string) (retorno map[s
 	}
 
 	// Remove o repo das contrbuições do user, no sistema do user-info
-	if err := RemoverContrbRepoFileUsrInfo(&repositorio, token); err != nil {
+	if err := RemoverContrbRepoUsrInfo(&repositorio, token); err != nil {
 		loggers.ServerErrorLogger.Println("Erro: ", err)
 		retorno["erro"] = "Erro ao tentar apagar a informação de repositorios por completo"
 		return

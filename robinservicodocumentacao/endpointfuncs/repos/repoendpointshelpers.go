@@ -161,7 +161,30 @@ func RemoverContrbRepoFileUsrInfo(repo *resolvedschema.Repositorio, token string
 		return err
 	}
 
-	loggers.ResolverLogger.Printf("AdicionarContrbRepo status: %v", string(bodyContentBytes))
+	loggers.ResolverLogger.Printf("ModificarContribuicoes status: %v", string(bodyContentBytes))
+	return nil
+}
+
+// RemoverContrbRepoUsrInfo Remove o repo especificado do user-progile no sistema da user-info
+func RemoverContrbRepoUsrInfo(repo *resolvedschema.Repositorio, token string) error {
+	// Mongodb query para atualizar o status do user
+	rmvQueryoptions := fmt.Sprintf(`{"user":"%s","repo": "%s"}`, repo.Autor, repo.Nome)
+	adicionarQuery := fmt.Sprintf("%s,\n\"%s\",", rmvQueryoptions, token)
+	// DynamicGoQuery body para conssumir o endpoint do serviço userinfo
+	action := fmt.Sprintf("action:\nfuncs:\n\"RemoverRepoContributo\":\n%s", adicionarQuery)
+
+	// Utilização do endpoint UpdateInfoUtilizador, exposto em http://0.0.0.0:8001
+	resp, err := http.Post("http://0.0.0.0:8001", "text/plain", bytes.NewBufferString(action))
+	if err != nil {
+		return err
+	}
+	defer resp.Body.Close()
+	bodyContentBytes, err := ioutil.ReadAll(resp.Body)
+	if err != nil {
+		return err
+	}
+
+	loggers.ResolverLogger.Printf("RemoverRepoContributo status: %v", string(bodyContentBytes))
 	return nil
 }
 
@@ -182,6 +205,6 @@ func MudarContrbRepoNomeUsrInfo(repoNome string, novoNomeRepo string, usrNome st
 		return err
 	}
 
-	loggers.ResolverLogger.Printf("AdicionarContrbRepo status: %v", string(bodyContentBytes))
+	loggers.ResolverLogger.Printf("UpdateInfoUtilizador status: %v", string(bodyContentBytes))
 	return nil
 }

@@ -67,7 +67,7 @@ func (defs *MongoDBOperation) RemoverContribuicaoFile(repo string, ficheiro stri
 	return nil
 }
 
-// RemoverRepoContribuicao Remove contribuições (nomes dos ficheiros), da info do user
+// RemoverRepoContribuicao Remove contribuições (repos), da info do user
 func (defs *MongoDBOperation) RemoverRepoContribuicao(repo string) error {
 	// Contribuição a inserir
 	operacaoDrop := bson.M{"$pull": bson.M{"contribuicoes": bson.M{"reponome": repo}}}
