@@ -35,7 +35,7 @@ func main() {
 	actions.FuncsStorage["PingServico"] = endpointfuncs.PingServico
 
 	router := mux.NewRouter()
-	router.HandleFunc("/", actions.Handler)
+	go router.HandleFunc("/", actions.Handler)
 
 	corsOptions := cors.New(cors.Options{
 		AllowedOrigins:   []string{"http://localhost:8080"},

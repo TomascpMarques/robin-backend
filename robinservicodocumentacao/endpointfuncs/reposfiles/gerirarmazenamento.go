@@ -1,6 +1,7 @@
 package reposfiles
 
 import (
+	"crypto/sha1"
 	"errors"
 	"fmt"
 	"io/fs"
@@ -21,7 +22,7 @@ func CriarRepositorio_repo(repo *resolvedschema.Repositorio) error {
 		// Mudar para a diretoria dos repos
 		// E verifica se hove algum erro no processo
 		if err := os.Chdir(HomePath + "/repo"); err != nil {
-			fmt.Println(err)
+			loggers.DocsStorage.Println(err)
 			return err
 		}
 	}
@@ -49,7 +50,7 @@ func ApagarRepositorio_repo(repo *resolvedschema.Repositorio) error {
 		// Mudar para a diretoria dos repos
 		// E verifica se hove algum erro no processo
 		if err := os.Chdir(HomePath + "/repo"); err != nil {
-			fmt.Println(err)
+			loggers.DocsStorage.Println(err)
 			return err
 		}
 	}
@@ -70,7 +71,7 @@ func CriarFicheiro_repo(ficheiro *resolvedschema.FicheiroMetaData) error {
 		// Mudar para a diretoria dos repos
 		// E verifica se hove algum erro no processo
 		if err := os.Chdir(HomePath + "/repo"); err != nil {
-			fmt.Println(err)
+			loggers.DocsStorage.Println(err)
 			return err
 		}
 	}
@@ -106,7 +107,7 @@ func ApagarFicheiro_repo(ficheiro *resolvedschema.FicheiroMetaData) error {
 		// Mudar para a diretoria dos repos
 		// E verifica se hove algum erro no processo
 		if err := os.Chdir(HomePath + "/repo"); err != nil {
-			fmt.Println(err)
+			loggers.DocsStorage.Println(err)
 			return err
 		}
 	}
@@ -130,17 +131,16 @@ func ApagarFicheiro_repo(ficheiro *resolvedschema.FicheiroMetaData) error {
 }
 
 func AdicionarConteudoFicheiro_file(ficheiro *resolvedschema.FicheiroConteudo) error {
-	fmt.Println(os.Getwd())
+	// Verificar se a wd está correta (se está no home path, /repo/)
 	workingDir, _ := os.Getwd()
 	if !VerificarDirBase(workingDir) {
 		// Mudar para a diretoria dos repos
 		// E verifica se hove algum erro no processo
 		if err := os.Chdir(HomePath + "/repo"); err != nil {
-			fmt.Println(err)
+			loggers.DocsStorage.Println(err)
 			return err
 		}
 	}
-	fmt.Println(os.Getwd())
 
 	// Walk path, cria as pastas necessárias, e muda de dir para essas mesmas
 	for _, dir := range ficheiro.Path[1 : len(ficheiro.Path)-1] {
@@ -158,4 +158,32 @@ func AdicionarConteudoFicheiro_file(ficheiro *resolvedschema.FicheiroConteudo) e
 	}
 
 	return nil
+}
+
+// GetConteudoFicheiro_file Lê o conteudo do ficheiro especificado nos params
+// Devolve esse conteudo e uma hash do mesmo, para verificar a validade do conteudo
+func GetConteudoFicheiro_file(ficheiro *resolvedschema.FicheiroMetaData) (*resolvedschema.FicheiroConteudo, error) {
+	// Ciração da estrutura de dados a desenvolver
+	ficheiroConteudos := resolvedschema.FicheiroConteudo{}
+
+	// Walk path, cria as pastas necessárias, e muda de dir para essas mesmas
+	for _, dir := range ficheiro.Path[1 : len(ficheiro.Path)-1] {
+		if _, existe := ioutil.ReadDir("./" + dir); existe != nil {
+			return nil, errors.New("não foi possivél navegar para uma das pastas")
+		}
+		// Muda para a dir correspondente à que se encontra dentro de valor
+		os.Chdir(dir)
+	}
+
+	// Leitura do conteudo do ficheiro
+	conteudo, err := ioutil.ReadFile(ficheiro.Nome)
+	if err != nil {
+		return nil, err
+	}
+
+	// Atribuição do conteudo do ficheiro e da hash
+	ficheiroConteudos.Conteudo = string(conteudo)
+	ficheiroConteudos.Hash = fmt.Sprintf("%x", sha1.Sum(conteudo))
+
+	return &ficheiroConteudos, nil
 }

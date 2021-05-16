@@ -43,7 +43,7 @@ func main() {
 	actions.FuncsStorage["Login"] = loginregistohandlers.Login
 
 	router := mux.NewRouter()
-	router.HandleFunc("/", actions.Handler)
+	go router.HandleFunc("/", actions.Handler)
 
 	corsOptions := cors.New(cors.Options{
 		AllowedOrigins:   []string{"http://localhost:8080"},

@@ -39,7 +39,8 @@ func main() {
 	actions.FuncsStorage["Ping"] = endpointfuncs.PingServico
 
 	router := mux.NewRouter()
-	router.HandleFunc("/", actions.Handler)
+	// WOW concunrrency, much cool
+	go router.HandleFunc("/", actions.Handler)
 
 	corsOptions := cors.New(cors.Options{
 		AllowedOrigins:   []string{"http://localhost:8080"},
@@ -49,6 +50,7 @@ func main() {
 	//handler := cors.Default().Handler(router)
 	corsHandlers := corsOptions.Handler(router)
 
+	// Server Setup
 	server := &http.Server{
 		Handler:      corsHandlers,
 		Addr:         "0.0.0.0:" + os.Getenv("ENV_ROBINUSERINFO_PORT"),
@@ -58,8 +60,9 @@ func main() {
 		ErrorLog:     loggers.ServerErrorLogger,
 	}
 
+	// Starts the server
 	if err := server.ListenAndServe(); err != nil {
-		log.Println("Erro: ", err)
+		log.Println("Major Server Error: ", err)
 		os.Exit(1)
 	}
 
