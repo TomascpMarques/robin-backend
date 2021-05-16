@@ -1,7 +1,7 @@
 package reposfiles
 
 import (
-	"crypto/sha1"
+	"crypto/sha256"
 	"errors"
 	"fmt"
 	"io/fs"
@@ -166,6 +166,17 @@ func GetConteudoFicheiro_file(ficheiro *resolvedschema.FicheiroMetaData) (*resol
 	// Ciração da estrutura de dados a desenvolver
 	ficheiroConteudos := resolvedschema.FicheiroConteudo{}
 
+	// Verificar se a wd está correta (se está no home path, /repo/)
+	workingDir, _ := os.Getwd()
+	if !VerificarDirBase(workingDir) {
+		// Mudar para a diretoria dos repos
+		// E verifica se hove algum erro no processo
+		if err := os.Chdir(HomePath + "/repo"); err != nil {
+			loggers.DocsStorage.Println(err)
+			return nil, err
+		}
+	}
+
 	// Walk path, cria as pastas necessárias, e muda de dir para essas mesmas
 	for _, dir := range ficheiro.Path[1 : len(ficheiro.Path)-1] {
 		if _, existe := ioutil.ReadDir("./" + dir); existe != nil {
@@ -176,6 +187,7 @@ func GetConteudoFicheiro_file(ficheiro *resolvedschema.FicheiroMetaData) (*resol
 	}
 
 	// Leitura do conteudo do ficheiro
+	fmt.Println("-> ", ficheiro.Nome)
 	conteudo, err := ioutil.ReadFile(ficheiro.Nome)
 	if err != nil {
 		return nil, err
@@ -183,7 +195,7 @@ func GetConteudoFicheiro_file(ficheiro *resolvedschema.FicheiroMetaData) (*resol
 
 	// Atribuição do conteudo do ficheiro e da hash
 	ficheiroConteudos.Conteudo = string(conteudo)
-	ficheiroConteudos.Hash = fmt.Sprintf("%x", sha1.Sum(conteudo))
+	ficheiroConteudos.Hash = fmt.Sprintf("%x", sha256.Sum256(conteudo))
 
 	return &ficheiroConteudos, nil
 }

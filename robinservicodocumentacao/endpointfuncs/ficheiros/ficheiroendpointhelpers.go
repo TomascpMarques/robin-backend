@@ -3,7 +3,7 @@ package ficheiros
 import (
 	"bytes"
 	"context"
-	"crypto/sha1"
+	"crypto/sha256"
 	"encoding/json"
 	"errors"
 	"fmt"
@@ -231,7 +231,7 @@ func CriarMetaHash(metaData map[string]interface{}) (string, error) {
 		return "", err
 	}
 	// Adiciona a hash o valor convertido para []byte
-	return fmt.Sprintf("%x", sha1.Sum(x)), nil
+	return fmt.Sprintf("%x", sha256.Sum256(x)), nil
 }
 
 // VerificarRepoExiste Verifica se o repositório com este nome existe
@@ -262,7 +262,7 @@ func ModificarContrbFileInRepoUsrInfo(opDef string, usrNome string, repoAutor st
 }
 
 func ConteudoRecebidoCheckSum(ficheiro *resolvedschema.FicheiroConteudo, hash string) error {
-	conteudoCheckSum := fmt.Sprintf("%x", sha1.Sum([]byte(ficheiro.Conteudo)))
+	conteudoCheckSum := fmt.Sprintf("%x", sha256.Sum256([]byte(ficheiro.Conteudo)))
 	if conteudoCheckSum != hash {
 		return errors.New("as check sum não são iguais, possivél corrupção ou alteração do conteúdo do ficheiro")
 	}

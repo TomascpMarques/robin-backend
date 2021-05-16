@@ -32,14 +32,14 @@ func CriarFicheiroMetaData(ficheiroMetaData map[string]interface{}, token string
 	// Criação da hash para a meta info do ficheiro
 	metaHash, err := CriarMetaHash(ficheiroMetaData)
 	if err != nil {
-		loggers.OperacoesBDLogger.Println("Erro ao criar hash para meta data: ", err)
+		loggers.ServerErrorLogger.Println("Erro ao criar hash para meta data: ", err)
 		retorno["erro"] = "Erro ao criar hash para meta data fornecida"
 		return
 	}
 	ficheiroMetaData["hash"] = metaHash
 	// Verificar a validade da meta-info fornecida
 	if err := MetaDataBaseValida(ficheiroMetaData); err != nil {
-		loggers.OperacoesBDLogger.Println(err.Error())
+		loggers.ServerErrorLogger.Println(err.Error())
 		retorno["erro"] = err.Error()
 		return
 	}
@@ -56,7 +56,7 @@ func CriarFicheiroMetaData(ficheiroMetaData map[string]interface{}, token string
 	insserido, err := mongoCollection.InsertOne(cntx, ficheiro, options.InsertOne())
 	defer cancel()
 	if err != nil || !reflect.ValueOf(insserido.InsertedID).IsValid() {
-		loggers.OperacoesBDLogger.Println("Erro ao insserir o registo na BD: ", err)
+		loggers.ServerErrorLogger.Println("Erro ao insserir o registo na BD: ", err)
 		retorno["erro"] = "Erro ao insserir o registo na BD"
 		return
 	}
@@ -64,21 +64,21 @@ func CriarFicheiroMetaData(ficheiroMetaData map[string]interface{}, token string
 	// Insere o nome e o path do novo ficheiro, no repo onde a meta data do fiche. especificado
 	err = RepoInserirMetaFileInfo(ficheiro.RepoNome, &ficheiro)
 	if err != nil {
-		loggers.OperacoesBDLogger.Println("Erro: ", err)
+		loggers.ServerErrorLogger.Println("Erro: ", err)
 		retorno["erro"] = err
 		return
 	}
 
 	// Adiciona o ficheiro ás contribuições do user no serviço user-info
 	if err := ModificarContrbFileInRepoUsrInfo("add", ficheiro.Autor, ficheiroMetaData["reponome"].(string), ficheiro.Nome, token); err != nil {
-		loggers.OperacoesBDLogger.Println("Erro: ", err)
+		loggers.ServerErrorLogger.Println("Erro: ", err)
 		retorno["erro"] = err
 		return
 	}
 
 	// Cria o ficheiro em local-storage após a criação da meta-data correspondente
 	if err := reposfiles.CriarFicheiro_repo(&ficheiro); err != nil {
-		loggers.OperacoesBDLogger.Println("Erro: ", err)
+		loggers.ServerErrorLogger.Println("Erro: ", err)
 		retorno["erro"] = err
 		return
 	}
@@ -101,7 +101,7 @@ func BuscarMetaData(campos map[string]interface{}, token string) (retorno map[st
 	// De um só registo
 	metaData := GetMetaDataFicheiro(campos)
 	if reflect.ValueOf(metaData).IsZero() {
-		loggers.OperacoesBDLogger.Println("Erro: Sem meta data para esse ficheiro")
+		loggers.ServerErrorLogger.Println("Erro: Sem meta data para esse ficheiro")
 		retorno["erro"] = "Sem meta data para esse ficheiro"
 		return
 	}
@@ -125,7 +125,7 @@ func ApagarFicheiroMetaData(campos map[string]interface{}, token string) (retorn
 	// Cria a hash dos campos fornecidos para procurar a meta data respetiva
 	metaHash, err := CriarMetaHash(campos)
 	if err != nil {
-		loggers.OperacoesBDLogger.Println("Erro ao criar hash para meta data: ", err)
+		loggers.ServerErrorLogger.Println("Erro ao criar hash para meta data: ", err)
 		retorno["erro"] = "Erro ao criar hash para meta data fornecida"
 		return
 	}
@@ -133,7 +133,7 @@ func ApagarFicheiroMetaData(campos map[string]interface{}, token string) (retorn
 	// Apaga o ficheiro que contêm o campo "hash" igual ao fornecido
 	err = ApagarMetaDataFicheiro(metaHash)
 	if err != nil {
-		loggers.OperacoesBDLogger.Println("Erro: Não foi possivél apagar este ficheiro: ", err)
+		loggers.ServerErrorLogger.Println("Erro: Não foi possivél apagar este ficheiro: ", err)
 		retorno["erro"] = "Não foi possivél apagar este ficheiro"
 		return
 	}
@@ -141,7 +141,7 @@ func ApagarFicheiroMetaData(campos map[string]interface{}, token string) (retorn
 	// Apaga o ficheiro que contêm o campo "hash" igual ao fornecido, no repositório indicado
 	err = ApagarFicheiroMetaRepo(metaHash, campos["autor"].(string))
 	if err != nil {
-		loggers.OperacoesBDLogger.Println("Não foi possivél apagar um ficheiro devido ao erro: ", err)
+		loggers.ServerErrorLogger.Println("Não foi possivél apagar um ficheiro devido ao erro: ", err)
 		retorno["erro"] = "Não foi possivél apagar este ficheiro"
 		return
 	}
@@ -149,7 +149,7 @@ func ApagarFicheiroMetaData(campos map[string]interface{}, token string) (retorn
 	// Remove o ficheiro das contribuições do user no sistema user-info
 	err = ModificarContrbFileInRepoUsrInfo("rmv", campos["autor"].(string), campos["reponome"].(string), campos["nome"].(string), token)
 	if err != nil {
-		loggers.OperacoesBDLogger.Println("Erro: ", err)
+		loggers.ServerErrorLogger.Println("Erro: ", err)
 		retorno["erro"] = err
 		return
 	}
@@ -158,7 +158,7 @@ func ApagarFicheiroMetaData(campos map[string]interface{}, token string) (retorn
 	// De um só registo
 	ficheiroMetaData := GetMetaDataFicheiro(campos)
 	if reflect.ValueOf(ficheiroMetaData).IsZero() {
-		loggers.OperacoesBDLogger.Println("Erro: Sem meta data para esse ficheiro")
+		loggers.ServerErrorLogger.Println("Erro: Sem meta data para esse ficheiro")
 		retorno["erro"] = "Sem meta data para esse ficheiro"
 		return
 	}
@@ -166,7 +166,7 @@ func ApagarFicheiroMetaData(campos map[string]interface{}, token string) (retorn
 	// Apaga o ficheiro de local storage
 	err = reposfiles.ApagarFicheiro_repo(&ficheiroMetaData)
 	if err != nil {
-		loggers.OperacoesBDLogger.Println("Erro: Sem meta data para esse ficheiro")
+		loggers.ServerErrorLogger.Println("Erro: Sem meta data para esse ficheiro")
 		retorno["erro"] = "Sem meta data para esse ficheiro"
 		return
 	}
@@ -187,7 +187,7 @@ func InserirConteudoFicheiro(contntMeta map[string]interface{}, token string) (r
 
 	ficheiroStruct := resolvedschema.FicheiroConteudoParaStruct(&contntMeta)
 	if ficheiroStruct.Nome != ficheiroStruct.Path[len(ficheiroStruct.Path)-1] {
-		loggers.OperacoesBDLogger.Println("Erro: o nome do ficheiro não corresponde ao nome no path")
+		loggers.ServerErrorLogger.Println("Erro: o nome do ficheiro não corresponde ao nome no path")
 		retorno["erro"] = "O nome do ficheiro não corresponde ao nome no path"
 		return
 	}
@@ -195,19 +195,51 @@ func InserirConteudoFicheiro(contntMeta map[string]interface{}, token string) (r
 	// Verificação da check sum do ficheiro
 	err := ConteudoRecebidoCheckSum(&ficheiroStruct, ficheiroStruct.Hash)
 	if err != nil {
-		loggers.OperacoesBDLogger.Println("Erro: ", err.Error())
+		loggers.ServerErrorLogger.Println("Erro: ", err.Error())
 		retorno["erro"] = err.Error()
 		return
 	}
 
 	// Inserção do conteudo de ficheiro recebido, no ficheiro pré-criado correspondente
 	if err := reposfiles.AdicionarConteudoFicheiro_file(&ficheiroStruct); err != nil {
-		loggers.OperacoesBDLogger.Println("Erro: ", err.Error())
+		loggers.ServerErrorLogger.Println("Erro: ", err.Error())
 		retorno["erro"] = err.Error()
 		return
 	}
 
 	loggers.OperacoesBDLogger.Println("Conteudo adicionado com sucesso")
+	retorno["sucesso"] = true
+	return
+}
+
+// BuscarConteudoFicheiro Busca um ficheiro lê o seu conteudo e devolve oa user
+func BuscarConteudoFicheiro(campos map[string]interface{}, token string) (retorno map[string]interface{}) {
+	retorno = make(map[string]interface{})
+	var err error
+
+	// if endpointfuncs.VerificarTokenUser(token) != "OK" {
+	// 	loggers.OperacoesBDLogger.Println("Erro: A token fornecida é inválida ou expirou")
+	// 	retorno["erro"] = "A token fornecida é inválida ou expirou"
+	// 	return
+	// }
+
+	// Converte o query para um ficheiro meta info
+	ficheiroContMeta := resolvedschema.FicheiroMetaDataParaStruct(&campos)
+	if !reflect.ValueOf(ficheiroContMeta).IsValid() {
+		loggers.ServerErrorLogger.Println("Erro: Não foi possível converter o query para o ficheiro, numa struct")
+		retorno["erro"] = "Não fomos capazaes de concluir o request"
+		return
+	}
+
+	// Coloca o conteudo, hash, etc, na response
+	retorno["conteudo"], err = reposfiles.GetConteudoFicheiro_file(&ficheiroContMeta)
+	if err != nil {
+		loggers.ServerErrorLogger.Println("Erro: Não foi possível ler o ficheiro: ", err)
+		retorno["erro"] = "Não fomos capazaes de concluir o request " + err.Error()
+		return
+	}
+
+	loggers.OperacoesBDLogger.Println("Conteudo do ficheiro lido e enviado: ", ficheiroContMeta.Nome)
 	retorno["sucesso"] = true
 	return
 }
