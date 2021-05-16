@@ -4,7 +4,6 @@ import (
 	"context"
 	"fmt"
 	"reflect"
-	"time"
 
 	"github.com/tomascpmarques/PAP/backend/robinservicouserinfo/loggers"
 	"github.com/tomascpmarques/PAP/backend/robinservicouserinfo/mongodbhandle"
@@ -40,21 +39,21 @@ func GetInfoUtilizador(usrNome string, token string) (retorno map[string]interfa
 	}
 
 	// Defenição do filter a usar nas pesquisas da bd
-	filter := bson.M{"user": usrNome}
+	// filter := bson.M{"user": usrNome}
 	// Conexão à bd e coleção a usar
-	colecao := MongoClient.Database("users_data").Collection("account_info")
+	//operacoesColl := MongoClient.Database("users_data").Collection("account_info")
 
-	//operacoesColl := SetupColecao("users_data", "account_info")
+	operacoesColl := SetupColecao("users_data", "account_info")
+	operacoesColl.Filter = bson.M{"user": usrNome}
 
 	// defenições de utilitários
 	var registoUser resolvedschema.Utilizador
-	context, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 
 	// Procura por 1 registo que iguale às opções
-	err := colecao.FindOne(context, filter, options.FindOne()).Decode(&registoUser)
-	defer cancel()
+	err := operacoesColl.Colecao.FindOne(operacoesColl.Cntxt, operacoesColl.Filter, options.FindOne()).Decode(&registoUser)
+	defer operacoesColl.CancelFunc()
 	if err != nil {
-		loggers.OperacoesBDLogger.Println("Erro ao procurar pelo utilizador: ", usrNome)
+		loggers.OperacoesBDLogger.Println("Erro ao procurar pelo utilizador: ", usrNome, err)
 		retorno["erro"] = "Erro ao procurar pelo utilizador: " + usrNome
 		return
 	}

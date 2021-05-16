@@ -55,7 +55,7 @@ func ApagarRepositorio_repo(repo *resolvedschema.Repositorio) error {
 	}
 
 	// Remove a dir do repo especificada
-	if err := os.Remove(repo.Nome); err != nil {
+	if err := os.RemoveAll(repo.Nome); err != nil {
 		loggers.DocsStorage.Println(err)
 		return errors.New("não foi possivél aoagar o repo no storage")
 	}
