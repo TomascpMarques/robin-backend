@@ -218,10 +218,10 @@ func BuscarReposPorUserNome(usrNome string) (resultados []map[string]interface{}
 	colecao := endpointfuncs.MongoClient.Database("documentacao").Collection("repos")
 	cntx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 
-	// False value
-	fl := false
+	// False value para o filter - maneira muito pimposa de escrever *false
+	//&[]bool{false}[0]}
 	// Pesquisa pelos repos com o autor igual ao usrNome
-	cursor, err := colecao.Find(cntx, bson.M{"autor": usrNome}, &options.FindOptions{ReturnKey: &fl})
+	cursor, err := colecao.Find(cntx, bson.M{"autor": usrNome}, &options.FindOptions{ReturnKey: &[]bool{false}[0]})
 	defer cancel()
 	// Error handeling
 	if err != nil {
