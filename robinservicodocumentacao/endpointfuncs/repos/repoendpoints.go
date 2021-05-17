@@ -189,3 +189,33 @@ func UpdateRepositorio(campos map[string]interface{}, updateQuery map[string]int
 	retorno["resultado"] = atualizacoes
 	return
 }
+
+// BuscarUserRepos Busca todos os repos que o user, criou ou fez contribuições
+func BuscarUserRepos(nomeUsr string, token string) (retorno map[string]interface{}) {
+	retorno = make(map[string]interface{})
+
+	// if endpointfuncs.VerificarTokenUser(token) != "OK" {
+	// 	loggers.ServerErrorLogger.Println("Erro: A token fornecida é inválida ou expirou")
+	// 	retorno["erro"] = "A token fornecida é inválida ou expirou"
+	// 	return
+	// }
+
+	// Busca todos os repositórios em que o user é autor
+	repos, err := BuscarReposPorUserNome(nomeUsr)
+	if err != nil {
+		loggers.ServerErrorLogger.Println("Erro: ", err)
+		retorno["erro"] = err.Error()
+		return
+	}
+
+	// Verifica se a lista de repos retornada não é nil
+	if reflect.ValueOf(repos).IsValid() {
+		loggers.ResolverLogger.Println("A operação não encontrou o(s) repo(s) pedidos")
+		retorno["encontrados"] = 0
+	}
+
+	loggers.ResolverLogger.Println("Sucesso, a operação encontrou o(s) repo(s) pedido")
+	retorno["repos"] = repos
+	retorno["encontrados"] = len(repos)
+	return
+}

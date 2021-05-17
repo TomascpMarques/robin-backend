@@ -6,6 +6,7 @@ import (
 	"errors"
 	"fmt"
 	"io/ioutil"
+	"log"
 	"net/http"
 	"reflect"
 	"time"
@@ -207,4 +208,38 @@ func MudarContrbRepoNomeUsrInfo(repoNome string, novoNomeRepo string, usrNome st
 
 	loggers.ResolverLogger.Printf("UpdateInfoUtilizador status: %v", string(bodyContentBytes))
 	return nil
+}
+
+// BuscarReposPorUserNome Busca todos os repositórios em que u autor dos mesmos, é igual ao especificádo nos params
+func BuscarReposPorUserNome(usrNome string) (resultados []map[string]interface{}, err error) {
+	resultados = make([]map[string]interface{}, 0)
+
+	// Coleção a pesquisar
+	colecao := endpointfuncs.MongoClient.Database("documentacao").Collection("repos")
+	cntx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+
+	// False value
+	fl := false
+	// Pesquisa pelos repos com o autor igual ao usrNome
+	cursor, err := colecao.Find(cntx, bson.M{"autor": usrNome}, &options.FindOptions{ReturnKey: &fl})
+	defer cancel()
+	// Error handeling
+	if err != nil {
+		return nil, err
+	}
+
+	// Mapea todos os resultados para a var results
+	var results []map[string]interface{}
+	if err = cursor.All(context.TODO(), &results); err != nil {
+		log.Fatal(err)
+	}
+
+	// Atribui os valores returnados da pesquisa e atribui os mesmos à var login
+	// Para poder ser retornada
+
+	// Os <...> funciona aqui como se fosse nos params da fucn, enumera todos os valores dentro do array,
+	// E adiciona um por um cada um desses valores através do append, na var resultados
+	resultados = append(resultados, results...)
+
+	return
 }
