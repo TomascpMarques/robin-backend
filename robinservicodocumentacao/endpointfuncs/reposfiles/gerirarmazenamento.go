@@ -7,6 +7,7 @@ import (
 	"io/fs"
 	"io/ioutil"
 	"os"
+	"reflect"
 
 	"github.com/tomascpmarques/PAP/backend/robinservicodocumentacao/loggers"
 	"github.com/tomascpmarques/PAP/backend/robinservicodocumentacao/resolvedschema"
@@ -186,9 +187,22 @@ func GetConteudoFicheiro_file(ficheiro *resolvedschema.FicheiroMetaData) (*resol
 		os.Chdir(dir)
 	}
 
+	if !reflect.ValueOf(ficheiro.Nome).IsZero() {
+		// Leitura do conteudo do ficheiro
+		conteudo, err := ioutil.ReadFile(ficheiro.Nome)
+		if err != nil {
+			return nil, err
+		}
+
+		// Atribuição do conteudo do ficheiro e da hash
+		ficheiroConteudos.Conteudo = string(conteudo)
+		ficheiroConteudos.Hash = fmt.Sprintf("%x", sha256.Sum256(conteudo))
+
+		return &ficheiroConteudos, nil
+	}
+
 	// Leitura do conteudo do ficheiro
-	fmt.Println("-> ", ficheiro.Nome)
-	conteudo, err := ioutil.ReadFile(ficheiro.Nome)
+	conteudo, err := ioutil.ReadFile(ficheiro.Path[len(ficheiro.Path)-1])
 	if err != nil {
 		return nil, err
 	}
