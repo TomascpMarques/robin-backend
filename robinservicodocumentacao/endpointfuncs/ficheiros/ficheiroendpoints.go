@@ -193,7 +193,7 @@ func InserirConteudoFicheiro(contntMeta map[string]interface{}, token string) (r
 	}
 
 	// Verificação da check sum do ficheiro
-	err := ConteudoRecebidoCheckSum(&ficheiroStruct, ficheiroStruct.Hash)
+	err := ConteudoRecebidoCheckSum(&ficheiroStruct)
 	if err != nil {
 		loggers.ServerErrorLogger.Println("Erro: ", err.Error())
 		retorno["erro"] = err.Error()

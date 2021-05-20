@@ -261,9 +261,9 @@ func ModificarContrbFileInRepoUsrInfo(opDef string, usrNome string, repoAutor st
 	return nil
 }
 
-func ConteudoRecebidoCheckSum(ficheiro *resolvedschema.FicheiroConteudo, hash string) error {
-	conteudoCheckSum := fmt.Sprintf("%x", sha256.Sum256([]byte(ficheiro.Conteudo)))
-	if conteudoCheckSum != hash {
+func ConteudoRecebidoCheckSum(ficheiro *resolvedschema.FicheiroConteudo) error {
+	conteudoCheckSum := fmt.Sprintf("%x", sha256.Sum256(([]byte(ficheiro.Conteudo))))
+	if string(conteudoCheckSum) != ficheiro.Hash {
 		return errors.New("as check sum não são iguais, possivél corrupção ou alteração do conteúdo do ficheiro")
 	}
 	return nil
