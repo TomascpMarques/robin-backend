@@ -213,3 +213,36 @@ func GetConteudoFicheiro_file(ficheiro *resolvedschema.FicheiroMetaData) (*resol
 
 	return &ficheiroConteudos, nil
 }
+
+// VerificarFileExiste Verifica se o ficheiro especificado pelo path já existe
+func VerificarFileExiste(ficheiro *resolvedschema.FicheiroMetaData) (bool, error) {
+	// Verificar se a wd está correta (se está no home path, /repo/)
+	workingDir, _ := os.Getwd()
+	if !VerificarDirBase(workingDir) {
+		// Mudar para a diretoria dos repos
+		// E verifica se hove algum erro no processo
+		if err := os.Chdir(HomePath + "/repo"); err != nil {
+			loggers.DocsStorage.Println(err)
+			return false, err
+		}
+	}
+
+	// Walk path, cria as pastas necessárias, e muda de dir para essas mesmas
+	for _, dir := range ficheiro.Path[1 : len(ficheiro.Path)-1] {
+		if _, existe := ioutil.ReadDir("./" + dir); existe != nil {
+			return false, errors.New("não foi possivél navegar para uma das pastas")
+		}
+		// Muda para a dir correspondente à que se encontra dentro de valor
+		os.Chdir(dir)
+	}
+
+	fmt.Println("-> ", ficheiro.Path[len(ficheiro.Path)-1])
+	// Verifica-se a existencia do file, através de um content read
+	cnt, err := ioutil.ReadFile(ficheiro.Path[len(ficheiro.Path)-1])
+	fmt.Println(err, string(cnt))
+	if err != nil {
+		return true, nil
+	}
+
+	return true, errors.New("o ficheiro já existe")
+}

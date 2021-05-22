@@ -2,6 +2,7 @@ package ficheiros
 
 import (
 	"context"
+	"fmt"
 	"reflect"
 	"time"
 
@@ -122,6 +123,23 @@ func ApagarFicheiroMetaData(campos map[string]interface{}, token string) (retorn
 	// 	return
 	// }
 
+	// Busca a meta data que corresponde aos campos dados
+	// De um só registo
+	ficheiroMetaData := GetMetaDataFicheiro(campos)
+	if reflect.ValueOf(ficheiroMetaData).IsZero() {
+		loggers.ServerErrorLogger.Println("Erro: Sem meta data para esse ficheiro")
+		retorno["erro"] = "Sem meta data para esse ficheiro"
+		return
+	}
+
+	// Apaga o ficheiro de local storage
+	err := reposfiles.ApagarFicheiro_repo(&ficheiroMetaData)
+	if err != nil {
+		loggers.ServerErrorLogger.Println("Erro: Sem meta data para esse ficheiro")
+		retorno["erro"] = "Sem meta data para esse ficheiro"
+		return
+	}
+
 	// Cria a hash dos campos fornecidos para procurar a meta data respetiva
 	metaHash, err := CriarMetaHash(campos)
 	if err != nil {
@@ -129,6 +147,7 @@ func ApagarFicheiroMetaData(campos map[string]interface{}, token string) (retorn
 		retorno["erro"] = "Erro ao criar hash para meta data fornecida"
 		return
 	}
+	fmt.Println(metaHash)
 
 	// Apaga o ficheiro que contêm o campo "hash" igual ao fornecido
 	err = ApagarMetaDataFicheiro(metaHash)
@@ -151,23 +170,6 @@ func ApagarFicheiroMetaData(campos map[string]interface{}, token string) (retorn
 	if err != nil {
 		loggers.ServerErrorLogger.Println("Erro: ", err)
 		retorno["erro"] = err
-		return
-	}
-
-	// Busca a meta data que corresponde aos campos dados
-	// De um só registo
-	ficheiroMetaData := GetMetaDataFicheiro(campos)
-	if reflect.ValueOf(ficheiroMetaData).IsZero() {
-		loggers.ServerErrorLogger.Println("Erro: Sem meta data para esse ficheiro")
-		retorno["erro"] = "Sem meta data para esse ficheiro"
-		return
-	}
-
-	// Apaga o ficheiro de local storage
-	err = reposfiles.ApagarFicheiro_repo(&ficheiroMetaData)
-	if err != nil {
-		loggers.ServerErrorLogger.Println("Erro: Sem meta data para esse ficheiro")
-		retorno["erro"] = "Sem meta data para esse ficheiro"
 		return
 	}
 
@@ -241,6 +243,34 @@ func BuscarConteudoFicheiro(campos map[string]interface{}, token string) (retorn
 
 	loggers.OperacoesBDLogger.Println("Conteudo do ficheiro lido e enviado: ", ficheiroContMeta.Nome)
 	retorno["sucesso"] = true
+	return
+}
+
+func VerificarFicheiroExiste(params map[string]interface{}, token string) (retorno map[string]interface{}) {
+	retorno = make(map[string]interface{})
+
+	// if endpointfuncs.VerificarTokenUser(token) != "OK" {
+	// 	loggers.OperacoesBDLogger.Println("Erro: A token fornecida é inválida ou expirou")
+	// 	retorno["erro"] = "A token fornecida é inválida ou expirou"
+	// 	return
+	// }
+
+	file := resolvedschema.FicheiroMetaDataParaStruct(&params)
+	if !(reflect.ValueOf(file).IsValid()) {
+		loggers.DocsStorage.Println("Erro: Erro ao converter o path fornecido para meta info")
+		retorno["erro"] = "Erro ao converter o path fornecido para meta info"
+		return
+	}
+
+	existe, err := reposfiles.VerificarFileExiste(&file)
+	if err != nil {
+		loggers.DocsStorage.Println("Erro: ", err)
+		retorno["erro"] = err.Error()
+		return
+	}
+
+	loggers.DocsStorage.Println("Procura com sucesso")
+	retorno["existe"] = existe
 	return
 }
 
