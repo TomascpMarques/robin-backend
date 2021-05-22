@@ -2,7 +2,6 @@ package ficheiros
 
 import (
 	"context"
-	"fmt"
 	"reflect"
 	"time"
 
@@ -123,6 +122,14 @@ func ApagarFicheiroMetaData(campos map[string]interface{}, token string) (retorn
 	// 	return
 	// }
 
+	// Cria a hash dos campos fornecidos para procurar a meta data respetiva
+	metaHash, err := CriarMetaHash(campos)
+	if err != nil {
+		loggers.ServerErrorLogger.Println("Erro ao criar hash para meta data: ", err)
+		retorno["erro"] = "Erro ao criar hash para meta data fornecida"
+		return
+	}
+
 	// Busca a meta data que corresponde aos campos dados
 	// De um só registo
 	ficheiroMetaData := GetMetaDataFicheiro(campos)
@@ -133,21 +140,12 @@ func ApagarFicheiroMetaData(campos map[string]interface{}, token string) (retorn
 	}
 
 	// Apaga o ficheiro de local storage
-	err := reposfiles.ApagarFicheiro_repo(&ficheiroMetaData)
+	err = reposfiles.ApagarFicheiro_repo(&ficheiroMetaData)
 	if err != nil {
-		loggers.ServerErrorLogger.Println("Erro: Sem meta data para esse ficheiro")
-		retorno["erro"] = "Sem meta data para esse ficheiro"
+		loggers.ServerErrorLogger.Println("Erro: Sem meta data para esse ficheiro para podêlo apagar do repo")
+		retorno["erro"] = "Sem meta data para esse ficheiro para podêlo apagar do repo"
 		return
 	}
-
-	// Cria a hash dos campos fornecidos para procurar a meta data respetiva
-	metaHash, err := CriarMetaHash(campos)
-	if err != nil {
-		loggers.ServerErrorLogger.Println("Erro ao criar hash para meta data: ", err)
-		retorno["erro"] = "Erro ao criar hash para meta data fornecida"
-		return
-	}
-	fmt.Println(metaHash)
 
 	// Apaga o ficheiro que contêm o campo "hash" igual ao fornecido
 	err = ApagarMetaDataFicheiro(metaHash)

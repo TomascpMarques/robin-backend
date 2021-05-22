@@ -85,6 +85,7 @@ func CriarFicheiro_repo(ficheiro *resolvedschema.FicheiroMetaData) error {
 				return errors.New("não foi possivél criar a pasta")
 			}
 		}
+		fmt.Println(os.Getwd())
 		// Muda para a dir correspondente à que se encontra dentro de valor
 		os.Chdir(dir)
 	}
@@ -230,7 +231,8 @@ func VerificarFileExiste(ficheiro *resolvedschema.FicheiroMetaData) (bool, error
 	// Walk path, cria as pastas necessárias, e muda de dir para essas mesmas
 	for _, dir := range ficheiro.Path[1 : len(ficheiro.Path)-1] {
 		if _, existe := ioutil.ReadDir("./" + dir); existe != nil {
-			return false, errors.New("não foi possivél navegar para uma das pastas")
+			// Se adir não está criada, então o path já é unico para o novo ficheiro
+			return true, nil
 		}
 		// Muda para a dir correspondente à que se encontra dentro de valor
 		os.Chdir(dir)
