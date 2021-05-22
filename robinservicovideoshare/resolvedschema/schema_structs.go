@@ -1,8 +1,8 @@
 package resolvedschema
 
 type Video struct {
-	Titulo    string
-	Descricao string
-	URL       string
-	Criador   string
+	Titulo    string `json:"titulo,omitempty"`
+	Descricao string `json:"descricao,omitempty"`
+	URL       string `json:"url,omitempty"`
+	Criador   string `json:"criador,omitempty"`
 }
