@@ -1,4 +1,4 @@
-package loginregistohandlers
+package authhandlers
 
 import (
 	"bytes"
@@ -8,8 +8,8 @@ import (
 	"io/ioutil"
 	"net/http"
 
-	"github.com/tomascpmarques/PAP/backend/robinservicologin/loggers"
-	"github.com/tomascpmarques/PAP/backend/robinservicologin/redishandle"
+	"github.com/tomascpmarques/PAP/backend/robinservicoauth/loggers"
+	"github.com/tomascpmarques/PAP/backend/robinservicoauth/redishandle"
 )
 
 // AtualizarUser atualiza os dados dos utilizador fornecido, depois de verificar a token fornecida

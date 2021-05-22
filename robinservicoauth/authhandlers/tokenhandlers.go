@@ -1,4 +1,4 @@
-package loginregistohandlers
+package authhandlers
 
 import (
 	"encoding/json"
@@ -6,8 +6,8 @@ import (
 	"time"
 
 	"github.com/dgrijalva/jwt-go"
-	"github.com/tomascpmarques/PAP/backend/robinservicologin/loggers"
-	"github.com/tomascpmarques/PAP/backend/robinservicologin/redishandle"
+	"github.com/tomascpmarques/PAP/backend/robinservicoauth/loggers"
+	"github.com/tomascpmarques/PAP/backend/robinservicoauth/redishandle"
 )
 
 const (
