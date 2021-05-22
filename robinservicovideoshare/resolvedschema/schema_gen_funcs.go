@@ -4,15 +4,15 @@ import (
 	"encoding/json"
 )
 
-func UtilizadorParaStruct(param1 *map[string]interface{}) Utilizador {
-	var returnStruct Utilizador
+func VideoParaStruct(param1 *map[string]interface{}) Video {
+	var returnStruct Video
 	temp, err := json.Marshal(param1)
 	if err != nil {
-		return Utilizador{}
+		return Video{}
 	}
 	err = json.Unmarshal(temp, &returnStruct)
 	if err != nil {
-		return Utilizador{}
+		return Video{}
 	}
 	return returnStruct
 }

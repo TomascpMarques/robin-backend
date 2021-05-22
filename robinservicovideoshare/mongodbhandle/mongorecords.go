@@ -7,7 +7,7 @@ func ParseTipoDeRegisto(alvo map[string]interface{}) interface{} {
 	switch alvo["tipo_de_registo"] {
 	// Para o tipo Item
 	case "Utilizador":
-		return resolvedschema.UtilizadorParaStruct(&alvo)
+		return resolvedschema.VideoParaStruct(&alvo)
 	}
 
 	return nil
