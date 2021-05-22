@@ -13,27 +13,17 @@ import (
 	"github.com/TomascpMarques/dynamic-querys-go/actions"
 	"github.com/gorilla/mux"
 	"github.com/rs/cors"
-	"github.com/tomascpmarques/PAP/backend/robinservicouserinfo/endpointfuncs"
-	"github.com/tomascpmarques/PAP/backend/robinservicouserinfo/loggers"
+	"github.com/tomascpmarques/PAP/backend/robinservicovideoshare/endpointfuncs"
+	"github.com/tomascpmarques/PAP/backend/robinservicovideoshare/loggers"
 )
 
 func main() {
-	os.Setenv("ENV_ROBINUSERINFO_PORT", "8001")
+	os.Setenv("ENV_ROBINUSERINFO_PORT", "8008")
 
 	// flag setup fo graceful-shutdown
 	var wait time.Duration
 	flag.DurationVar(&wait, "graceful-timeout", time.Second*15, "gracefully wait for existing connections to finish in 15s")
 	flag.Parse()
-
-	// Modificações das contribuições do user
-	actions.FuncsStorage["ModificarContribuicoes"] = endpointfuncs.ModificarContribuicoes
-	actions.FuncsStorage["RemoverRepoContributo"] = endpointfuncs.RemoverRepoContributo
-	actions.FuncsStorage["AdicionarContrbRepo"] = endpointfuncs.AdicionarContrbRepo
-
-	// Management geral da user-info
-	actions.FuncsStorage["UpdateInfoUtilizador"] = endpointfuncs.UpdateInfoUtilizador
-	actions.FuncsStorage["GetInfoUtilizador"] = endpointfuncs.GetInfoUtilizador
-	actions.FuncsStorage["CriarRegistoUser"] = endpointfuncs.CriarRegistoUser
 
 	// Utilidade
 	actions.FuncsStorage["Ping"] = endpointfuncs.PingServico
@@ -42,7 +32,7 @@ func main() {
 	go router.HandleFunc("/", actions.Handler)
 
 	corsOptions := cors.New(cors.Options{
-		AllowedOrigins:   []string{"http://localhost:8080", "http://localhost:8001", "http://localhost:8118"},
+		AllowedOrigins:   []string{"http://localhost:8080"},
 		AllowCredentials: true,
 	})
 
