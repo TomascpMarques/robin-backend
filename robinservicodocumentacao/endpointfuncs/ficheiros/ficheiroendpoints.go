@@ -130,8 +130,7 @@ func ApagarFicheiroMetaData(campos map[string]interface{}, token string) (retorn
 		return
 	}
 
-	// Busca a meta data que corresponde aos campos dados
-	// De um só registo
+	// Busca a meta data que corresponde aos campos dados, de um só registo
 	ficheiroMetaData := GetMetaDataFicheiro(campos)
 	if reflect.ValueOf(ficheiroMetaData).IsZero() {
 		loggers.ServerErrorLogger.Println("Erro: Sem meta data para esse ficheiro")
@@ -148,6 +147,7 @@ func ApagarFicheiroMetaData(campos map[string]interface{}, token string) (retorn
 	}
 
 	// Apaga o ficheiro que contêm o campo "hash" igual ao fornecido
+	// Na bd da meta data
 	err = ApagarMetaDataFicheiro(metaHash)
 	if err != nil {
 		loggers.ServerErrorLogger.Println("Erro: Não foi possivél apagar este ficheiro: ", err)
@@ -155,7 +155,7 @@ func ApagarFicheiroMetaData(campos map[string]interface{}, token string) (retorn
 		return
 	}
 
-	// Apaga o ficheiro que contêm o campo "hash" igual ao fornecido, no repositório indicado
+	// Apaga o ficheiro que contêm o campo "hash" igual ao fornecido, no repositório indicado no mongoDB
 	err = ApagarFicheiroMetaRepo(metaHash, campos["autor"].(string))
 	if err != nil {
 		loggers.ServerErrorLogger.Println("Não foi possivél apagar um ficheiro devido ao erro: ", err)
