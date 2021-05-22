@@ -4,6 +4,7 @@ import (
 	"context"
 	"time"
 
+	"github.com/tomascpmarques/PAP/backend/robinservicovideoshare/resolvedschema"
 	"go.mongodb.org/mongo-driver/mongo"
 )
 
@@ -20,4 +21,11 @@ func SetupColecao(dbName, collName string) (defs MongoDBOperation) {
 	defs.Colecao = MongoClient.Database(dbName).Collection(collName)
 	defs.Cntxt, defs.CancelFunc = context.WithTimeout(context.Background(), time.Second*10)
 	return
+}
+
+// Adiciona os dados da video-share à base de dados
+func AdicionarVideoShareDB(videoShare resolvedschema.Video) error {
+	//colecao := SetupColecao("videoshares", "videos")
+
+	return nil
 }

@@ -27,7 +27,7 @@ func MongoCtxMaker(ctxTipo string, duracao time.Duration) (context.Context, cont
 func CriarConexaoMongoDB(params MongoConexaoParams) *mongo.Client {
 	// Verifica para valores default
 	if params.URI == "" {
-		params.URI = "mongodb://0.0.0.0:27019"
+		params.URI = "mongodb://0.0.0.0:27022"
 	}
 
 	// Necessidades da conexão, i.e.: operation-timeout, operation context
