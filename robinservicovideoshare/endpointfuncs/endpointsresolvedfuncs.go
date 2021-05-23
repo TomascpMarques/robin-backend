@@ -23,6 +23,14 @@ func PingServico(name string) (retorno map[string]interface{}) {
 	return
 }
 
+func GetVideoShares(paramsPesquisa map[string]interface{}, token string) (retorno map[string]interface{}) {
+	retorno = make(map[string]interface{})
+
+	
+
+	return
+}
+
 func CriarVideoShare(videoMetaData map[string]interface{}, token string) (retorno map[string]interface{}) {
 	retorno = make(map[string]interface{})
 

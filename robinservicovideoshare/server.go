@@ -26,6 +26,7 @@ func main() {
 	flag.Parse()
 
 	// VideoShare
+	actions.FuncsStorage["GetVideoShares"] = endpointfuncs.GetVideoShares
 	actions.FuncsStorage["CriarVideoShare"] = endpointfuncs.CriarVideoShare
 
 	// Utilidade
