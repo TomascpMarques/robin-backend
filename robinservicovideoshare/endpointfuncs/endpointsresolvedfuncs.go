@@ -26,6 +26,13 @@ func PingServico(name string) (retorno map[string]interface{}) {
 func GetVideoShares(paramsPesquisa map[string]interface{}, token string) (retorno map[string]interface{}) {
 	retorno = make(map[string]interface{})
 
+	// Verifica se o request está a ser efetuado por um user logado
+	// if VerificarTokenUser(token) != "OK" {
+	// 	loggers.ResolverLogger.Println("Token inválida.")
+	// 	retorno["err"] = "Token inválida ou expirada"
+	// 	return
+	// }
+
 	
 
 	return

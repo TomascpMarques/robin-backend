@@ -29,6 +29,28 @@ func SetupColecao(dbName, collName string) (defs MongoDBOperation) {
 	return
 }
 
+// VerificarCamposBase Verifica se os vlores para keys do mapa <params> se encontram no array <campos>
+func VerificarCamposBase(params map[string]interface{}, campos []string) error {
+	// Verifica se têm os campos obrigatórios defenidos
+	for _, v := range campos {
+		if _, existe := params[v]; !existe {
+			return fmt.Errorf("o campo <%s>, não está presente na info da videoshare", v)
+		}
+	}
+
+	// Retorna nil se não houver erros
+	return nil
+}
+
+func VerificarSearchParams(params map[string]interface{}) error {
+	// Verifica se as keys obrigatorias existem em params
+	if err := VerificarCamposBase(params, []string{"quanti"}); err != nil {
+		return err
+	}
+
+	return nil
+}
+
 func VerificarVideoShareMetaData(videoShare map[string]interface{}) error {
 	camposObrgt := []string{
 		"url",
@@ -37,11 +59,9 @@ func VerificarVideoShareMetaData(videoShare map[string]interface{}) error {
 		"criador",
 	}
 
-	// Verifica se têm os campos obrigatórios defenidos
-	for _, v := range camposObrgt {
-		if _, existe := videoShare[v]; !existe {
-			return fmt.Errorf("o campo <%s>, não está presente na info da videoshare", v)
-		}
+	// Verifica os campos base
+	if err := VerificarCamposBase(videoShare, camposObrgt); err != nil {
+		return err
 	}
 
 	// Verifica se o tema do video é válido
