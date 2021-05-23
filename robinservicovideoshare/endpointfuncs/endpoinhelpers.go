@@ -3,6 +3,7 @@ package endpointfuncs
 import (
 	"context"
 	"errors"
+	"fmt"
 	"reflect"
 	"regexp"
 	"time"
@@ -30,16 +31,22 @@ func SetupColecao(dbName, collName string) (defs MongoDBOperation) {
 
 func VerificarVideoShareMetaData(videoShare map[string]interface{}) error {
 	camposObrgt := []string{
-		"titulo",
 		"url",
+		"tema",
+		"titulo",
 		"criador",
 	}
 
 	// Verifica se têm os campos obrigatórios defenidos
 	for _, v := range camposObrgt {
 		if _, existe := videoShare[v]; !existe {
-			return errors.New("o campo <" + v + ">, não está presente na info da videoshare")
+			return fmt.Errorf("o campo <%s>, não está presente na info da videoshare", v)
 		}
+	}
+
+	// Verifica se o tema do video é válido
+	if len(videoShare["tema"].(string)) < 3 {
+		return errors.New("o tema do video é demasiado curto, deve ter no minímo 3 caracteres")
 	}
 
 	// Verifica o tamanho do título
@@ -54,6 +61,7 @@ func VerificarVideoShareMetaData(videoShare map[string]interface{}) error {
 		return errors.New("o link fornecido não é válido")
 	}
 
+	// If all good returb nil (no error)
 	return nil
 }
 
