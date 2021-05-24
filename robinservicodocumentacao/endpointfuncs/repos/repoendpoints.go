@@ -1,7 +1,9 @@
 package repos
 
 import (
+	"fmt"
 	"reflect"
+	"strings"
 
 	"github.com/tomascpmarques/PAP/backend/robinservicodocumentacao/endpointfuncs"
 	"github.com/tomascpmarques/PAP/backend/robinservicodocumentacao/endpointfuncs/reposfiles"
@@ -24,9 +26,14 @@ func CriarRepositorio(repoInfo map[string]interface{}, token string) (retorno ma
 	// Get the mongo colection
 	operacoesColl := endpointfuncs.MongoClient.Database("documentacao").Collection("repos")
 
+	// Transformação da informação de repo para uma struct do tipo Repo
+	repo := resolvedschema.RepositorioParaStruct(&repoInfo)
+	// Retira caracteres desnecessários do nome do repo
+	repo.Nome = strings.Trim(repo.Nome, ` .,-:;\|!"#$%&/()=£§{[]}'?«»<>`)
+
 	// Verifica se o repo que queremos inserir, já existe ou não
-	if repoExiste := GetRepoPorCampo("nome", repoInfo["nome"].(string)); !(reflect.ValueOf(repoExiste).IsZero()) {
-		loggers.DbFuncsLogger.Println("Não foi possivél criar o repositório pedido: ", repoInfo["nome"], ".Já existe um com esse nome")
+	if repoExiste := GetRepoPorCampo("nome", repo.Nome); !(reflect.ValueOf(repoExiste).IsZero()) {
+		loggers.DbFuncsLogger.Println("Não foi possivél criar o repositório pedido: ", repo.Nome, ".Já existe um com esse nome")
 		retorno["erro"] = ("Não foi possivél criar o repositório pedido, devido ao nome ser igual a um existente")
 		return
 	}
@@ -38,8 +45,6 @@ func CriarRepositorio(repoInfo map[string]interface{}, token string) (retorno ma
 		return
 	}
 
-	// Transformação da informação de repo para uma struct do tipo Repo
-	repo := resolvedschema.RepositorioParaStruct(&repoInfo)
 	// Inicializa os arrays de contribuições e de ficheiros a zero, evita null erros no decoding
 	InitRepoFichrContribCriacao(&repo)
 
@@ -105,6 +110,7 @@ func DropRepositorio(campos map[string]interface{}, token string) (retorno map[s
 	// 	return
 	// }
 
+	fmt.Println(campos)
 	// Busca o repositório para se poder comparar o autor com o user que fez o pedido
 	repositorio := GetRepoPorCampo("nome", campos["nome"].(string))
 	// Se o resultado da busca for nil, devolve umas menssagens de erro

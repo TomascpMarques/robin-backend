@@ -27,9 +27,10 @@ func GetRepoPorCampo(campo string, valor interface{}) (repo resolvedschema.Repos
 	cntx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 
 	// Procura na BD do registo pedido
-	err := collection.FindOne(cntx, map[string]interface{}{string(campo): valor}, options.FindOne()).Decode(&repo)
+	err := collection.FindOne(cntx, bson.M{campo: valor}, options.FindOne()).Decode(&repo)
 	defer cancel()
 	if err != nil {
+		fmt.Println("-> ", err)
 		// Devolve um repo vzaio se não se encontrar o pedido
 		repo = resolvedschema.Repositorio{}
 		return

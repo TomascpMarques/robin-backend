@@ -10,5 +10,5 @@ type Video struct {
 
 type VideoSearchParams struct {
 	Params map[string]interface{} `json:"params,omitempty"`
-	Quanti int                    `json:"quanti,omitempty"`	
+	Quanti int                    `json:"quanti,omitempty"`
 }
