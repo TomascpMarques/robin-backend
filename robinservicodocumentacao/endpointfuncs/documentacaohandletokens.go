@@ -88,3 +88,20 @@ func VerificarTokenAdmin(userToken string) string {
 	}
 	return "Token inválida ou expirada"
 }
+
+func DevolveTokenClaims(userToken string) map[string]interface{} {
+	token, err := jwt.Parse(userToken, func(token *jwt.Token) (interface{}, error) {
+		// valida o metodo de assinatura da key
+		if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
+			return nil, nil
+		}
+		// hmacSampleSecret é o []byte que contem o segredo de assinatura
+		return hmacSecret, nil
+	})
+	// Se a token for assinada por outro metodo ou a key for diferente dá erro
+	if err != nil {
+		return nil
+	}
+
+	return token.Claims.(jwt.MapClaims)
+}

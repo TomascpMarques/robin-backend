@@ -19,11 +19,11 @@ import (
 func CriarRepositorio(repoInfo map[string]interface{}, token string) (retorno map[string]interface{}) {
 	retorno = make(map[string]interface{})
 
-	// if endpointfuncs.VerificarTokenUser(token) != "OK" {
-	// 	loggers.OperacoesBDLogger.Println("Erro: A token fornecida é inválida ou expirou")
-	// 	retorno["erro"] = "A token fornecida é inválida ou expirou"
-	// 	return retorno
-	// }
+	if endpointfuncs.VerificarTokenUser(token) != "OK" {
+		loggers.OperacoesBDLogger.Println("Erro: A token fornecida é inválida ou expirou")
+		retorno["erro"] = "A token fornecida é inválida ou expirou"
+		return retorno
+	}
 
 	// Get the mongo colection
 	operacoesColl := endpointfuncs.MongoClient.Database("documentacao").Collection("repos")
@@ -81,11 +81,11 @@ func BuscarRepositorio(campos map[string]interface{}, token string) (retorno map
 	retorno = make(map[string]interface{})
 	//fmt.Println("AND NOW THE TIME: ", time.Now().Local().Format("2006/01/02 15:04:05"))
 
-	// if endpointfuncs.VerificarTokenUser(token) != "OK" {
-	// 	loggers.OperacoesBDLogger.Println("Erro: A token fornecida é inválida ou expirou")
-	// 	retorno["erro"] = "A token fornecida é inválida ou expirou"
-	// 	return retorno
-	// }
+	if endpointfuncs.VerificarTokenUser(token) != "OK" {
+		loggers.OperacoesBDLogger.Println("Erro: A token fornecida é inválida ou expirou")
+		retorno["erro"] = "A token fornecida é inválida ou expirou"
+		return retorno
+	}
 
 	// Busca o repositório por um campo especifico, e o valor esperado nesse campo
 	repositorio := GetRepoPorCampo("nome", campos["nome"].(string))
@@ -106,11 +106,11 @@ func BuscarRepositorio(campos map[string]interface{}, token string) (retorno map
 func DropRepositorio(campos map[string]interface{}, token string) (retorno map[string]interface{}) {
 	retorno = make(map[string]interface{})
 
-	// if endpointfuncs.VerificarTokenUser(token) != "OK" {
-	// 	loggers.ServerErrorLogger.Println("Erro: A token fornecida é inválida ou expirou")
-	// 	retorno["erro"] = "A token fornecida é inválida ou expirou"
-	// 	return
-	// }
+	if endpointfuncs.VerificarTokenUser(token) != "OK" {
+		loggers.ServerErrorLogger.Println("Erro: A token fornecida é inválida ou expirou")
+		retorno["erro"] = "A token fornecida é inválida ou expirou"
+		return
+	}
 
 	fmt.Println(campos)
 	// Busca o repositório para se poder comparar o autor com o user que fez o pedido
@@ -123,11 +123,11 @@ func DropRepositorio(campos map[string]interface{}, token string) (retorno map[s
 	}
 
 	// Verificação de igualdade entre request user, e repo autor
-	// if endpointfuncs.VerificarTokenUserSpecif(token, repositorio.Autor) != "OK" {
-	// 	loggers.ServerErrorLogger.Println("Erro: Este utilizador não têm permissões para esta operação")
-	// 	retorno["erro"] = "Este utilizador não têm permissões para esta operação"
-	// 	return
-	// }
+	if endpointfuncs.VerificarTokenUserSpecif(token, repositorio.Autor) != "OK" {
+		loggers.ServerErrorLogger.Println("Erro: Este utilizador não têm permissões para esta operação")
+		retorno["erro"] = "Este utilizador não têm permissões para esta operação"
+		return
+	}
 
 	// Drop do repo pedido
 	if err := DropRepoPorNome(campos["nome"].(string)); err != nil {
@@ -228,21 +228,27 @@ func BuscarUserRepos(nomeUsr string, token string) (retorno map[string]interface
 	return
 }
 
-// BuscarTodosOsRepos Retorna todos os repos existentes na BD
-func BuscarTodosOsRepos(token string) (retorno map[string]interface{}) {
+// BuscarTodosOsReposNotTokenUsr Retorna todos os repos existentes na BD
+func BuscarTodosOsReposNotTokenUsr(token string) (retorno map[string]interface{}) {
 	retorno = make(map[string]interface{})
 
-	// if endpointfuncs.VerificarTokenUser(token) != "OK" {
-	// 	loggers.ServerErrorLogger.Println("Erro: A token fornecida é inválida ou expirou")
-	// 	retorno["erro"] = "A token fornecida é inválida ou expirou"
-	// 	return
-	// }
+	// Verifica se o user está logado
+	if endpointfuncs.VerificarTokenUser(token) != "OK" {
+		loggers.ServerErrorLogger.Println("Erro: A token fornecida é inválida ou expirou")
+		retorno["erro"] = "A token fornecida é inválida ou expirou"
+		return
+	}
+
+	// Get user from token, para evitar registo que includam o user
+	tokenClaims := endpointfuncs.DevolveTokenClaims(token)
+	usr := reflect.ValueOf(tokenClaims["user"]).String()
 
 	// Documento e repo onde procurar o repo
 	collection := endpointfuncs.MongoClient.Database("documentacao").Collection("repos")
 	cntx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 
-	results, err := collection.Find(cntx, nil)
+	// Procura todos os registos que não sejam de autoria do user fornecido na token
+	results, err := collection.Find(cntx, bson.M{"autor": bson.M{"$ne": usr}})
 	defer cancel()
 	if err != nil {
 		loggers.ServerErrorLogger.Println("Erro: ", err)
@@ -250,8 +256,10 @@ func BuscarTodosOsRepos(token string) (retorno map[string]interface{}) {
 		return
 	}
 
+	// Decodifica todos os registos encontrados para as structs corretas
 	reposStruct := make([]resolvedschema.Repositorio, 0)
 	err = results.All(cntx, &reposStruct)
+	defer cancel()
 	if err != nil {
 		loggers.ServerErrorLogger.Println("Erro: ", err)
 		retorno["erro"] = err.Error()
