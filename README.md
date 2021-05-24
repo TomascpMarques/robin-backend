@@ -22,3 +22,6 @@ Conecta com um serviço mongodb, como base de dados, e pode atualizar, eliminar 
 ## Serviço de documentação/tutoriais para manutenções
 Este serviço permite criar repositórios de ficheiros para que assim se possa guardar informação em formato de texto.
 Vai ser constituido por dois serviços, um que gere os repos e outro que gere os ficheiros.
+
+## Serviço de video-sharing
+Este serviço visa partilhar conteudo de vídeo entre os utilizadores da plataforma. Para complementar o sistema de documentação em termos de conteudo e suporte às tarefas.
