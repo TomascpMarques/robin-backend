@@ -38,7 +38,7 @@ func main() {
 	actions.FuncsStorage["BuscarMetaData"] = ficheiros.BuscarMetaData
 
 	// Repo funcs
-	actions.FuncsStorage["BuscarTodosOsRepos"] = repos.BuscarTodosOsReposNotTokenUsr
+	actions.FuncsStorage["BuscarTodosOsReposNotTokenUsr"] = repos.BuscarTodosOsReposNotTokenUsr
 	actions.FuncsStorage["BuscarRepositorio"] = repos.BuscarRepositorio
 	actions.FuncsStorage["CriarRepositorio"] = repos.CriarRepositorio
 	actions.FuncsStorage["DropRepositorio"] = repos.DropRepositorio

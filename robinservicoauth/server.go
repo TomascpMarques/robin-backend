@@ -45,21 +45,23 @@ func main() {
 	router := mux.NewRouter()
 	go router.HandleFunc("/", actions.Handler)
 
+	// Defenições de partilha de recursos cruzada
 	corsOptions := cors.New(cors.Options{
-		AllowedOrigins:   []string{"http://localhost:8080"},
-		AllowCredentials: true,
+		AllowedOrigins:   []string{"http://localhost:8080"}, // Permite só o localhost:8080 a fazer requests ao serviço
+		AllowCredentials: false,
 	})
 
 	//handler := cors.Default().Handler(router)
 	corsHandlers := corsOptions.Handler(router)
 
+	// Defenições do servidor web
 	srv := &http.Server{
-		Handler:      corsHandlers,
-		Addr:         "0.0.0.0:" + HTTPport,
-		WriteTimeout: 2 * time.Second,
-		ReadTimeout:  2 * time.Second,
-		IdleTimeout:  4 * time.Second,
-		ErrorLog:     loggers.LoginServerErrorLogger,
+		Handler:      corsHandlers,                   // Gestor dos requests ao entrar no servidor
+		Addr:         "0.0.0.0:" + HTTPport,          // Localização do web server, ip + port combo
+		WriteTimeout: 2 * time.Second,                // Se o pedido demorar mais do que 2s a escrever o conteúdo fecha a conexão
+		ReadTimeout:  2 * time.Second,                // Se o servidor demorar mais que 2s a ler o request, fecha a conexão
+		IdleTimeout:  4 * time.Second,                // Quando keep-alive estiver especificado, se a próxima conec, demorar mais de 2s fecha
+		ErrorLog:     loggers.LoginServerErrorLogger, // Logger dos erros de servidor
 	}
 
 	// Exits se não se consseguir iniciar o servidor com as defnições necessárias
