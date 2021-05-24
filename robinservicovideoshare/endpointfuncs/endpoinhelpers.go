@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"log"
 	"reflect"
 	"regexp"
 	"time"
@@ -44,7 +45,7 @@ func VerificarCamposBase(params map[string]interface{}, campos []string) error {
 
 func VerificarSearchParams(params map[string]interface{}) error {
 	// Verifica se as keys obrigatorias existem em params
-	if err := VerificarCamposBase(params, []string{"quanti"}); err != nil {
+	if err := VerificarCamposBase(params, []string{"quanti", "params"}); err != nil {
 		return err
 	}
 
@@ -109,4 +110,31 @@ func AdicionarVideoShareDB(videoShare *resolvedschema.Video) error {
 	}
 
 	return nil
+}
+
+// GetVideoShareWithParams Procura todos os registos de videoshares que igualem aos params passados
+func GetVideoShareWithParams(params *resolvedschema.VideoSearchParams) ([]resolvedschema.Video, error) {
+	// Setup da coleção a usar & search params
+	colecao := SetupColecao("videoshares", "videos")
+	colecao.Filter = params.Params
+	opcoesBusca := options.Find().SetAllowPartialResults(true).SetLimit(int64(params.Quanti))
+
+	cursor, err := colecao.Colecao.Find(colecao.Cntxt, colecao.Filter, opcoesBusca)
+	defer colecao.CancelFunc()
+	if err != nil {
+		return nil, err
+	}
+
+	// Obtêm todos os documentos retornados e colocaos num array de maps
+	var results []resolvedschema.Video
+	if err = cursor.All(context.TODO(), &results); err != nil {
+		log.Fatal(err)
+	}
+
+	// Verifica se encontrou algum resultado
+	if reflect.ValueOf(results).IsZero() {
+		return nil, errors.New("sem registos para esse valor")
+	}
+
+	return results, nil
 }

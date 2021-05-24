@@ -9,9 +9,6 @@ type Video struct {
 }
 
 type VideoSearchParams struct {
-	URL     string `json:"url,omitempty"`
-	Tema    string `json:"tema,omitempty"`
-	Titulo  string `json:"titulo,omitempty"`
-	Quanti  int    `json:"quanti,omitempty"`
-	Criador string `json:"criador,omitempty"`
+	Params map[string]interface{} `json:"params,omitempty"`
+	Quanti int                    `json:"quanti,omitempty"`	
 }

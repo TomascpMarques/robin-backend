@@ -23,6 +23,8 @@ func PingServico(name string) (retorno map[string]interface{}) {
 	return
 }
 
+// GetVideoShares Retorna 0 ou + resultados encontrados na mongobd de video-shares,
+// utiliza os params passados para a pesquisa, os params não podem ser parciais nas suas igualdades
 func GetVideoShares(paramsPesquisa map[string]interface{}, token string) (retorno map[string]interface{}) {
 	retorno = make(map[string]interface{})
 
@@ -33,11 +35,29 @@ func GetVideoShares(paramsPesquisa map[string]interface{}, token string) (retorn
 	// 	return
 	// }
 
-	
+	// Verifica a validade dos params de pesquisa da func
+	if err := VerificarSearchParams(paramsPesquisa); err != nil {
+		loggers.ResolverLogger.Println(err.Error())
+		retorno["error"] = err.Error()
+		return
+	}
 
+	// Converte os params para a struct equivalente e inicia a busca
+	params := resolvedschema.SearchParamsParaStruct(&paramsPesquisa)
+	shares, err := GetVideoShareWithParams(&params)
+	if err != nil {
+		loggers.ResolverLogger.Println(err.Error())
+		retorno["aviso"] = err.Error()
+		return
+	}
+
+	loggers.ResolverLogger.Println("Conteudo encontrado com sucesso!")
+	retorno["shares"] = shares
+	retorno["sucesso"] = true
 	return
 }
 
+// CriarVideoShare Cria um registo de uma video-share na MongoBD
 func CriarVideoShare(videoMetaData map[string]interface{}, token string) (retorno map[string]interface{}) {
 	retorno = make(map[string]interface{})
 
