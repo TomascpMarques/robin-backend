@@ -27,19 +27,24 @@ func main() {
 	flag.DurationVar(&wait, "graceful-timeout", time.Second*15, "gracefully wait for existing connections to finish in 15s")
 	flag.Parse()
 
+	// Ficheiro funcs
 	actions.FuncsStorage["VerificarFicheiroExiste"] = ficheiros.VerificarFicheiroExiste
-	actions.FuncsStorage["BuscarConteudoFicheiro"] = ficheiros.BuscarConteudoFicheiro
 	actions.FuncsStorage["InserirConteudoFicheiro"] = ficheiros.InserirConteudoFicheiro
+	actions.FuncsStorage["BuscarConteudoFicheiro"] = ficheiros.BuscarConteudoFicheiro
 
+	// MetaInfo files funcs
 	actions.FuncsStorage["ApagarFicheiroMetaData"] = ficheiros.ApagarFicheiroMetaData
 	actions.FuncsStorage["CriarFicheiroMetaData"] = ficheiros.CriarFicheiroMetaData
 	actions.FuncsStorage["BuscarMetaData"] = ficheiros.BuscarMetaData
 
-	actions.FuncsStorage["BuscarUserRepos"] = repos.BuscarUserRepos
+	// Repo funcs
+	actions.FuncsStorage["BuscarTodosOsRepos"] = repos.BuscarTodosOsRepos
 	actions.FuncsStorage["BuscarRepositorio"] = repos.BuscarRepositorio
 	actions.FuncsStorage["CriarRepositorio"] = repos.CriarRepositorio
 	actions.FuncsStorage["DropRepositorio"] = repos.DropRepositorio
+	actions.FuncsStorage["BuscarUserRepos"] = repos.BuscarUserRepos
 
+	// Health Check Func
 	actions.FuncsStorage["Ping"] = endpointfuncs.PingServico
 
 	router := mux.NewRouter()

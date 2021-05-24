@@ -1,9 +1,11 @@
 package repos
 
 import (
+	"context"
 	"fmt"
 	"reflect"
 	"strings"
+	"time"
 
 	"github.com/tomascpmarques/PAP/backend/robinservicodocumentacao/endpointfuncs"
 	"github.com/tomascpmarques/PAP/backend/robinservicodocumentacao/endpointfuncs/reposfiles"
@@ -223,5 +225,40 @@ func BuscarUserRepos(nomeUsr string, token string) (retorno map[string]interface
 	loggers.ResolverLogger.Println("Sucesso, a operação encontrou o(s) repo(s) pedido")
 	retorno["repos"] = repos
 	retorno["encontrados"] = len(repos)
+	return
+}
+
+// BuscarTodosOsRepos Retorna todos os repos existentes na BD
+func BuscarTodosOsRepos(token string) (retorno map[string]interface{}) {
+	retorno = make(map[string]interface{})
+
+	// if endpointfuncs.VerificarTokenUser(token) != "OK" {
+	// 	loggers.ServerErrorLogger.Println("Erro: A token fornecida é inválida ou expirou")
+	// 	retorno["erro"] = "A token fornecida é inválida ou expirou"
+	// 	return
+	// }
+
+	// Documento e repo onde procurar o repo
+	collection := endpointfuncs.MongoClient.Database("documentacao").Collection("repos")
+	cntx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+
+	results, err := collection.Find(cntx, nil)
+	defer cancel()
+	if err != nil {
+		loggers.ServerErrorLogger.Println("Erro: ", err)
+		retorno["erro"] = err.Error()
+		return
+	}
+
+	reposStruct := make([]resolvedschema.Repositorio, 0)
+	err = results.All(cntx, &reposStruct)
+	if err != nil {
+		loggers.ServerErrorLogger.Println("Erro: ", err)
+		retorno["erro"] = err.Error()
+		return
+	}
+
+	loggers.ResolverLogger.Println("Sucesso, todos os repos foram devolvidos.")
+	retorno["repos"] = reposStruct
 	return
 }
