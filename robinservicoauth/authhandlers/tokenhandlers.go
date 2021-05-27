@@ -21,7 +21,8 @@ const (
 
 /*
 	Credeenciais default do admin robin:
-	admin - md5 > 532f1f7e5e4ae1475835c4978696c1e3
+	admin - md5 > 		 532f1f7e5e4ae1475835c4978696c1e3
+			sha256 > 	 027aede4e00bfe45724dc54c740fa6d57109dc1ba661edf99f93728f6c7371e4
 			clear-text > @@Robin_Gestao_Admin2#0#2#0!!
 */
 
@@ -85,7 +86,7 @@ func VerificarAdminFirstBoot() bool {
 	if err != nil {
 		loggers.LoginAuthLogger.Println("O utilizador administrador não existe...")
 		// Cria a struct de utilisador para o admin
-		admin := CriarNovoUser("admin", "532f1f7e5e4ae1475835c4978696c1e3", 2)
+		admin := CriarNovoUser("admin", "027aede4e00bfe45724dc54c740fa6d57109dc1ba661edf99f93728f6c7371e4", 2)
 		registoUserJSON, err := json.Marshal(&admin)
 		if err != nil {
 			loggers.LoginRedisLogger.Println("Erro: ", err)
