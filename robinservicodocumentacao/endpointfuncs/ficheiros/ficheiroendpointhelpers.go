@@ -37,6 +37,40 @@ func SetupColecao(dbName, collName string) (defs MongoDBOperation) {
 	return
 }
 
+func AdicionarContribuicaoRepo(ficheiroStruct *resolvedschema.FicheiroConteudo, usr string) error {
+	// Setup da coleção a usar nas operções
+	colecao := SetupColecao("documentacao", "repos")
+	colecao.Filter = bson.M{"nome": ficheiroStruct.Path[1]}
+
+	// Get repo especifico da BD
+	searchResult := colecao.Colecao.FindOne(colecao.Cntxt, colecao.Filter)
+	defer colecao.CancelFunc()
+	// Verifica se o repo foi encontrado
+	if searchResult.Err() != nil {
+		return searchResult.Err()
+	}
+
+	// Tenda decodificar o repo para a struct correta
+	var repo resolvedschema.Repositorio
+	err := searchResult.Decode(&repo)
+	if err != nil {
+		return err
+	}
+
+	// Se o utilizador especificado for diferente do autor do repo
+	// Adiciona esse user como contribuidor
+	if usr != repo.Autor {
+		// Adiciona o valora ao vetor "contribuicoes" se não existir
+		_, err := colecao.Colecao.UpdateOne(colecao.Cntxt, colecao.Filter, bson.M{"$addToSet": bson.M{"contribuidores": usr}})
+		defer colecao.CancelFunc()
+		if err != nil {
+			return err
+		}
+	}
+
+	return nil
+}
+
 // VerifCamposBaseMeta Valida os campos existentes com os campos que são obrigatórios
 // A funcção valida os existentes, se eles conterem os obrigatórios
 func VerifCamposBaseMeta(metaData map[string]interface{}, camposObrg []string) error {

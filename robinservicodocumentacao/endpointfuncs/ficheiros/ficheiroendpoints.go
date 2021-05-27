@@ -179,11 +179,11 @@ func InserirConteudoFicheiro(contntMeta map[string]interface{}, token string) (r
 	retorno = make(map[string]interface{})
 
 	// Verificação de igualdade entre request user, e file autor
-	// if endpointfuncs.VerificarTokenUserSpecif(token, campos["autor"].(string)) != "OK" || endpointfuncs.VerificarTokenAdmin(token) != "OK" {
-	// 	loggers.ServerErrorLogger.Println("Erro: Este utilizador não têm permissões para esta operação, ou token expirada")
-	// 	retorno["erro"] = "Este utilizador não têm permissões para esta operação, ou token expirada"
-	// 	return
-	// }
+	if endpointfuncs.VerificarTokenUser(token) != "OK" {
+		loggers.ServerErrorLogger.Println("Erro: Este utilizador não têm permissões para esta operação, ou token expirada")
+		retorno["erro"] = "Este utilizador não têm permissões para esta operação, ou token expirada"
+		return
+	}
 
 	ficheiroStruct := resolvedschema.FicheiroConteudoParaStruct(&contntMeta)
 	if ficheiroStruct.Nome != ficheiroStruct.Path[len(ficheiroStruct.Path)-1] {
@@ -195,6 +195,16 @@ func InserirConteudoFicheiro(contntMeta map[string]interface{}, token string) (r
 	// Verificação da check sum do ficheiro
 	err := ConteudoRecebidoCheckSum(&ficheiroStruct)
 	if err != nil {
+		loggers.ServerErrorLogger.Println("Erro: ", err.Error())
+		retorno["erro"] = err.Error()
+		return
+	}
+
+	// Get user from token, para evitar registo que includam o user
+	tokenClaims := endpointfuncs.DevolveTokenClaims(token)
+	usr := reflect.ValueOf(tokenClaims["user"]).String()
+
+	if err := AdicionarContribuicaoRepo(&ficheiroStruct, usr); err != nil {
 		loggers.ServerErrorLogger.Println("Erro: ", err.Error())
 		retorno["erro"] = err.Error()
 		return
