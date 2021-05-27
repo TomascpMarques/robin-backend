@@ -77,7 +77,7 @@ func VerificarVideoShareMetaData(videoShare map[string]interface{}) error {
 
 	// Verifica que o url é válido
 	url := (videoShare["url"].(string))
-	regex := regexp.MustCompile(`(?m)https://youtu\.be/[a-zA-Z0-9_]+`).FindAllString(url, -1)
+	regex := regexp.MustCompile(`(?m)https://youtu.be/[a-zA-Z0-9_]+`).FindAllString(url, -1)
 	if reflect.ValueOf(regex).IsZero() {
 		return errors.New("o link fornecido não é válido")
 	}
@@ -88,7 +88,7 @@ func VerificarVideoShareMetaData(videoShare map[string]interface{}) error {
 
 // TrimURL Larga a parte desnecessária do url, >https://youtu\.be/<
 func TrimURL(url string) string {
-	return url[18:]
+	return url[17:]
 }
 
 // Adiciona os dados da video-share à base de dados
