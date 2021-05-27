@@ -77,7 +77,7 @@ func VerificarVideoShareMetaData(videoShare map[string]interface{}) error {
 
 	// Verifica que o url é válido
 	url := (videoShare["url"].(string))
-	regex := regexp.MustCompile(`(?m)https://youtu.be/[a-zA-Z0-9_]+`).FindAllString(url, -1)
+	regex := regexp.MustCompile(`(?m)https://youtu.be/[a-zA-Z0-9_-]+`).FindAllString(url, -1)
 	if reflect.ValueOf(regex).IsZero() {
 		return errors.New("o link fornecido não é válido")
 	}
@@ -117,7 +117,7 @@ func GetVideoShareWithParams(params *resolvedschema.VideoSearchParams) ([]resolv
 	// Setup da coleção a usar & search params
 	colecao := SetupColecao("videoshares", "videos")
 	colecao.Filter = params.Params
-	opcoesBusca := options.Find().SetAllowPartialResults(true).SetLimit(int64(params.Quanti))
+	opcoesBusca := options.Find().SetLimit(int64(params.Quanti))
 
 	cursor, err := colecao.Colecao.Find(colecao.Cntxt, colecao.Filter, opcoesBusca)
 	defer colecao.CancelFunc()
@@ -130,6 +130,8 @@ func GetVideoShareWithParams(params *resolvedschema.VideoSearchParams) ([]resolv
 	if err = cursor.All(context.TODO(), &results); err != nil {
 		log.Fatal(err)
 	}
+
+	fmt.Println("-> ", results)
 
 	// Verifica se encontrou algum resultado
 	if reflect.ValueOf(results).IsZero() {
