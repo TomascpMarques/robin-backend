@@ -47,7 +47,7 @@ func AdicionarRegisto(tipoDeIndex string, dbCollPar map[string]interface{}, item
 	mongoCollection := MongoClient.Database(dbCollPar["db"].(string)).Collection(dbCollPar["cl"].(string))
 
 	// Insser um registo na coleção e base de dados especificada
-	record, err := mongodbhandle.InsserirUmRegisto(item, mongoCollection, 10)
+	record, err := mongodbhandle.InserirUmRegisto(item, mongoCollection, 10)
 
 	if err != nil {
 		loggers.ServerErrorLogger.Println("Error: ", err)
