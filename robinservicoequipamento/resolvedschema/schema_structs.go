@@ -7,11 +7,12 @@ type Query struct {
 }
 
 type Registo struct {
-	/* Meta do Regsito */
-	TipoRegisto string
-	Estado      string
-	Quantidade  int64
-	/* =============== */
-	// Body criado pelo o user para o registo
-	Body map[string]interface{}
+	Meta *RegistoMeta           `json:"meta,omitempty"`
+	Body map[string]interface{} `json:"body,omitempty"`
+}
+
+type RegistoMeta struct {
+	Tipo       string `json:"tipo,omitempty"`
+	Estado     string `json:"estado,omitempty"`
+	Quantidade int64  `json:"quantidade,omitempty"`
 }

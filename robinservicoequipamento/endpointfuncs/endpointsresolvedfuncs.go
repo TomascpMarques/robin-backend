@@ -3,6 +3,7 @@ package endpointfuncs
 import (
 	"context"
 	"fmt"
+	"reflect"
 	"time"
 
 	"github.com/tomascpmarques/PAP/backend/robinservicoequipamento/loggers"
@@ -30,8 +31,8 @@ func PingServico(name string) map[string]interface{} {
 }
 
 // AdicionarRegisto Adiciona um registo numa base de dados e coleção especifícada
-func AdicionarRegisto(tipoDeIndex string, dbCollPar map[string]interface{}, item map[string]interface{}, token string) map[string]interface{} {
-	result := make(map[string]interface{})
+func AdicionarRegisto(registoMeta map[string]interface{}, dbCollPar map[string]interface{}, item map[string]interface{}, token string) (result map[string]interface{}) {
+	result = make(map[string]interface{})
 
 	// if VerificarTokenUser(token) != "OK" {
 	// 	fmt.Println("Erro: A token fornecida é inválida ou expirou")
@@ -39,25 +40,41 @@ func AdicionarRegisto(tipoDeIndex string, dbCollPar map[string]interface{}, item
 	// 	return result
 	// }
 
-	// Declara o tipo de registo para outras funções terem o tipo de dados necessários
-	// Para apontarem para structs compativeis
-	item["tipo_de_registo"] = tipoDeIndex
+	/* Defenição do novo registo */
+	// Verificação da meta do registo
+	if err := VerificarCamposMetaRegisto(registoMeta); err != nil {
+		loggers.ServerErrorLogger.Println("Error: ", err)
+		result["erro"] = err.Error()
+		return
+	}
+	// Verificação do corpo do novo registo
+	if !reflect.ValueOf(item).IsValid() || reflect.ValueOf(item).IsZero() {
+		loggers.ServerErrorLogger.Println("Error: ", "O corpo do registo não pode ser nulo ou inválido")
+		result["erro"] = "O corpo do registo não pode ser nulo ou inválido"
+		return
+	}
+
+	metaRegisto := resolvedschema.RegistoMetaParaStruct(&registoMeta)
+	registo := resolvedschema.Registo{
+		Meta: &metaRegisto,
+		Body: item,
+	}
 
 	// Get the mongo colection
 	mongoCollection := MongoClient.Database(dbCollPar["db"].(string)).Collection(dbCollPar["cl"].(string))
 
 	// Insser um registo na coleção e base de dados especificada
-	record, err := mongodbhandle.InserirUmRegisto(item, mongoCollection, 10)
+	_, err := mongodbhandle.InserirUmRegisto(registo, mongoCollection, 10)
 
 	if err != nil {
 		loggers.ServerErrorLogger.Println("Error: ", err)
-		result["Error"] = err
-		return nil
+		result["erro"] = err
+		return
 	}
-	result["resultado"] = record
 
-	loggers.MongoDBLogger.Println("Registo inserido!")
-	return result
+	loggers.MongoDBLogger.Println("Registo adicionado ao sistema!")
+	result["sucesso"] = true
+	return
 }
 
 // QueryRegistoJSON Executa um query nos registos encontrados que satisfazêm o filtro de pesquisa
@@ -78,12 +95,13 @@ func QueryRegistoJSON(campos map[string]interface{}, dbCollPar map[string]interf
 	}
 
 	// Extrai os campos pedidos
-	var records []map[string]interface{}
-	for k, registo := range registos {
-		// Mapa temporário a ser usado para extrair os valores
-		mapTemp := make(map[string]interface{})
-		ExtractValuesFromJSON(query.Extrair[k], registo, mapTemp)
-		records = append(records, mapTemp)
+	var records = RunQuerysOnRecords(query, registos)
+
+	// Verifica se os resultados do query são válidos (!= 0)
+	if reflect.ValueOf(records).IsZero() {
+		loggers.ServerErrorLogger.Println("Error: ", "Erro ao extrair os campos pedidos")
+		result["Error"] = "Erro ao extrair os campos pedidos"
+		return
 	}
 
 	loggers.ResolverLogger.Println("Sucesso, campos extraidos com sucesso!")

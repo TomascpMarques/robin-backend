@@ -28,6 +28,13 @@ func CriarRepositorio(repoInfo map[string]interface{}, token string) (retorno ma
 	// Get the mongo colection
 	operacoesColl := endpointfuncs.MongoClient.Database("documentacao").Collection("repos")
 
+	// Verifica se a info base é enviada pela front-end de uma maneira correta
+	if err := VerificarInfoBaseRepo(repoInfo); err != nil {
+		loggers.DbFuncsLogger.Println("Os dados estão incompletos para criar um repo")
+		retorno["erro"] = "Os dados estão incompletos para criar um repo"
+		return
+	}
+
 	// Transformação da informação de repo para uma struct do tipo Repo
 	repo := resolvedschema.RepositorioParaStruct(&repoInfo)
 	// Retira caracteres desnecessários do nome do repo
@@ -37,13 +44,6 @@ func CriarRepositorio(repoInfo map[string]interface{}, token string) (retorno ma
 	if repoExiste := GetRepoPorCampo("nome", repo.Nome); !(reflect.ValueOf(repoExiste).IsZero()) {
 		loggers.DbFuncsLogger.Println("Não foi possivél criar o repositório pedido: ", repo.Nome, ".Já existe um com esse nome")
 		retorno["erro"] = ("Não foi possivél criar o repositório pedido, devido ao nome ser igual a um existente")
-		return
-	}
-
-	// Verifica se a info base é enviada pela front-end de uma maneira correta
-	if err := VerificarInfoBaseRepo(repoInfo); err != nil {
-		loggers.DbFuncsLogger.Println("Os dados estão incompletos para criar um repo")
-		retorno["erro"] = "Os dados estão incompletos para criar um repo"
 		return
 	}
 
