@@ -26,7 +26,7 @@ func main() {
 	flag.Parse()
 
 	// Gestão de Registos
-	actions.FuncsStorage["AtualizarRegistoID"] = endpointfuncs.AtualizarRegistoDeItem
+	actions.FuncsStorage["AtualizarRegistoDeItem"] = endpointfuncs.AtualizarRegistoDeItem
 	actions.FuncsStorage["ApagarRegistoDeItem"] = endpointfuncs.ApagarRegistoPorID
 	actions.FuncsStorage["AdicionarRegisto"] = endpointfuncs.AdicionarRegisto
 

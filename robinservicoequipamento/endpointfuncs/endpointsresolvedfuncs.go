@@ -95,11 +95,11 @@ func QueryRegistoJSON(campos map[string]interface{}, dbCollPar map[string]interf
 func ApagarRegistoPorID(dbCollPar map[string]interface{}, idItem string, token string) map[string]interface{} {
 	result := make(map[string]interface{})
 
-	if VerificarTokenUser(token) != "OK" {
-		fmt.Println("Erro: A token fornecida é inválida ou expirou")
-		result["erro"] = "A token fornecida é inválida ou expirou"
-		return result
-	}
+	// if VerificarTokenUser(token) != "OK" {
+	// 	fmt.Println("Erro: A token fornecida é inválida ou expirou")
+	// 	result["erro"] = "A token fornecida é inválida ou expirou"
+	// 	return result
+	// }
 
 	// Converte o ID de uma String para um ObjectID
 	idOBJ, err := primitive.ObjectIDFromHex(idItem)
@@ -135,11 +135,11 @@ func ApagarRegistoPorID(dbCollPar map[string]interface{}, idItem string, token s
 func AtualizarRegistoDeItem(dbCollPar map[string]interface{}, idItem string, item map[string]interface{}, token string) map[string]interface{} {
 	result := make(map[string]interface{})
 
-	if VerificarTokenUser(token) != "OK" {
-		fmt.Println("Erro: A token fornecida é inválida ou expirou")
-		result["erro"] = "A token fornecida é inválida ou expirou"
-		return result
-	}
+	// if VerificarTokenUser(token) != "OK" {
+	// 	fmt.Println("Erro: A token fornecida é inválida ou expirou")
+	// 	result["erro"] = "A token fornecida é inválida ou expirou"
+	// 	return result
+	// }
 
 	// Converte o ID de uma String para um ObjectID
 	idOBJ, err := primitive.ObjectIDFromHex(idItem)
@@ -158,7 +158,8 @@ func AtualizarRegistoDeItem(dbCollPar map[string]interface{}, idItem string, ite
 	cntx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 
 	// Atualiza o item através do map especificado nos params
-	matchCount, err := coll.UpdateOne(cntx, filter, item, options.MergeUpdateOptions())
+	matchCount, err := coll.UpdateOne(cntx, filter, bson.M{"$set": item}, options.MergeUpdateOptions())
+	fmt.Println(matchCount)
 	defer cancel()
 	if err != nil {
 		loggers.ServerErrorLogger.Println("Erro: ", err, " | registo de id: ", idItem)
