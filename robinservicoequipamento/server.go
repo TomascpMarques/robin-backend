@@ -25,10 +25,15 @@ func main() {
 	flag.DurationVar(&wait, "graceful-timeout", time.Second*15, "gracefully wait for existing connections to finish in 15s")
 	flag.Parse()
 
-	actions.FuncsStorage["QueryRegistoJSON"] = endpointfuncs.QueryRegistoJSON
-	actions.FuncsStorage["ApagarRegistoDeItem"] = endpointfuncs.ApagarRegistoPorID
+	// Gestão de Registos
 	actions.FuncsStorage["AtualizarRegistoID"] = endpointfuncs.AtualizarRegistoDeItem
+	actions.FuncsStorage["ApagarRegistoDeItem"] = endpointfuncs.ApagarRegistoPorID
 	actions.FuncsStorage["AdicionarRegisto"] = endpointfuncs.AdicionarRegisto
+
+	// Queries a registos
+	actions.FuncsStorage["QueryRegistoJSON"] = endpointfuncs.QueryRegistoJSON
+
+	// Health check
 	actions.FuncsStorage["PingServico"] = endpointfuncs.PingServico
 
 	router := mux.NewRouter()
