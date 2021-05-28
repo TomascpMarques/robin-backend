@@ -9,8 +9,8 @@ func ParseTipoDeRegisto(alvo map[string]interface{}) interface{} {
 
 	switch alvo["tipo_de_registo"] {
 	// Para o tipo Item
-	case "Item":
-		return resolvedschema.ItemParaStruct(&alvo)
+	case "Query":
+		return resolvedschema.QueryParaStruct(&alvo)
 	}
 
 	return nil

@@ -4,15 +4,15 @@ import (
 	"encoding/json"
 )
 
-func ItemParaStruct(param1 *map[string]interface{}) Item {
-	var returnStruct Item
+func QueryParaStruct(param1 *map[string]interface{}) Query {
+	var returnStruct Query
 	temp, err := json.Marshal(param1)
 	if err != nil {
-		return Item{}
+		return Query{}
 	}
 	err = json.Unmarshal(temp, &returnStruct)
 	if err != nil {
-		return Item{}
+		return Query{}
 	}
 	return returnStruct
 }

@@ -9,6 +9,7 @@ import (
 
 	"github.com/tomascpmarques/PAP/backend/robinservicoequipamento/loggers"
 	"github.com/tomascpmarques/PAP/backend/robinservicoequipamento/mongodbhandle"
+	"github.com/tomascpmarques/PAP/backend/robinservicoequipamento/resolvedschema"
 	"github.com/tomascpmarques/PAP/backend/robinservicoequipamento/structextract"
 
 	"go.mongodb.org/mongo-driver/bson"
@@ -62,28 +63,34 @@ func AdicionarRegisto(tipoDeIndex string, dbCollPar map[string]interface{}, item
 	return result
 }
 
-func QueryRegistoJSON(query map[string]interface{}, dbCollPar map[string]interface{}, token string) (result map[string]interface{}) {
+// QueryRegistoJSON Executa um query nos registos encontrados que satisfazêm o filtro de pesquisa
+// Devolve só os campos pedidos dos registos encontrados, no formato { "key1.key2.key3.value1": result1 }
+func QueryRegistoJSON(campos map[string]interface{}, dbCollPar map[string]interface{}, token string) (result map[string]interface{}) {
 	result = make(map[string]interface{})
 
-	colecao := MongoClient.Database(dbCollPar["db"].(string)).Collection(dbCollPar["cl"].(string))
-	cntx, cancel := context.WithTimeout(context.Background(), time.Second*10)
+	// Define o query a usar nas buscas e a colecao alvo
+	query := resolvedschema.QueryParaStruct(&campos)
+	colecao := GetColecaoFromDB(dbCollPar)
 
-	var registo map[string]interface{}
-
-	err := colecao.FindOne(cntx, query["campos"], options.FindOne().SetMaxTime(time.Second*10)).Decode(&registo)
-	defer cancel()
+	// Busca os registos da coleção, que igualêm os resultados
+	registos, err := GetRegistosDaColecao(query.Campos, colecao)
 	if err != nil {
 		loggers.ServerErrorLogger.Println("Error: ", err)
 		result["Error"] = err
 		return
 	}
 
-	fmt.Println(registo)
-	finalReturn := make(map[string]interface{})
-	ExtractValuesFromJSON(query["query"].([]interface{}), registo, finalReturn)
+	// Extrai os campos pedidos
+	var records []map[string]interface{}
+	for k, registo := range registos {
+		// Mapa temporário a ser usado para extrair os valores
+		mapTemp := make(map[string]interface{})
+		ExtractValuesFromJSON(query.Extrair[k], registo, mapTemp)
+		records = append(records, mapTemp)
+	}
 
-	loggers.ResolverLogger.Println("Sucesso com os querys!")
-	result["queryRes"] = finalReturn
+	loggers.ResolverLogger.Println("Sucesso, campos extraidos com sucesso!")
+	result["queryRes"] = records
 	return
 }
 
