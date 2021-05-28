@@ -26,13 +26,9 @@ func main() {
 	flag.Parse()
 
 	actions.FuncsStorage["QueryRegistoJSON"] = endpointfuncs.QueryRegistoJSON
-	actions.FuncsStorage["BuscarRegistoCustom"] = endpointfuncs.QueryRegistosCustom
 	actions.FuncsStorage["ApagarRegistoDeItem"] = endpointfuncs.ApagarRegistoPorID
 	actions.FuncsStorage["AtualizarRegistoID"] = endpointfuncs.AtualizarRegistoDeItem
 	actions.FuncsStorage["AdicionarRegisto"] = endpointfuncs.AdicionarRegisto
-	actions.FuncsStorage["BuscarRegistoID"] = endpointfuncs.QueryRegistoObjID
-	actions.FuncsStorage["BuscarInfoItems"] = endpointfuncs.BuscarInfoItems
-	actions.FuncsStorage["BuscarInfoItem"] = endpointfuncs.BuscarInfoItemQuery
 	actions.FuncsStorage["PingServico"] = endpointfuncs.PingServico
 
 	router := mux.NewRouter()
