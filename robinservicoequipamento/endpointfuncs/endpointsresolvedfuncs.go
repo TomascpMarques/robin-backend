@@ -35,11 +35,11 @@ func PingServico(name string) map[string]interface{} {
 func AdicionarRegisto(tipoDeIndex string, dbCollPar map[string]interface{}, item map[string]interface{}, token string) map[string]interface{} {
 	result := make(map[string]interface{})
 
-	if VerificarTokenUser(token) != "OK" {
-		fmt.Println("Erro: A token fornecida é inválida ou expirou")
-		result["erro"] = "A token fornecida é inválida ou expirou"
-		return result
-	}
+	// if VerificarTokenUser(token) != "OK" {
+	// 	fmt.Println("Erro: A token fornecida é inválida ou expirou")
+	// 	result["erro"] = "A token fornecida é inválida ou expirou"
+	// 	return result
+	// }
 
 	// Declara o tipo de registo para outras funções terem o tipo de dados necessários
 	// Para apontarem para structs compativeis
@@ -58,8 +58,33 @@ func AdicionarRegisto(tipoDeIndex string, dbCollPar map[string]interface{}, item
 	}
 	result["resultado"] = record
 
-	loggers.MongoDBLogger.Println("Registo ensserido!")
+	loggers.MongoDBLogger.Println("Registo inserido!")
 	return result
+}
+
+func QueryRegistoJSON(query map[string]interface{}, dbCollPar map[string]interface{}, token string) (result map[string]interface{}) {
+	result = make(map[string]interface{})
+
+	colecao := MongoClient.Database(dbCollPar["db"].(string)).Collection(dbCollPar["cl"].(string))
+	cntx, cancel := context.WithTimeout(context.Background(), time.Second*10)
+
+	var registo map[string]interface{}
+
+	err := colecao.FindOne(cntx, query["campos"], options.FindOne().SetMaxTime(time.Second*10)).Decode(&registo)
+	defer cancel()
+	if err != nil {
+		loggers.ServerErrorLogger.Println("Error: ", err)
+		result["Error"] = err
+		return
+	}
+
+	fmt.Println(registo)
+	finalReturn := make(map[string]interface{})
+	ExtractValuesFromJSON(query["query"].([]interface{}), registo, finalReturn)
+
+	loggers.ResolverLogger.Println("Sucesso com os querys!")
+	result["queryRes"] = finalReturn
+	return
 }
 
 // QueryRegistoObjID Busca um registo na base de dados pelo ID especificado

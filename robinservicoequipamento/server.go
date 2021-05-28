@@ -25,6 +25,7 @@ func main() {
 	flag.DurationVar(&wait, "graceful-timeout", time.Second*15, "gracefully wait for existing connections to finish in 15s")
 	flag.Parse()
 
+	actions.FuncsStorage["QueryRegistoJSON"] = endpointfuncs.QueryRegistoJSON
 	actions.FuncsStorage["BuscarRegistoCustom"] = endpointfuncs.QueryRegistosCustom
 	actions.FuncsStorage["ApagarRegistoDeItem"] = endpointfuncs.ApagarRegistoPorID
 	actions.FuncsStorage["AtualizarRegistoID"] = endpointfuncs.AtualizarRegistoDeItem
