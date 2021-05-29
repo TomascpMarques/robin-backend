@@ -45,17 +45,6 @@ func CriarNovoUser(user string, password string, perms int) User {
 
 type UserFuncs interface {
 	CriarAuthJWT() *jwt.Token
-	CriarReloadJWT() *jwt.Token
-}
-
-// CriarReloadJWT Cria uma token de reload para devolver ao utilizador após o login
-func (user User) CriarReloadJWT() *jwt.Token {
-	jwtReload := jwt.NewWithClaims(jwt.SigningMethodHS512, jwt.MapClaims{
-		"user": user.Username,
-		"iss":  "Robin-Servico-Auth",
-		"exp":  time.Now().Add(time.Hour * 24).Unix(),
-	})
-	return jwtReload
 }
 
 // CriarJWT Cria as JWT Token para cada utilisador, a partir dos dados da struct User
