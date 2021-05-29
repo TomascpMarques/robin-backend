@@ -34,10 +34,6 @@ type User struct {
 	Permissoes int    `json:"perms,omitempty"`
 }
 
-type UserFuncs interface {
-	CriarJWT() *jwt.Token
-}
-
 // CriarNovoUser através de um username, password e permissões cria e devolve um novo utilizador (struct)
 func CriarNovoUser(user string, password string, perms int) User {
 	return User{
@@ -47,15 +43,30 @@ func CriarNovoUser(user string, password string, perms int) User {
 	}
 }
 
+type UserFuncs interface {
+	CriarAuthJWT() *jwt.Token
+	CriarReloadJWT() *jwt.Token
+}
+
+// CriarReloadJWT Cria uma token de reload para devolver ao utilizador após o login
+func (user User) CriarReloadJWT() *jwt.Token {
+	jwtReload := jwt.NewWithClaims(jwt.SigningMethodHS512, jwt.MapClaims{
+		"user": user.Username,
+		"iss":  "Robin-Servico-Auth",
+		"exp":  time.Now().Add(time.Hour * 24).Unix(),
+	})
+	return jwtReload
+}
+
 // CriarJWT Cria as JWT Token para cada utilisador, a partir dos dados da struct User
 func (user User) CriarJWT() *jwt.Token {
-	jwtToken := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{
+	jwtAuth := jwt.NewWithClaims(jwt.SigningMethodHS512, jwt.MapClaims{
 		"user":  user.Username,
 		"perms": user.Permissoes,
 		"iss":   "Robin-Servico-Auth",
 		"exp":   time.Now().Add(time.Minute * 40).Unix(),
 	})
-	return jwtToken
+	return jwtAuth
 }
 
 // GetUserParaValorStruct Busca um utilisador pelo nome na base de dados

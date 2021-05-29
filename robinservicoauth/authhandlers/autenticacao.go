@@ -48,7 +48,14 @@ func Login(user string, passwd string) (retorno map[string]interface{}) {
 	}
 
 	// Cria um token de utilisador a partir dos dados fornecidos
-	NovaTokenLogin, err := utilizadorPedido.CriarJWT().SignedString(assinaturaSecretaServer)
+	novaTokenLogin, err := utilizadorPedido.CriarJWT().SignedString(assinaturaSecretaServer)
+	if err != nil {
+		loggers.LoginAuthLogger.Println("Error: ", err)
+		retorno["erro"] = err
+		return
+	}
+	// Cria ua nova token de reload para o utilizador
+	novaTokenReload, err := utilizadorPedido.CriarReloadJWT().SignedString(assinaturaSecretaServer)
 	if err != nil {
 		loggers.LoginAuthLogger.Println("Error: ", err)
 		retorno["erro"] = err
@@ -58,7 +65,8 @@ func Login(user string, passwd string) (retorno map[string]interface{}) {
 	// Loga que o utilisador XXXX iniciou sessão
 	// E devolve a token, em como o utilisador está logado
 	loggers.LoginAuthLogger.Println("Utilizador, ", user, ", iniciou sessão")
-	retorno["token"] = NovaTokenLogin
+	retorno["token"] = novaTokenLogin
+	retorno["reload"] = novaTokenReload
 	return
 }
 
@@ -72,14 +80,6 @@ func Registar(user string, password string, perms int, token string) (retorno ma
 	if VerificarTokenAdmin(token) != "OK" {
 		loggers.LoginAuthLogger.Println("A token não têm permissões")
 		retorno["error"] = "A token não têm permissões"
-		return
-	}
-
-	// Cria a jwt para o novo utilisador
-	tokenCriadaAssinada, err := CriarNovoUser(user, password, perms).CriarJWT().SignedString(assinaturaSecretaServer)
-	if err != nil {
-		loggers.LoginAuthLogger.Println("Error: ", err)
-		retorno["error"] = err
 		return
 	}
 
@@ -106,7 +106,6 @@ func Registar(user string, password string, perms int, token string) (retorno ma
 			Expira: 0,
 		}, 0)
 		loggers.LoginAuthLogger.Println("Registo adicionado com sucesso.")
-		retorno["token"] = tokenCriadaAssinada
 		return
 	}
 

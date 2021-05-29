@@ -82,6 +82,12 @@ func AdicionarRegisto(registoMeta map[string]interface{}, dbCollPar map[string]i
 func QueryRegistoJSON(campos map[string]interface{}, dbCollPar map[string]interface{}, token string) (result map[string]interface{}) {
 	result = make(map[string]interface{})
 
+	// if VerificarTokenUser(token) != "OK" {
+	// 	fmt.Println("Erro: A token fornecida é inválida ou expirou")
+	// 	result["erro"] = "A token fornecida é inválida ou expirou"
+	// 	return result
+	// }
+
 	// Define o query a usar nas buscas e a colecao alvo
 	query := resolvedschema.QueryParaStruct(&campos)
 	colecao := GetColecaoFromDB(dbCollPar)
@@ -90,7 +96,7 @@ func QueryRegistoJSON(campos map[string]interface{}, dbCollPar map[string]interf
 	registos, err := GetRegistosDaColecao(query.Campos, colecao)
 	if err != nil {
 		loggers.ServerErrorLogger.Println("Error: ", err)
-		result["Error"] = err
+		result["erro"] = err
 		return
 	}
 
@@ -100,12 +106,44 @@ func QueryRegistoJSON(campos map[string]interface{}, dbCollPar map[string]interf
 	// Verifica se os resultados do query são válidos (!= 0)
 	if reflect.ValueOf(records).IsZero() {
 		loggers.ServerErrorLogger.Println("Error: ", "Erro ao extrair os campos pedidos")
-		result["Error"] = "Erro ao extrair os campos pedidos"
+		result["erro"] = "Erro ao extrair os campos pedidos"
 		return
 	}
 
 	loggers.ResolverLogger.Println("Sucesso, campos extraidos com sucesso!")
 	result["queryRes"] = records
+	return
+}
+
+// BuscarTodosOsRegistosBD Faz o que o título da função descreve
+func BuscarTodosOsRegistosBD(dbCollPar map[string]interface{}, token string) (retorno map[string]interface{}) {
+	retorno = make(map[string]interface{})
+
+	// if VerificarTokenUser(token) != "OK" {
+	// 	fmt.Println("Erro: A token fornecida é inválida ou expirou")
+	// 	result["erro"] = "A token fornecida é inválida ou expirou"
+	// 	return result
+	// }
+
+	// Define o query a usar nas buscas e a colecao alvo
+	colecao := GetColecaoFromDB(dbCollPar)
+	results, err := colecao.Find(context.TODO(), bson.M{}, options.Find())
+	if err != nil {
+		loggers.ServerErrorLogger.Println("Error: ", err)
+		retorno["erro"] = "Erro ao buscar todos os registos"
+		return
+	}
+
+	registos := make([]map[string]interface{}, 0)
+	err = results.All(context.TODO(), &registos)
+	if err != nil {
+		loggers.ServerErrorLogger.Println("Error: ", err)
+		retorno["erro"] = err
+		return
+	}
+
+	loggers.ResolverLogger.Println("Sucesso, registos encontrados!")
+	retorno["registos"] = registos
 	return
 }
 
