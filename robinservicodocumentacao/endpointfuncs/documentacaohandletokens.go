@@ -108,7 +108,7 @@ func DevolveTokenClaims(userToken string) map[string]interface{} {
 }
 
 // VerificarTokenReAuth Verifica a token de reload de autenticação do user
-func VerificarTokenReAuth(reAuthToken string, tokenAuth string) string {
+func VerificarTokenReAuth(reAuthToken string) string {
 	token, err := jwt.Parse(reAuthToken, func(token *jwt.Token) (interface{}, error) {
 		// valida o metodo de assinatura da key
 		if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {

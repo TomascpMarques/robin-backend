@@ -46,7 +46,6 @@ func main() {
 
 	// Health Check Func
 	actions.FuncsStorage["Ping"] = endpointfuncs.PingServico
-	actions.FuncsStorage["TesteInvalidAuthTokenReload"] = endpointfuncs.TesteInvalidAuthTokenReload
 
 	router := mux.NewRouter()
 	// WOW concunrrency, much cool
