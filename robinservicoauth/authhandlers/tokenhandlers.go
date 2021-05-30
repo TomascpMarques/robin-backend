@@ -49,11 +49,10 @@ type UserFuncs interface {
 
 func (user User) CriarJWTReAuth() *jwt.Token {
 	jwtAuth := jwt.NewWithClaims(jwt.SigningMethodHS512, jwt.MapClaims{
-		"user":  user.Username,
-		"perms": user.Permissoes,
-		"iss":   "Robin-Servico-Auth",
-		"typ":   "reauth",
-		"exp":   time.Now().Add(time.Hour * 72).Unix(),
+		"user": user.Username,
+		"iss":  "Robin-Servico-Auth",
+		"typ":  "reauth",
+		"exp":  time.Now().Add(time.Hour * 72).Unix(),
 	})
 	return jwtAuth
 }
@@ -65,7 +64,7 @@ func (user User) CriarJWTAuth() *jwt.Token {
 		"perms": user.Permissoes,
 		"iss":   "Robin-Servico-Auth",
 		"typ":   "auth",
-		"exp":   time.Now().Add(time.Minute * 17).Unix(),
+		"exp":   time.Now().Add(0).Unix(),
 	})
 	return jwtAuth
 }
@@ -164,6 +163,7 @@ func VerificarTokenAdmin(userToken string) string {
 	return "Token inválida ou expirada"
 }
 
+// DevolveTokenClaims Devolve os valores do body da token (claims)
 func DevolveTokenClaims(userToken string) map[string]interface{} {
 	token, err := jwt.Parse(userToken, func(token *jwt.Token) (interface{}, error) {
 		// valida o metodo de assinatura da key
@@ -181,8 +181,8 @@ func DevolveTokenClaims(userToken string) map[string]interface{} {
 	return token.Claims.(jwt.MapClaims)
 }
 
+// VerificarTokenReAuth Verifica a token de reload de autenticação do user
 func VerificarTokenReAuth(reAuthToken string, tokenAuth string) string {
-	authClaims := DevolveTokenClaims(tokenAuth)
 	token, err := jwt.Parse(reAuthToken, func(token *jwt.Token) (interface{}, error) {
 		// valida o metodo de assinatura da key
 		if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
@@ -199,7 +199,7 @@ func VerificarTokenReAuth(reAuthToken string, tokenAuth string) string {
 
 	// Verifica que a token é válida e assinada pelo servidor de login
 	if claims, ok := token.Claims.(jwt.MapClaims); ok && token.Valid && claims["iss"] == "Robin-Servico-Auth" &&
-		claims["typ"] == "reauth" && claims["user"] == authClaims["user"] && claims["perms"] == authClaims["perms"] {
+		claims["typ"] == "reauth" {
 		return "OK"
 	}
 	return "Token inválida ou expirada"

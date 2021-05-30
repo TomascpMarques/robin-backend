@@ -33,6 +33,7 @@ func main() {
 	flag.Parse()
 
 	// Mapeamento das funções desponíveis aos action requests
+	actions.FuncsStorage["VerificarTokensParaReAuth"] = authhandlers.VerificarTokenReAuth
 	actions.FuncsStorage["VerificarUserExiste"] = authhandlers.VerificarUserExiste
 	actions.FuncsStorage["VerificarTokenAdmin"] = authhandlers.VerificarTokenAdmin
 	actions.FuncsStorage["VerificarTokenUser"] = authhandlers.VerificarTokenUser
