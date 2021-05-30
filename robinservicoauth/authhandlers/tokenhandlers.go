@@ -52,6 +52,7 @@ func (user User) CriarJWTReAuth() *jwt.Token {
 		"user":  user.Username,
 		"perms": user.Permissoes,
 		"iss":   "Robin-Servico-Auth",
+		"typ":   "reauth",
 		"exp":   time.Now().Add(time.Hour * 72).Unix(),
 	})
 	return jwtAuth
@@ -63,6 +64,7 @@ func (user User) CriarJWTAuth() *jwt.Token {
 		"user":  user.Username,
 		"perms": user.Permissoes,
 		"iss":   "Robin-Servico-Auth",
+		"typ":   "auth",
 		"exp":   time.Now().Add(time.Minute * 17).Unix(),
 	})
 	return jwtAuth
@@ -157,6 +159,47 @@ func VerificarTokenAdmin(userToken string) string {
 	// Verifica que a token é válida e assinada pelo servidor de login
 	if claims, ok := token.Claims.(jwt.MapClaims); ok && token.Valid && claims["iss"] == "Robin-Servico-Auth" &&
 		claims["perms"].(float64) == 2 {
+		return "OK"
+	}
+	return "Token inválida ou expirada"
+}
+
+func DevolveTokenClaims(userToken string) map[string]interface{} {
+	token, err := jwt.Parse(userToken, func(token *jwt.Token) (interface{}, error) {
+		// valida o metodo de assinatura da key
+		if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
+			return nil, nil
+		}
+		// hmacSampleSecret é o []byte que contem o segredo de assinatura
+		return assinaturaSecretaServer, nil
+	})
+	// Se a token for assinada por outro metodo ou a key for diferente dá erro
+	if err != nil {
+		return nil
+	}
+
+	return token.Claims.(jwt.MapClaims)
+}
+
+func VerificarTokenReAuth(reAuthToken string, tokenAuth string) string {
+	authClaims := DevolveTokenClaims(tokenAuth)
+	token, err := jwt.Parse(reAuthToken, func(token *jwt.Token) (interface{}, error) {
+		// valida o metodo de assinatura da key
+		if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
+			return nil, fmt.Errorf("metodo de assinatura inesperado: %v", token.Header["alg"])
+		}
+
+		// hmacSampleSecret é o []byte que contem o segredo de assinatura
+		return assinaturaSecretaServer, nil
+	})
+	// Se a token for assinada por outro metodo ou a key for diferente dá erro
+	if err != nil {
+		return fmt.Sprint(err)
+	}
+
+	// Verifica que a token é válida e assinada pelo servidor de login
+	if claims, ok := token.Claims.(jwt.MapClaims); ok && token.Valid && claims["iss"] == "Robin-Servico-Auth" &&
+		claims["typ"] == "reauth" && claims["user"] == authClaims["user"] && claims["perms"] == authClaims["perms"] {
 		return "OK"
 	}
 	return "Token inválida ou expirada"
