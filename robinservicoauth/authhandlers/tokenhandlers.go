@@ -44,16 +44,26 @@ func CriarNovoUser(user string, password string, perms int) User {
 }
 
 type UserFuncs interface {
-	CriarAuthJWT() *jwt.Token
+	CriarJWTAuth() *jwt.Token
 }
 
-// CriarJWT Cria as JWT Token para cada utilisador, a partir dos dados da struct User
-func (user User) CriarJWT() *jwt.Token {
+func (user User) CriarJWTReAuth() *jwt.Token {
 	jwtAuth := jwt.NewWithClaims(jwt.SigningMethodHS512, jwt.MapClaims{
 		"user":  user.Username,
 		"perms": user.Permissoes,
 		"iss":   "Robin-Servico-Auth",
-		"exp":   time.Now().Add(time.Minute * 40).Unix(),
+		"exp":   time.Now().Add(time.Hour * 72).Unix(),
+	})
+	return jwtAuth
+}
+
+// CriarJWTAuth Cria as JWT Token para cada utilisador, a partir dos dados da struct User
+func (user User) CriarJWTAuth() *jwt.Token {
+	jwtAuth := jwt.NewWithClaims(jwt.SigningMethodHS512, jwt.MapClaims{
+		"user":  user.Username,
+		"perms": user.Permissoes,
+		"iss":   "Robin-Servico-Auth",
+		"exp":   time.Now().Add(time.Minute * 17).Unix(),
 	})
 	return jwtAuth
 }
