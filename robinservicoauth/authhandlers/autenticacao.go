@@ -55,18 +55,10 @@ func Login(user string, passwd string) (retorno map[string]interface{}) {
 		return
 	}
 
-	novaTokenAuthReload, err := utilizadorPedido.CriarJWTReAuth().SignedString(assinaturaSecretaServer)
-	if err != nil {
-		loggers.LoginAuthLogger.Println("Error: ", err)
-		retorno["erro"] = err
-		return
-	}
-
 	// Loga que o utilisador XXXX iniciou sessão
 	// E devolve a token, em como o utilisador está logado
 	loggers.LoginAuthLogger.Println("Utilizador, ", user, ", iniciou sessão")
 	retorno["token"] = novaTokenLogin
-	retorno["reload"] = novaTokenAuthReload
 	return
 }
 
