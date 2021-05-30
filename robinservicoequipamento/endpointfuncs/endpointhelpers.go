@@ -51,8 +51,8 @@ func CheckValMapStrInter(val interface{}) bool {
 }
 
 // GetColecaoFromDB Devolve a coleção especificada, de um documento especifico
-func GetColecaoFromDB(dbCollPar map[string]interface{}) *mongo.Collection {
-	return MongoClient.Database(dbCollPar["db"].(string)).Collection(dbCollPar["cl"].(string))
+func GetColecaoFromDB(colecao string) *mongo.Collection {
+	return MongoClient.Database("recursos").Collection(colecao)
 }
 
 // GetRegistosDaColecao Busca todos os resultados de uma coleção, que igualam ao filtro
@@ -100,6 +100,17 @@ func VerificarCamposMetaRegisto(meta map[string]interface{}) error {
 	// Verifica se foi fornecido a quantidade em inventário do item
 	if reflect.ValueOf(meta[campos[2]]).IsZero() {
 		return errors.New("o registo deve fornecer uma quantidade miníma de items existentes")
+	}
+
+	// Define o estado do item em Upper, evita estados iguais escritos de maneiras diferentes
+	meta[campos[1]] = strings.ToUpper(meta[campos[1]].(string))
+
+	// Define o tipo do item em Upper, evita tipos iguais escritos de maneiras diferentes
+	meta[campos[0]] = strings.ToUpper(meta[campos[0]].(string))
+
+	// Define o valor minimo do item , evita quantidades inferiores a zero
+	if meta[campos[2]].(int64) < 0 {
+		meta[campos[2]] = 0
 	}
 
 	return nil

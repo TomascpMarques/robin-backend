@@ -31,7 +31,7 @@ func PingServico(name string) map[string]interface{} {
 }
 
 // AdicionarRegisto Adiciona um registo numa base de dados e coleção especifícada
-func AdicionarRegisto(registoMeta map[string]interface{}, dbCollPar map[string]interface{}, item map[string]interface{}, token string) (result map[string]interface{}) {
+func AdicionarRegisto(registoMeta map[string]interface{}, colecao string, item map[string]interface{}, token string) (result map[string]interface{}) {
 	result = make(map[string]interface{})
 
 	// if VerificarTokenUser(token) != "OK" {
@@ -61,7 +61,7 @@ func AdicionarRegisto(registoMeta map[string]interface{}, dbCollPar map[string]i
 	}
 
 	// Get the mongo colection
-	mongoCollection := MongoClient.Database(dbCollPar["db"].(string)).Collection(dbCollPar["cl"].(string))
+	mongoCollection := MongoClient.Database("recursos").Collection(colecao)
 
 	// Insser um registo na coleção e base de dados especificada
 	_, err := mongodbhandle.InserirUmRegisto(registo, mongoCollection, 10)
@@ -79,7 +79,7 @@ func AdicionarRegisto(registoMeta map[string]interface{}, dbCollPar map[string]i
 
 // QueryRegistoJSON Executa um query nos registos encontrados que satisfazêm o filtro de pesquisa
 // Devolve só os campos pedidos dos registos encontrados, no formato { "key1.key2.key3.value1": result1 }
-func QueryRegistoJSON(campos map[string]interface{}, dbCollPar map[string]interface{}, token string) (result map[string]interface{}) {
+func QueryRegistoJSON(campos map[string]interface{}, colecao string, token string) (result map[string]interface{}) {
 	result = make(map[string]interface{})
 
 	// if VerificarTokenUser(token) != "OK" {
@@ -90,10 +90,10 @@ func QueryRegistoJSON(campos map[string]interface{}, dbCollPar map[string]interf
 
 	// Define o query a usar nas buscas e a colecao alvo
 	query := resolvedschema.QueryParaStruct(&campos)
-	colecao := GetColecaoFromDB(dbCollPar)
+	colecaoAlvo := GetColecaoFromDB(colecao)
 
 	// Busca os registos da coleção, que igualêm os resultados
-	registos, err := GetRegistosDaColecao(query.Campos, colecao)
+	registos, err := GetRegistosDaColecao(query.Campos, colecaoAlvo)
 	if err != nil {
 		loggers.ServerErrorLogger.Println("Error: ", err)
 		result["erro"] = err
@@ -116,7 +116,7 @@ func QueryRegistoJSON(campos map[string]interface{}, dbCollPar map[string]interf
 }
 
 // BuscarTodosOsRegistosBD Faz o que o título da função descreve
-func BuscarTodosOsRegistosBD(dbCollPar map[string]interface{}, token string) (retorno map[string]interface{}) {
+func BuscarTodosOsRegistosBD(colecao string, token string) (retorno map[string]interface{}) {
 	retorno = make(map[string]interface{})
 
 	// if VerificarTokenUser(token) != "OK" {
@@ -126,8 +126,8 @@ func BuscarTodosOsRegistosBD(dbCollPar map[string]interface{}, token string) (re
 	// }
 
 	// Define o query a usar nas buscas e a colecao alvo
-	colecao := GetColecaoFromDB(dbCollPar)
-	results, err := colecao.Find(context.TODO(), bson.M{}, options.Find())
+	colecaoAlvo := GetColecaoFromDB(colecao)
+	results, err := colecaoAlvo.Find(context.TODO(), bson.M{}, options.Find())
 	if err != nil {
 		loggers.ServerErrorLogger.Println("Error: ", err)
 		retorno["erro"] = "Erro ao buscar todos os registos"
@@ -148,7 +148,7 @@ func BuscarTodosOsRegistosBD(dbCollPar map[string]interface{}, token string) (re
 }
 
 // ApagarRegistoPorID Apaga um registo pelo seu ObjectID, na bd e coleção fornecida
-func ApagarRegistoPorID(dbCollPar map[string]interface{}, idItem string, token string) map[string]interface{} {
+func ApagarRegistoPorID(colecao string, idItem string, token string) map[string]interface{} {
 	result := make(map[string]interface{})
 
 	// if VerificarTokenUser(token) != "OK" {
@@ -170,7 +170,7 @@ func ApagarRegistoPorID(dbCollPar map[string]interface{}, idItem string, token s
 	filter := bson.M{"_id": idOBJ}
 
 	// Get collection
-	coll := MongoClient.Database(dbCollPar["db"].(string)).Collection(dbCollPar["cl"].(string))
+	coll := MongoClient.Database("recursos").Collection(colecao)
 	cntx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 
 	// Operação de delete de um só registo
@@ -188,7 +188,7 @@ func ApagarRegistoPorID(dbCollPar map[string]interface{}, idItem string, token s
 
 // AtualizarRegistoDeItem Na bd e coleção escolhida, o registo de id idItem
 // vai ser atualizado para os valores especificados em item
-func AtualizarRegistoDeItem(dbCollPar map[string]interface{}, idItem string, item map[string]interface{}, token string) map[string]interface{} {
+func AtualizarRegistoDeItem(colecao string, idItem string, item map[string]interface{}, token string) map[string]interface{} {
 	result := make(map[string]interface{})
 
 	// if VerificarTokenUser(token) != "OK" {
@@ -210,7 +210,7 @@ func AtualizarRegistoDeItem(dbCollPar map[string]interface{}, idItem string, ite
 	filter := bson.M{"_id": idOBJ}
 
 	// Get collection
-	coll := MongoClient.Database(dbCollPar["db"].(string)).Collection(dbCollPar["cl"].(string))
+	coll := MongoClient.Database("recursos").Collection(colecao)
 	cntx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 
 	// Atualiza o item através do map especificado nos params
