@@ -3,12 +3,10 @@ package endpointfuncs
 import (
 	"context"
 	"errors"
-	"fmt"
 	"reflect"
 	"strings"
 
 	"github.com/tomascpmarques/PAP/backend/robinservicoequipamento/resolvedschema"
-	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo"
 )
 
@@ -55,10 +53,14 @@ func GetColecaoFromDB(colecao string) *mongo.Collection {
 	return MongoClient.Database("recursos").Collection(colecao)
 }
 
+// ReturnDB Devolve a base-de-dados dos recursos
+func ReturnDB() *mongo.Database {
+	return MongoClient.Database("recursos")
+}
+
 // GetRegistosDaColecao Busca todos os resultados de uma coleção, que igualam ao filtro
 func GetRegistosDaColecao(filter interface{}, colecao *mongo.Collection) ([]resolvedschema.Registo, error) {
 	// Busca todos os resultados que coincidêm com o filtro passado
-	fmt.Println(bson.M{"body": bson.M{"nome": "teste"}})
 	cursor, err := colecao.Find(context.TODO(), filter)
 	if err != nil {
 		return nil, err
@@ -109,7 +111,7 @@ func VerificarCamposMetaRegisto(meta map[string]interface{}) error {
 	meta[campos[0]] = strings.ToUpper(meta[campos[0]].(string))
 
 	// Define o valor minimo do item , evita quantidades inferiores a zero
-	if meta[campos[2]].(int64) < 0 {
+	if meta[campos[2]].(float64) < 0 {
 		meta[campos[2]] = 0
 	}
 

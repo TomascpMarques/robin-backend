@@ -31,7 +31,7 @@ func PingServico(name string) map[string]interface{} {
 }
 
 // AdicionarRegisto Adiciona um registo numa base de dados e coleção especifícada
-func AdicionarRegisto(registoMeta map[string]interface{}, colecao string, item map[string]interface{}, token string) (result map[string]interface{}) {
+func AdicionarRegisto(registoMeta map[string]interface{}, item map[string]interface{}, token string) (result map[string]interface{}) {
 	result = make(map[string]interface{})
 
 	// if VerificarTokenUser(token) != "OK" {
@@ -61,7 +61,7 @@ func AdicionarRegisto(registoMeta map[string]interface{}, colecao string, item m
 	}
 
 	// Get the mongo colection
-	mongoCollection := MongoClient.Database("recursos").Collection(colecao)
+	mongoCollection := MongoClient.Database("recursos").Collection(registo.Meta.Tipo)
 
 	// Insser um registo na coleção e base de dados especificada
 	_, err := mongodbhandle.InserirUmRegisto(registo, mongoCollection, 10)
@@ -115,8 +115,8 @@ func QueryRegistoJSON(campos map[string]interface{}, colecao string, token strin
 	return
 }
 
-// BuscarTodosOsRegistosBD Faz o que o título da função descreve
-func BuscarTodosOsRegistosBD(colecao string, token string) (retorno map[string]interface{}) {
+// BuscarTodosOsRegistosColecao Faz o que o título da função descreve
+func BuscarTodosOsRegistosColecao(colecao string, token string) (retorno map[string]interface{}) {
 	retorno = make(map[string]interface{})
 
 	// if VerificarTokenUser(token) != "OK" {
@@ -143,6 +143,57 @@ func BuscarTodosOsRegistosBD(colecao string, token string) (retorno map[string]i
 	}
 
 	loggers.ResolverLogger.Println("Sucesso, registos encontrados!")
+	retorno["registos"] = registos
+	return
+}
+
+func BuscarTodosRegistosBD(token string) (retorno map[string]interface{}) {
+	retorno = make(map[string]interface{})
+
+	// if VerificarTokenUser(token) != "OK" {
+	// 	fmt.Println("Erro: A token fornecida é inválida ou expirou")
+	// 	result["erro"] = "A token fornecida é inválida ou expirou"
+	// 	return result
+	// }
+
+	// Busca a base de dados usada pelo sistema
+	dataBase := ReturnDB()
+	// Extrai todos os nome de coleções existentes
+	colecoesNomes, err := dataBase.ListCollectionNames(context.TODO(), bson.M{})
+	if err != nil {
+		fmt.Println("erro: ", err)
+		retorno["erro"] = err.Error()
+		return
+	}
+
+	// Prepara a variavél onde todos os registos vão ser guardados
+	registos := make(map[string]interface{})
+	for _, collName := range colecoesNomes {
+		// Busca o conteudo da coleção alvo
+		colecaoAlvo := GetColecaoFromDB(collName)
+		// Busca todos os items presentes na coleção
+		results, err := colecaoAlvo.Find(context.TODO(), bson.M{}, options.Find())
+		if err != nil {
+			loggers.ServerErrorLogger.Println("Error: ", err)
+			retorno["erro"] = "Erro ao buscar todos os registos"
+			return
+		}
+
+		// Variavél temporária para armazenar todos os registos da coleção
+		temp := make([]map[string]interface{}, 0)
+		// Descodifica todos os registos para a var temp
+		err = results.All(context.TODO(), &temp)
+		if err != nil {
+			loggers.ServerErrorLogger.Println("Error: ", err)
+			retorno["erro"] = err.Error()
+			return
+		}
+		// Atribui os registos a um mapa representante da coleção, existente na var registos
+		registos[collName] = temp
+	}
+
+	// Retorna os registos se tudo correr bêm
+	loggers.ResolverLogger.Println("Sucesso, registos encontrados e enviados!")
 	retorno["registos"] = registos
 	return
 }

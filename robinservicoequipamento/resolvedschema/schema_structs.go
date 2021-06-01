@@ -12,7 +12,7 @@ type Registo struct {
 }
 
 type RegistoMeta struct {
-	Tipo       string `json:"tipo,omitempty"`
-	Estado     string `json:"estado,omitempty"`
-	Quantidade int64  `json:"quantidade,omitempty"`
+	Tipo       string  `json:"tipo,omitempty"`
+	Estado     string  `json:"estado,omitempty"`
+	Quantidade float64 `json:"quantidade,omitempty"`
 }

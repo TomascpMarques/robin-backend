@@ -31,7 +31,8 @@ func main() {
 	actions.FuncsStorage["AdicionarRegisto"] = endpointfuncs.AdicionarRegisto
 
 	// Queries a registos
-	actions.FuncsStorage["BuscarTodosOsRegistosBD"] = endpointfuncs.BuscarTodosOsRegistosBD
+	actions.FuncsStorage["BuscarTodosRegistosBD"] = endpointfuncs.BuscarTodosRegistosBD
+	actions.FuncsStorage["BuscarTodosOsRegistosColecao"] = endpointfuncs.BuscarTodosOsRegistosColecao
 	actions.FuncsStorage["QueryRegistoJSON"] = endpointfuncs.QueryRegistoJSON
 
 	// Health check
