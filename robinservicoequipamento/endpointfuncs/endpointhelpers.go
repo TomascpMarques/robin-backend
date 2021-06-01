@@ -3,6 +3,7 @@ package endpointfuncs
 import (
 	"context"
 	"errors"
+	"fmt"
 	"reflect"
 	"strings"
 
@@ -123,10 +124,22 @@ func RunQuerysOnRecords(querys resolvedschema.Query, registos []resolvedschema.R
 
 	if len(registos) > len(querys.Extrair) {
 		for _, registo := range registos {
+			registoCompleto := JuntarPropriedadesDeRegisto(registo)
+
 			// Mapa temporário a ser usado para extrair os valores
 			mapTemp := make(map[string]interface{})
-			// Extrai os valores de uma forma recurssiva
-			ExtractValuesFromJSON(querys.Extrair[0], registo.Body, mapTemp)
+			// Query a executar na busca atual
+			queryCurrente := querys.Extrair[0]
+
+			// Verifica se o query está vazio, se sim
+			// A extrasão dos elementos do registo, irá devolver todos os valores
+			if len(queryCurrente) < 1 {
+				for k := range registoCompleto {
+					queryCurrente = append(queryCurrente, k)
+				}
+			}
+			// Extrai os valores de JSON existentes na struct
+			ExtractValuesFromJSON(queryCurrente, registoCompleto, mapTemp)
 
 			// Se chegarmos ao ultimo query na lista, aplica esse mesmo a todos os registo restantes
 			if len(querys.Extrair) >= 2 {
@@ -135,6 +148,7 @@ func RunQuerysOnRecords(querys resolvedschema.Query, registos []resolvedschema.R
 			// Adiciona os registos ao retorno
 			records = append(records, mapTemp)
 		}
+		fmt.Println(records)
 		return records
 	}
 
@@ -145,4 +159,20 @@ func RunQuerysOnRecords(querys resolvedschema.Query, registos []resolvedschema.R
 		records = append(records, mapTemp)
 	}
 	return records
+}
+
+func JuntarPropriedadesDeRegisto(registo resolvedschema.Registo) map[string]interface{} {
+	// Adiciona as propriedades estáticas da struct ao mapa
+	registoCompleto := map[string]interface{}{
+		"quantidade": registo.Meta.Quantidade,
+		"estado":     registo.Meta.Estado,
+		"tipo":       registo.Meta.Tipo,
+	}
+
+	// Itera sobre todos os valores do body (não defenidos/dinamicos)
+	// E adiciona os mesmos ao mapa a retornar
+	for chave, valor := range registo.Body {
+		registoCompleto[chave] = valor
+	}
+	return registoCompleto
 }
