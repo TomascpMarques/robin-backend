@@ -167,7 +167,7 @@ func RunQuerysOnRecords(querys resolvedschema.Query, registos []resolvedschema.R
 
 		// Verifica se o query está vazio, se sim
 		// A extrasão dos elementos do registo, irá devolver todos os valores
-		if len(queryCurrente) <= 1 {
+		if len(queryCurrente) < 1 {
 			for k := range registoCompleto {
 				queryCurrente = append(queryCurrente, k)
 			}
