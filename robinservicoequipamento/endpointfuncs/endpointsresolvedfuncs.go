@@ -111,7 +111,9 @@ func QueryRegistoJSON(campos map[string]interface{}, colecao string, token strin
 	}
 
 	loggers.ResolverLogger.Println("Sucesso, campos extraidos com sucesso!")
-	result[colecao] = records
+	result["registos"] = map[string]interface{}{
+		colecao: records,
+	}
 	return
 }
 
