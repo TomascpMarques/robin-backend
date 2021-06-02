@@ -15,6 +15,7 @@ import (
 func ExtractValuesFromJSON(querys []interface{}, obj map[string]interface{}, final map[string]interface{}) {
 	for _, k := range querys {
 		var temp = strings.Split(k.(string), ".")
+		fmt.Println("Objeto: ", obj, "\nQuery: ", temp)
 		if val := GetMapValueRecurssive(temp, obj); val != nil {
 			final[k.(string)] = val
 		}
@@ -32,7 +33,7 @@ func GetMapValueRecurssive(keys []string, obj map[string]interface{}) interface{
 		}
 		// Verifica se o valor é um map, se sim
 		// Devolve esse mapa e o query atualizado
-		if CheckValMapStrInter(obj[keys[0]]) {
+		if CheckValMapStrInterface(obj[keys[0]]) {
 			return GetMapValueRecurssive(keys[1:], obj[keys[0]].(map[string]interface{}))
 		}
 	}
@@ -44,8 +45,8 @@ func CheckValueIsValid(val interface{}) bool {
 	return reflect.ValueOf(val).IsValid()
 }
 
-// CheckValMapStrInter Verifica se val é um mapa
-func CheckValMapStrInter(val interface{}) bool {
+// CheckValMapStrInterface Verifica se val é um mapa
+func CheckValMapStrInterface(val interface{}) bool {
 	return reflect.TypeOf(val).String() == "map[string]interface {}"
 }
 
@@ -121,9 +122,11 @@ func VerificarCamposMetaRegisto(meta map[string]interface{}) error {
 
 func RunQuerysOnRecords(querys resolvedschema.Query, registos []resolvedschema.Registo) []map[string]interface{} {
 	var records = make([]map[string]interface{}, 0)
+	fmt.Println("registos:", registos)
 
 	if len(registos) > len(querys.Extrair) {
 		for _, registo := range registos {
+			// Junta todos os valores do registo para poderem ser "queryed"
 			registoCompleto := JuntarPropriedadesDeRegisto(registo)
 
 			// Mapa temporário a ser usado para extrair os valores
@@ -152,10 +155,25 @@ func RunQuerysOnRecords(querys resolvedschema.Query, registos []resolvedschema.R
 		return records
 	}
 
-	for k, registo := range registos {
+	for _, registo := range registos {
 		// Mapa temporário a ser usado para extrair os valores
 		mapTemp := make(map[string]interface{})
-		ExtractValuesFromJSON(querys.Extrair[k], registo.Body, mapTemp)
+
+		// Query a executar na busca atual
+		queryCurrente := querys.Extrair[0]
+
+		// Junta todos os valores do registo para poderem ser "queryed"
+		registoCompleto := JuntarPropriedadesDeRegisto(registo)
+
+		// Verifica se o query está vazio, se sim
+		// A extrasão dos elementos do registo, irá devolver todos os valores
+		if len(queryCurrente) <= 1 {
+			for k := range registoCompleto {
+				queryCurrente = append(queryCurrente, k)
+			}
+		}
+
+		ExtractValuesFromJSON(queryCurrente, registo.Body, mapTemp)
 		records = append(records, mapTemp)
 	}
 	return records
