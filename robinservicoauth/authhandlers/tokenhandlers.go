@@ -54,7 +54,7 @@ func (user User) CriarJWTAuth() *jwt.Token {
 		"perms": user.Permissoes,
 		"iss":   "Robin-Servico-Auth",
 		"typ":   "auth",
-		"exp":   time.Now().Add(time.Minute * 45).Unix(),
+		"exp":   time.Now().Add(time.Hour * 9).Unix(),
 	})
 	return jwtAuth
 }
