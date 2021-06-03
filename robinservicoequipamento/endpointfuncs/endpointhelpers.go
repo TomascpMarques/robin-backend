@@ -141,6 +141,7 @@ func RunQuerysOnRecords(querys resolvedschema.Query, registos []resolvedschema.R
 					queryCurrente = append(queryCurrente, k)
 				}
 			}
+
 			// Extrai os valores de JSON existentes na struct
 			ExtractValuesFromJSON(queryCurrente, registoCompleto, mapTemp)
 
@@ -173,7 +174,7 @@ func RunQuerysOnRecords(querys resolvedschema.Query, registos []resolvedschema.R
 			}
 		}
 
-		ExtractValuesFromJSON(queryCurrente, registo.Body, mapTemp)
+		ExtractValuesFromJSON(queryCurrente, registoCompleto, mapTemp)
 		records = append(records, mapTemp)
 	}
 	return records
