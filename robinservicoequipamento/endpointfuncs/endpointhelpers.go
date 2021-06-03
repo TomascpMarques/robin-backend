@@ -15,7 +15,6 @@ import (
 func ExtractValuesFromJSON(querys []interface{}, obj map[string]interface{}, final map[string]interface{}) {
 	for _, k := range querys {
 		var temp = strings.Split(k.(string), ".")
-		fmt.Println("Objeto: ", obj, "\nQuery: ", temp)
 		if val := GetMapValueRecurssive(temp, obj); val != nil {
 			final[k.(string)] = val
 		}
@@ -122,7 +121,6 @@ func VerificarCamposMetaRegisto(meta map[string]interface{}) error {
 
 func RunQuerysOnRecords(querys resolvedschema.Query, registos []resolvedschema.Registo) []map[string]interface{} {
 	var records = make([]map[string]interface{}, 0)
-	fmt.Println("registos:", registos)
 
 	if len(registos) > len(querys.Extrair) {
 		for _, registo := range registos {
