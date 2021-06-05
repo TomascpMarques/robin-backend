@@ -98,6 +98,7 @@ func Registar(user string, password string, perms int, token string) (retorno ma
 			Expira: 0,
 		}, 0)
 		loggers.LoginAuthLogger.Println("Registo adicionado com sucesso.")
+		retorno["sucesso"] = true
 		return
 	}
 
